@@ -9,24 +9,23 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 30px 16px;
+      background: linear-gradient(to bottom right, #e6f2ff, #ffffff);
       display: flex;
       justify-content: center;
-      background: linear-gradient(to bottom right, #f8f9fc, #fefefe);
     }
 
     .container {
       width: 100%;
       max-width: 500px;
-      background: linear-gradient(to bottom, #f8f8f8, #ffffff);
+      background: #fff;
       padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
-      border-top: 6px solid #f57f20;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     }
 
     h2 {
       text-align: center;
-      color: #f57f20;
+      color: #003f6f;
       margin-top: 0;
     }
 
@@ -34,7 +33,7 @@
       display: block;
       margin-top: 16px;
       font-weight: bold;
-      color: #333;
+      color: #003f6f;
     }
 
     input[type="number"] {
@@ -49,14 +48,20 @@
 
     .geschwindigkeit-reihe {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 10px 0;
+      justify-content: flex-start;
+      overflow-x: auto;
       gap: 8px;
+      padding: 10px 0;
+      scrollbar-width: thin;
     }
 
-    .geschwindigkeit-reihe input[type="radio"] {
-      display: none;
+    .geschwindigkeit-reihe::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .geschwindigkeit-reihe::-webkit-scrollbar-thumb {
+      background-color: #f57f20;
+      border-radius: 4px;
     }
 
     .geschwindigkeit-reihe label {
@@ -64,30 +69,31 @@
       border: 2px solid #f57f20;
       color: #f57f20;
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       text-align: center;
-      line-height: 32px;
+      line-height: 36px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.2s;
       user-select: none;
+      flex: 0 0 auto;
     }
 
     .geschwindigkeit-reihe label.active {
       background-color: #f57f20;
       color: white;
+      border-color: #f57f20;
     }
 
     .ergebnis {
       margin-top: 24px;
       padding: 14px;
-      background-color: #fff3e0;
+      background-color: #e6f2ff;
       font-size: 22px;
       text-align: center;
       border-radius: 8px;
-      color: #333;
-      border: 1px solid #f57f20;
+      color: #003f6f;
     }
   </style>
 </head>
@@ -166,9 +172,9 @@
         return;
       }
 
-      // Nur berechnen, wenn aktuelle Geschwindigkeit gesetzt ist
-      if (!istWert && neuWert) {
-        document.getElementById("ergebnis").innerText = "Bitte zuerst die aktuelle Bandgeschwindigkeit wählen.";
+      // Nur berechnen, wenn aktuelle Geschwindigkeit vorhanden ist
+      if (neuWert && !istWert) {
+        document.getElementById("ergebnis").innerText = "Bitte aktuelle Bandgeschwindigkeit wählen.";
         return;
       }
 
