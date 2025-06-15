@@ -7,12 +7,13 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
       margin: 0;
       padding: 30px 16px;
       display: flex;
       justify-content: center;
+      background: linear-gradient(to bottom right, #cce0ff, #e6f0ff);
     }
+
     .container {
       width: 100%;
       max-width: 500px;
@@ -21,16 +22,19 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     }
+
     h2 {
       text-align: center;
       color: #007bff;
       margin-top: 0;
     }
+
     label {
       display: block;
       margin-top: 16px;
       font-weight: bold;
     }
+
     input[type="number"] {
       width: 100%;
       padding: 10px;
@@ -40,6 +44,7 @@
       border-radius: 6px;
       box-sizing: border-box;
     }
+
     .geschwindigkeit-reihe {
       display: flex;
       justify-content: center;
@@ -48,9 +53,11 @@
       padding: 10px 0;
       gap: 8px;
     }
+
     .geschwindigkeit-reihe input[type="radio"] {
       display: none;
     }
+
     .geschwindigkeit-reihe label {
       background: #fff;
       border: 2px solid #ccc;
@@ -64,11 +71,13 @@
       transition: all 0.2s;
       user-select: none;
     }
+
     .geschwindigkeit-reihe label.active {
       background-color: #007bff;
       color: white;
       border-color: #007bff;
     }
+
     .ergebnis {
       margin-top: 24px;
       padding: 14px;
@@ -154,12 +163,16 @@
         return;
       }
 
-      if (istWert === null || neuWert === null) {
-        document.getElementById("ergebnis").innerText = "Bitte beide Bandgeschwindigkeiten auswählen.";
+      // Sonderfall: nur neue Geschwindigkeit ausgewählt → keine Berechnung
+      if (neuWert !== null && istWert === null) {
+        document.getElementById("ergebnis").innerText = "Bitte auch die aktuelle Geschwindigkeit wählen.";
         return;
       }
 
-      const I_neu = I_alt * (S_neu / S_alt) * (neuWert / istWert);
+      const V_alt = istWert || 1;
+      const V_neu = neuWert || V_alt;
+
+      const I_neu = I_alt * (S_neu / S_alt) * (V_neu / V_alt);
       const gerundet = I_neu.toFixed(2);
 
       document.getElementById("ergebnis").innerText = `Benötigter Strom: ${gerundet} A`;
