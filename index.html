@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #eaf3fb, #ffffff);
+      background: linear-gradient(to bottom right, #f7f7f7, #ffffff);
       margin: 0;
       padding: 30px 16px;
       display: flex;
@@ -16,16 +16,16 @@
 
     .container {
       width: 100%;
-      max-width: 480px;
-      background: #fff;
+      max-width: 500px;
+      background: white;
       padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
 
     h2 {
       text-align: center;
-      color: #f57f20;
+      color: #F58025;
       margin-top: 0;
     }
 
@@ -33,7 +33,7 @@
       display: block;
       margin-top: 16px;
       font-weight: bold;
-      color: #333;
+      color: #002855;
     }
 
     input[type="number"] {
@@ -48,42 +48,42 @@
 
     .geschwindigkeit-reihe {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 6px;
-      margin-top: 8px;
+      margin-top: 10px;
     }
 
     .geschwindigkeit-reihe label {
       background: #fff;
-      border: 2px solid #f57f20;
-      color: #f57f20;
+      border: 2px solid #ccc;
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      font-size: 14px;
+      width: 34px;
+      height: 34px;
       text-align: center;
-      line-height: 28px;
+      line-height: 30px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
-      user-select: none;
+      font-size: 14px;
+      color: #002855;
+      transition: all 0.2s;
     }
 
     .geschwindigkeit-reihe label.active {
-      background-color: #f57f20;
+      background-color: #002855;
       color: white;
-      border-color: #f57f20;
+      border-color: #002855;
     }
 
     .ergebnis {
       margin-top: 24px;
       padding: 14px;
-      background-color: #eaf3fb;
-      font-size: 22px;
+      background-color: #f0f0f0;
+      font-size: 20px;
       text-align: center;
       border-radius: 8px;
-      color: #222;
+      color: #002855;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -102,26 +102,24 @@
 
     <label>Aktuelle Bandgeschwindigkeit (m/min):</label>
     <div class="geschwindigkeit-reihe" id="istGeschw">
-      <label data-value="3">3</label>
-      <label data-value="4">4</label>
-      <label data-value="5">5</label>
-      <label data-value="6">6</label>
-      <label data-value="7">7</label>
-      <label data-value="8">8</label>
-      <label data-value="9">9</label>
-      <label data-value="10">10</label>
+      <!-- 3 bis 16 -->
+      <script>
+        document.write([...Array(14)].map((_, i) => {
+          const v = i + 3;
+          return `<label data-value="${v}">${v}</label>`;
+        }).join(''));
+      </script>
     </div>
 
     <label>Neue Bandgeschwindigkeit (m/min):</label>
     <div class="geschwindigkeit-reihe" id="neuGeschw">
-      <label data-value="3">3</label>
-      <label data-value="4">4</label>
-      <label data-value="5">5</label>
-      <label data-value="6">6</label>
-      <label data-value="7">7</label>
-      <label data-value="8">8</label>
-      <label data-value="9">9</label>
-      <label data-value="10">10</label>
+      <!-- 3 bis 16 -->
+      <script>
+        document.write([...Array(14)].map((_, i) => {
+          const v = i + 3;
+          return `<label data-value="${v}">${v}</label>`;
+        }).join(''));
+      </script>
     </div>
 
     <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
@@ -162,12 +160,12 @@
         return;
       }
 
-      if (neuWert && !istWert) {
-        document.getElementById("ergebnis").innerText = "Bitte auch die aktuelle Geschwindigkeit wählen.";
+      if (neuWert !== null && istWert === null) {
+        document.getElementById("ergebnis").innerText = "Bitte auch aktuelle Geschwindigkeit auswählen.";
         return;
       }
 
-      const V_alt = istWert || 1;
+      const V_alt = istWert || neuWert || 1;
       const V_neu = neuWert || V_alt;
 
       const I_neu = I_alt * (S_neu / S_alt) * (V_neu / V_alt);
