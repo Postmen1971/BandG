@@ -11,21 +11,22 @@
       padding: 30px 16px;
       display: flex;
       justify-content: center;
-      background: linear-gradient(to bottom right, #cce0ff, #e6f0ff);
+      background: linear-gradient(to bottom right, #f8f9fc, #fefefe);
     }
 
     .container {
       width: 100%;
       max-width: 500px;
-      background: #fff;
+      background: linear-gradient(to bottom, #f8f8f8, #ffffff);
       padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+      border-top: 6px solid #f57f20;
     }
 
     h2 {
       text-align: center;
-      color: #007bff;
+      color: #f57f20;
       margin-top: 0;
     }
 
@@ -33,6 +34,7 @@
       display: block;
       margin-top: 16px;
       font-weight: bold;
+      color: #333;
     }
 
     input[type="number"] {
@@ -48,8 +50,7 @@
     .geschwindigkeit-reihe {
       display: flex;
       justify-content: center;
-      flex-wrap: nowrap;
-      overflow-x: auto;
+      flex-wrap: wrap;
       padding: 10px 0;
       gap: 8px;
     }
@@ -60,7 +61,8 @@
 
     .geschwindigkeit-reihe label {
       background: #fff;
-      border: 2px solid #ccc;
+      border: 2px solid #f57f20;
+      color: #f57f20;
       border-radius: 50%;
       width: 36px;
       height: 36px;
@@ -73,18 +75,19 @@
     }
 
     .geschwindigkeit-reihe label.active {
-      background-color: #007bff;
+      background-color: #f57f20;
       color: white;
-      border-color: #007bff;
     }
 
     .ergebnis {
       margin-top: 24px;
       padding: 14px;
-      background-color: #e6f2ff;
+      background-color: #fff3e0;
       font-size: 22px;
       text-align: center;
       border-radius: 8px;
+      color: #333;
+      border: 1px solid #f57f20;
     }
   </style>
 </head>
@@ -163,9 +166,9 @@
         return;
       }
 
-      // Sonderfall: nur neue Geschwindigkeit ausgewählt → keine Berechnung
-      if (neuWert !== null && istWert === null) {
-        document.getElementById("ergebnis").innerText = "Bitte auch die aktuelle Geschwindigkeit wählen.";
+      // Nur berechnen, wenn aktuelle Geschwindigkeit gesetzt ist
+      if (!istWert && neuWert) {
+        document.getElementById("ergebnis").innerText = "Bitte zuerst die aktuelle Bandgeschwindigkeit wählen.";
         return;
       }
 
