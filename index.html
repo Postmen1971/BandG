@@ -5,9 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Galvanik Stromrechner</title>
   <style>
+    :root {
+      --orange: #F58025;
+      --darkblue: #002855;
+      --lightgray: #f7f7f7;
+      --text: #002855;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #f7f7f7, #ffffff);
+      background: linear-gradient(to bottom right, var(--lightgray), #ffffff);
       margin: 0;
       padding: 30px 16px;
       display: flex;
@@ -25,7 +32,7 @@
 
     h2 {
       text-align: center;
-      color: #F58025;
+      color: var(--orange);
       margin-top: 0;
     }
 
@@ -33,7 +40,7 @@
       display: block;
       margin-top: 16px;
       font-weight: bold;
-      color: #002855;
+      color: var(--darkblue);
     }
 
     input[type="number"] {
@@ -55,8 +62,8 @@
     }
 
     .geschwindigkeit-reihe label {
-      background: #fff;
-      border: 2px solid #ccc;
+      background: white;
+      border: 2px solid var(--darkblue);
       border-radius: 50%;
       width: 34px;
       height: 34px;
@@ -65,14 +72,19 @@
       font-weight: bold;
       cursor: pointer;
       font-size: 14px;
-      color: #002855;
-      transition: all 0.2s;
+      color: var(--darkblue);
+      transition: all 0.2s ease;
+    }
+
+    .geschwindigkeit-reihe label:hover {
+      border-color: #e46b00;
+      color: #e46b00;
     }
 
     .geschwindigkeit-reihe label.active {
-      background-color: #002855;
+      background-color: var(--orange);
       color: white;
-      border-color: #002855;
+      border-color: var(--orange);
     }
 
     .ergebnis {
@@ -82,7 +94,7 @@
       font-size: 20px;
       text-align: center;
       border-radius: 8px;
-      color: #002855;
+      color: var(--darkblue);
       border: 1px solid #ccc;
     }
   </style>
@@ -102,7 +114,6 @@
 
     <label>Aktuelle Bandgeschwindigkeit (m/min):</label>
     <div class="geschwindigkeit-reihe" id="istGeschw">
-      <!-- 3 bis 16 -->
       <script>
         document.write([...Array(14)].map((_, i) => {
           const v = i + 3;
@@ -113,7 +124,6 @@
 
     <label>Neue Bandgeschwindigkeit (m/min):</label>
     <div class="geschwindigkeit-reihe" id="neuGeschw">
-      <!-- 3 bis 16 -->
       <script>
         document.write([...Array(14)].map((_, i) => {
           const v = i + 3;
