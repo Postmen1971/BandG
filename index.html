@@ -28,6 +28,7 @@
       padding: 24px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      position: relative;
     }
 
     h2 {
@@ -94,15 +95,26 @@
       font-size: 20px;
       text-align: center;
       border-radius: 8px;
-      color: var(--darkblue);
+      color: var(--orange);
       border: 1px solid #ccc;
     }
 
-    .haftung {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #666;
+    .haftungshinweis {
       text-align: center;
+      font-size: 12px;
+      margin-top: 10px;
+      color: #888;
+    }
+
+    #counter {
+      position: fixed;
+      bottom: 4px;
+      right: 8px;
+      font-size: 10px;
+      color: #cccccc;
+      font-family: monospace;
+      opacity: 0.5;
+      z-index: 9999;
     }
   </style>
 </head>
@@ -140,8 +152,10 @@
     </div>
 
     <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
-    <div class="haftung">Alle Angaben ohne Gewähr. Es wird keine Haftung für die Ergebnisse übernommen.</div>
+    <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
   </div>
+
+  <div id="counter"></div>
 
   <script>
     let istWert = null;
@@ -198,6 +212,13 @@
 
     setupAbwahl("istGeschw", true);
     setupAbwahl("neuGeschw", false);
+
+    // Besucherzähler (lokal gespeichert)
+    const key = "galvanikCounter";
+    let count = localStorage.getItem(key);
+    count = count ? parseInt(count) + 1 : 1;
+    localStorage.setItem(key, count);
+    document.getElementById("counter").innerText = `#${count}`;
   </script>
 </body>
 </html>
