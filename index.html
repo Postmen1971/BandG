@@ -2,223 +2,240 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galvanik Stromrechner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Galvanik Tools – Strom & Zeit</title>
   <style>
-    :root {
-      --orange: #F58025;
-      --darkblue: #002855;
-      --lightgray: #f7f7f7;
-      --text: #002855;
-    }
+    .topbar{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(6px);border-bottom:1px solid #e5e7eb;padding:10px 12px;z-index:1000;display:flex;justify-content:center;gap:8px}
+    .tabbtn{border:2px solid #002855;color:#002855;background:#fff;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:bold}
+    .tabbtn.active{background:#F58025;color:#fff;border-color:#F58025}
+    section.tab-pane{display:none}section.tab-pane.active{display:block}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, var(--lightgray), #ffffff);
-      margin: 0;
-      padding: 30px 16px;
-      display: flex;
-      justify-content: center;
+    :root{--orange:#F58025;--darkblue:#002855;--lightgray:#f7f7f7;--text:#002855}
+    body{
+      font-family:Arial,sans-serif;background:linear-gradient(to bottom right,var(--lightgray),#ffffff);
+      margin:0;
+      padding:30px max(20px, env(safe-area-inset-left)) 30px max(20px, env(safe-area-inset-right));
+      display:flex;justify-content:center;flex-direction:column;align-items:center
     }
+    .container{width:100%;max-width:500px;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.06);position:relative;margin-top:16px}
+    @media (max-width: 430px){.container{padding:22px}label{font-size:16px}input,select,button{font-size:17px}.tabbtn{padding:10px 16px}}
+    h2{text-align:center;color:var(--orange);margin-top:0}
+    label{display:block;margin-top:16px;font-weight:bold;color:var(--darkblue)}
+    input[type=number]{width:100%;padding:10px;font-size:18px;margin-top:5px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box}
+    .geschwindigkeit-reihe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
+    .geschwindigkeit-reihe label{background:#fff;border:2px solid var(--darkblue);border-radius:50%;width:34px;height:34px;text-align:center;line-height:30px;font-weight:bold;cursor:pointer;font-size:14px;color:#002855;transition:.2s}
+    .geschwindigkeit-reihe label:hover{border-color:#e46b00;color:#e46b00}
+    .geschwindigkeit-reihe label.active{background-color:#F58025;color:#fff;border-color:#F58025}
+    .ergebnis{margin-top:24px;padding:14px;background:#f0f0f0;font-size:20px;text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc}
+    .haftungshinweis{text-align:center;font-size:12px;margin-top:10px;color:#888}
+    #counter{position:fixed;bottom:4px;right:8px;font-size:10px;color:#ccc;font-family:monospace;opacity:.5;z-index:9999}
 
-    .container {
-      width: 100%;
-      max-width: 500px;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      position: relative;
-    }
-
-    h2 {
-      text-align: center;
-      color: var(--orange);
-      margin-top: 0;
-    }
-
-    label {
-      display: block;
-      margin-top: 16px;
-      font-weight: bold;
-      color: var(--darkblue);
-    }
-
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 18px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-
-    .geschwindigkeit-reihe {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .geschwindigkeit-reihe label {
-      background: white;
-      border: 2px solid var(--darkblue);
-      border-radius: 50%;
-      width: 34px;
-      height: 34px;
-      text-align: center;
-      line-height: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--darkblue);
-      transition: all 0.2s ease;
-    }
-
-    .geschwindigkeit-reihe label:hover {
-      border-color: #e46b00;
-      color: #e46b00;
-    }
-
-    .geschwindigkeit-reihe label.active {
-      background-color: var(--orange);
-      color: white;
-      border-color: var(--orange);
-    }
-
-    .ergebnis {
-      margin-top: 24px;
-      padding: 14px;
-      background-color: #f0f0f0;
-      font-size: 20px;
-      text-align: center;
-      border-radius: 8px;
-      color: var(--orange);
-      border: 1px solid #ccc;
-    }
-
-    .haftungshinweis {
-      text-align: center;
-      font-size: 12px;
-      margin-top: 10px;
-      color: #888;
-    }
-
-    #counter {
-      position: fixed;
-      bottom: 4px;
-      right: 8px;
-      font-size: 10px;
-      color: #cccccc;
-      font-family: monospace;
-      opacity: 0.5;
-      z-index: 9999;
-    }
+    .zeit-container .row{display:flex;gap:8px}
+    .zeit-container select,.zeit-container button{width:100%;padding:10px;font-size:16px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box}
+    .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
+    .zeit-container button:hover{background:#004d99}
+    .zeit-result{margin-top:16px;padding:12px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf}
+    .zeit-tip{margin-top:12px;padding:10px;border-radius:6px;background:#fff7ea;border:1px solid #f2c58a;color:#8a5400;font-size:14px}
+    .zeit-quote{margin-top:10px;padding:10px;border-radius:6px;background:#eef5ff;border:1px solid #cbdcff;color:#143a66;font-size:14px;font-style:italic}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Galvanik-Stromrechner</h2>
 
-    <label for="istStrom">Aktueller Strom (A):</label>
-    <input type="number" id="istStrom" placeholder="z. B. 4">
+  <nav class="topbar">
+    <button id="tabBtnStrom" class="tabbtn active">⚡ Stromrechner</button>
+    <button id="tabBtnZeit" class="tabbtn">⏱️ Zeitrechner</button>
+  </nav>
 
-    <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="number" id="istSchicht" placeholder="z. B. 1.0">
+  <!-- Stromrechner -->
+  <section id="tab-strom" class="tab-pane active">
+    <div class="container">
+      <h2>Galvanik-Stromrechner</h2>
 
-    <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="number" id="zielSchicht" placeholder="z. B. 2.5">
+      <label for="istStrom">Aktueller Strom (A):</label>
+      <input type="number" id="istStrom" placeholder="z. B. 4">
 
-    <label>Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <div class="geschwindigkeit-reihe" id="istGeschw">
-      <script>
-        document.write([...Array(14)].map((_, i) => {
-          const v = i + 3;
-          return `<label data-value="${v}">${v}</label>`;
-        }).join(''));
-      </script>
+      <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
+      <input type="number" id="istSchicht" placeholder="z. B. 1.0">
+
+      <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
+      <input type="number" id="zielSchicht" placeholder="z. B. 2.5">
+
+      <label>Aktuelle Bandgeschwindigkeit (m/min):</label>
+      <div class="geschwindigkeit-reihe" id="istGeschw">
+        <script>
+          document.write([...Array(14)].map((_, i) => {
+            const v = i + 3;
+            return `<label data-value="${v}">${v}</label>`;
+          }).join(''));
+        </script>
+      </div>
+
+      <label>Neue Bandgeschwindigkeit (m/min):</label>
+      <div class="geschwindigkeit-reihe" id="neuGeschw">
+        <script>
+          document.write([...Array(14)].map((_, i) => {
+            const v = i + 3;
+            return `<label data-value="${v}">${v}</label>`;
+          }).join(''));
+        </script>
+      </div>
+
+      <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
+      <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
     </div>
 
-    <label>Neue Bandgeschwindigkeit (m/min):</label>
-    <div class="geschwindigkeit-reihe" id="neuGeschw">
-      <script>
-        document.write([...Array(14)].map((_, i) => {
-          const v = i + 3;
-          return `<label data-value="${v}">${v}</label>`;
-        }).join(''));
-      </script>
+    <div id="counter"></div>
+
+    <script>
+      let istWert=null, neuWert=null;
+      function setupAbwahl(containerId,isIst){
+        const container=document.getElementById(containerId);
+        const labels=container.querySelectorAll("label");
+        labels.forEach(label=>{
+          label.addEventListener("click",()=>{
+            if(label.classList.contains("active")){
+              label.classList.remove("active");
+              if(isIst) istWert=null; else neuWert=null;
+            }else{
+              labels.forEach(l=>l.classList.remove("active"));
+              label.classList.add("active");
+              if(isIst) istWert=parseFloat(label.dataset.value);
+              else neuWert=parseFloat(label.dataset.value);
+            }
+            berechne();
+          });
+        });
+      }
+      function berechne(){
+        const I_alt=parseFloat(document.getElementById("istStrom").value);
+        const S_alt=parseFloat(document.getElementById("istSchicht").value);
+        const S_neu=parseFloat(document.getElementById("zielSchicht").value);
+        if(!I_alt||!S_alt||!S_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
+        if(neuWert!==null&&istWert===null){document.getElementById("ergebnis").innerText="Bitte auch aktuelle Geschwindigkeit auswählen.";return;}
+        const V_alt=istWert||neuWert||1, V_neu=neuWert||V_alt;
+        const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
+        document.getElementById("ergebnis").innerText=`Benötigter Strom: ${I_neu.toFixed(2)} A`;
+      }
+      document.querySelectorAll("input").forEach(i=>i.addEventListener("input",berechne));
+      setupAbwahl("istGeschw",true);
+      setupAbwahl("neuGeschw",false);
+      const key="galvanikCounter"; let count=localStorage.getItem(key);
+      count=count?parseInt(count)+1:1; localStorage.setItem(key,count);
+      document.getElementById("counter").innerText=`#${count}`;
+    </script>
+  </section>
+
+  <!-- Zeitrechner -->
+  <section id="tab-zeit" class="tab-pane">
+    <div class="container zeit-container">
+      <h2>Galvanik-Zeitrechner</h2>
+
+      <div class="row">
+        <div style="flex:1">
+          <label>Geschwindigkeit (m/min)</label>
+          <select id="speedSel"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="flex:1">
+          <label>Startpunkt</label>
+          <select id="startSel"></select>
+        </div>
+        <div style="flex:1">
+          <label>Endpunkt</label>
+          <select id="endSel"></select>
+        </div>
+      </div>
+
+      <button id="calcBtn">Zeit berechnen</button>
+      <div class="zeit-result" id="zeitResult">Bitte wähle Start, Ende und Geschwindigkeit.</div>
+      <div class="zeit-tip" id="zeitTip" style="display:none;"></div>
+      <div class="zeit-quote" id="zeitQuote" style="display:none;"></div>
     </div>
 
-    <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
-    <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
-  </div>
+    <script>
+      const punkte=[
+        ["Start","0:00"],["Hot Wash","5:10"],["Nickel 1","6:32"],["Nickel 6","7:25"],["Nickel 12","8:27"],
+        ["Pd 1","9:10"],["Pd 3","9:40"],["Pd 5","10:12"],["Pd 7","10:40"],["U-Turn Mitte","11:47"],
+        ["Gold 1","14:52"],["Gold 3","15:22"],["Gold 5","15:40"],["Gold Stripper","16:11"],
+        ["Zinn 1","17:20"],["Zinn 3","17:41"],["Zinn 5","18:03"],["Zinn 7","18:25"],
+        ["Zinn 9","19:00"],["Zinn Stripper","19:25"],
+        ["Nach-Fön","20:31"],["Speicher","22:17"]
+      ];
 
-  <div id="counter"></div>
+      const tips=[
+        "Nickel: Konstante Geschwindigkeit hält die Schichtdicke stabil – abruptes Beschleunigen vermeiden.",
+        "Palladium: Anoden-Polarisation bei höheren Geschwindigkeiten prüfen.",
+        "Gold: Spülqualität vor dem Goldbad sichern.",
+        "Zinn: Kantenunterdeckung nimmt mit Speed zu – Stromdichte prüfen.",
+        "Übergänge beachten: Kontaktierung & Bandführung sauber halten.",
+        "Vor Speed-Änderung Strom einstellen, danach verifizieren."
+      ];
+
+      const quotes=[
+        "Wer immer tut, was er schon kann, bleibt immer das, was er schon ist. — Henry Ford",
+        "Qualität ist kein Zufall; sie ist immer das Ergebnis hoher Ziele. — John Ruskin",
+        "Der Weg entsteht beim Gehen. — Franz Kafka",
+        "Es ist nicht wenig Zeit, die wir haben, sondern viel, die wir nicht nutzen. — Seneca",
+        "Make it work, then make it better. — Kent Beck",
+        "Humor ist der Regenschirm der Weisen. — Erich Kästner",
+        "Perfektion ist nicht erreichbar, aber wenn wir ihr nachjagen, fangen wir Exzellenz. — Vince Lombardi",
+        "Wenn du es nicht messen kannst, kannst du es nicht verbessern. — Lord Kelvin",
+        "Auch aus Steinen, die dir in den Weg gelegt werden, kannst du etwas Schönes bauen. — Goethe",
+        "Don’t panic. — Douglas Adams"
+      ];
+
+      const speedSel=document.getElementById("speedSel");
+      for(let v=1;v<=12;v++){const o=document.createElement("option");o.value=v;o.textContent=v;if(v===7)o.selected=true;speedSel.appendChild(o);}
+      const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel");
+      punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
+      startSel.value="Start";endSel.value="Hot Wash";
+
+      function zeitInSekunden(t){const[m,s]=t.split(":").map(Number);return m*60+s;}
+      function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+      function zeigeTippUndZitat(){
+        const tipEl=document.getElementById("zeitTip");
+        const quoteEl=document.getElementById("zeitQuote");
+        tipEl.textContent="Tipp: "+pick(tips);
+        quoteEl.textContent="Zitat: "+pick(quotes);
+        tipEl.style.display="block";
+        quoteEl.style.display="block";
+      }
+
+      function berechnenZeit(){
+        const v=parseFloat(speedSel.value);
+        const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
+        if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen.";return;}
+        const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
+        if(iS>iE){out.textContent="Rückwärtslauf ist nicht erlaubt.";return;}
+
+        const d7=zeitInSekunden(punkte[iE][1]) - zeitInSekunden(punkte[iS][1]);
+        const d = d7 * (7 / v);
+
+        // *** Korrekte Normalisierung (nie 60 Sekunden anzeigen) ***
+        const total = Math.round(d);
+        const m = Math.floor(total / 60);
+        const sec = total % 60;
+
+        out.textContent = `Von "${s}" bis "${e}" dauert es bei ${v.toFixed(0)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
+        zeigeTippUndZitat();
+      }
+
+      document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
+    </script>
+  </section>
 
   <script>
-    let istWert = null;
-    let neuWert = null;
-
-    function setupAbwahl(containerId, isIst) {
-      const container = document.getElementById(containerId);
-      const labels = container.querySelectorAll("label");
-
-      labels.forEach(label => {
-        label.addEventListener("click", () => {
-          if (label.classList.contains("active")) {
-            label.classList.remove("active");
-            if (isIst) istWert = null;
-            else neuWert = null;
-          } else {
-            labels.forEach(l => l.classList.remove("active"));
-            label.classList.add("active");
-            if (isIst) istWert = parseFloat(label.dataset.value);
-            else neuWert = parseFloat(label.dataset.value);
-          }
-          berechne();
-        });
-      });
+    const bS=document.getElementById("tabBtnStrom"),bZ=document.getElementById("tabBtnZeit");
+    const pS=document.getElementById("tab-strom"),pZ=document.getElementById("tab-zeit");
+    function activate(t){
+      if(t==="strom"){bS.classList.add("active");bZ.classList.remove("active");pS.classList.add("active");pZ.classList.remove("active");}
+      else{bZ.classList.add("active");bS.classList.remove("active");pZ.classList.add("active");pS.classList.remove("active");}
     }
-
-    function berechne() {
-      const I_alt = parseFloat(document.getElementById("istStrom").value);
-      const S_alt = parseFloat(document.getElementById("istSchicht").value);
-      const S_neu = parseFloat(document.getElementById("zielSchicht").value);
-
-      if (!I_alt || !S_alt || !S_neu) {
-        document.getElementById("ergebnis").innerText = "Bitte alle Werte eingeben.";
-        return;
-      }
-
-      if (neuWert !== null && istWert === null) {
-        document.getElementById("ergebnis").innerText = "Bitte auch aktuelle Geschwindigkeit auswählen.";
-        return;
-      }
-
-      const V_alt = istWert || neuWert || 1;
-      const V_neu = neuWert || V_alt;
-
-      const I_neu = I_alt * (S_neu / S_alt) * (V_neu / V_alt);
-      const gerundet = I_neu.toFixed(2);
-
-      document.getElementById("ergebnis").innerText = `Benötigter Strom: ${gerundet} A`;
-    }
-
-    document.querySelectorAll("input").forEach(input => {
-      input.addEventListener("input", berechne);
-    });
-
-    setupAbwahl("istGeschw", true);
-    setupAbwahl("neuGeschw", false);
-
-    // Besucherzähler (lokal gespeichert)
-    const key = "galvanikCounter";
-    let count = localStorage.getItem(key);
-    count = count ? parseInt(count) + 1 : 1;
-    localStorage.setItem(key, count);
-    document.getElementById("counter").innerText = `#${count}`;
+    bS.addEventListener("click",()=>activate("strom"));
+    bZ.addEventListener("click",()=>activate("zeit"));
   </script>
 </body>
 </html>
