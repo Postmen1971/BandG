@@ -155,6 +155,7 @@
     </div>
 
     <script>
+      /* Zeitmarken */
       const punkte=[
         ["Start","0:00"],["Hot Wash","5:10"],["Nickel 1","6:32"],["Nickel 6","7:25"],["Nickel 12","8:27"],
         ["Pd 1","9:10"],["Pd 3","9:40"],["Pd 5","10:12"],["Pd 7","10:40"],["U-Turn Mitte","11:47"],
@@ -164,28 +165,156 @@
         ["Nach-Fön","20:31"],["Speicher","22:17"]
       ];
 
-      const tips=[
-        "Nickel: Konstante Geschwindigkeit hält die Schichtdicke stabil – abruptes Beschleunigen vermeiden.",
-        "Palladium: Anoden-Polarisation bei höheren Geschwindigkeiten prüfen.",
-        "Gold: Spülqualität vor dem Goldbad sichern.",
-        "Zinn: Kantenunterdeckung nimmt mit Speed zu – Stromdichte prüfen.",
-        "Übergänge beachten: Kontaktierung & Bandführung sauber halten.",
-        "Vor Speed-Änderung Strom einstellen, danach verifizieren."
-      ];
+      /* ===== TIPPGENERATOR: erzeugt >200 praxisnahe Tipps ===== */
+      const tipParts = {
+        bereich: ["Nickel","Palladium","Gold","Zinn","Spülen","Vorbehandlung","Kontaktierung","Anoden","Kathoden","Stripper","U-Turn","Trocknung"],
+        aktion: [
+          "Stromdichte prüfen","Temperaturfenster kontrollieren","pH stabil halten","Leitfähigkeit prüfen","Zugabe nach Analyse dosieren",
+          "Durchfluss erhöhen","Rühren/Umwälzung optimieren","Filter wechseln","Anodenfilm inspizieren","Kontaktflächen reinigen",
+          "Bandführung justieren","Tröpfchen/Drag-Out minimieren","Badoberfläche entspannen","Prozessproben dokumentieren",
+          "Stromabschaltung testen","Rampenzeit anpassen","Zeit in Station verifizieren","Luftblasen vermeiden","Spülkaskade prüfen",
+          "Rückführung aktivieren","Dosiersperre prüfen","Anoden/Körbe gleichmäßig verteilen","Ionenbelastung beobachten"
+        ],
+        bedingung: [
+          "bei höherer Bandgeschwindigkeit","bei niedrigen Temperaturen","nach längeren Stillständen","bei neuem Ansatz",
+          "bei Qualitätsabweichung","vor Schichtwechsel","nach Filterwechsel","bei veränderten Stromstärken",
+          "bei hoher Teilelast","bei Schichtdickenabweichung","bei Kantenunterdeckung","bei Fleckenbildung"
+        ],
+        detail: [
+          "Messwerte protokollieren","Soll-/Ist vergleichen","Probenahme mit Zeitstempel","Kontaktfedern nicht überlasten",
+          "Gleichmäßige Strömung am Bauteil","Leitwert in der Spüle tracken","Anodenpolung nicht umkehren",
+          "Badschaum entfernen","Rauheit dokumentieren","Temperaturfühler kalibrieren","Stromzuführung auf Erwärmung prüfen",
+          "Not-Aus und Sicherheitskette testen","Zugabemengen in kleinen Schritten","Überlauf auf klare Spülen prüfen"
+        ]
+      };
+      function buildTip(){
+        const pick = a => a[Math.floor(Math.random()*a.length)];
+        // kleine Variation mit Übergängen
+        const tmpl = [
+          `${pick(tipParts.bereich)}: ${pick(tipParts.aktion)} ${pick(tipParts.bedingung)} – ${pick(tipParts.detail)}.`,
+          `${pick(tipParts.bereich)}: ${pick(tipParts.aktion)}; ${pick(tipParts.detail)}.`,
+          `${pick(tipParts.bereich)}: ${pick(tipParts.bedingung)}, daher ${pick(tipParts.aktion)}.`,
+          `${pick(tipParts.bereich)}: Zur Stabilität ${pick(tipParts.aktion)} und ${pick(tipParts.detail)}.`
+        ];
+        return pick(tmpl);
+      }
+      // Erzeuge mindestens 200 eindeutige Tipps
+      const tipPool = (() => {
+        const set = new Set();
+        let guard = 0;
+        while (set.size < 220 && guard < 10000) { set.add(buildTip()); guard++; }
+        return Array.from(set);
+      })();
 
-      const quotes=[
-        "Wer immer tut, was er schon kann, bleibt immer das, was er schon ist. — Henry Ford",
-        "Qualität ist kein Zufall; sie ist immer das Ergebnis hoher Ziele. — John Ruskin",
-        "Der Weg entsteht beim Gehen. — Franz Kafka",
-        "Es ist nicht wenig Zeit, die wir haben, sondern viel, die wir nicht nutzen. — Seneca",
-        "Make it work, then make it better. — Kent Beck",
+      /* ===== ZITATE: großer Pool + Generator für zusätzliche Sinnsprüche ===== */
+      // Kurze, bekannte (deutsche) Zitate & Sprichwörter (Auswahl)
+      const quoteBase = [
+        "In der Ruhe liegt die Kraft. — Sprichwort",
+        "Der Weg ist das Ziel. — Konfuzius",
+        "Wer wagt, gewinnt. — Sprichwort",
+        "Ordnung ist das halbe Leben. — Sprichwort",
+        "Qualität beginnt damit, die Bedürfnisse des Kunden zu erkennen. — W. Edwards Deming",
+        "Der Erfolg hat viele Väter. — Sprichwort",
+        "Ohne Fleiß kein Preis. — Sprichwort",
+        "Zeit ist das, was man an der Uhr abliest. — Albert Einstein",
+        "Wer aufgehört hat, besser zu werden, hat aufgehört, gut zu sein. — Philip Rosenthal",
+        "Vertrauen ist gut, Kontrolle ist besser. — Sprichwort",
+        "Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen. — Goethe",
+        "Die Einfachheit ist die höchste Stufe der Vollendung. — Leonardo da Vinci",
+        "Wege entstehen dadurch, dass man sie geht. — Franz Kafka",
+        "Nicht die Dinge selbst beunruhigen uns, sondern die Meinung über die Dinge. — Epiktet",
+        "Handle nur nach derjenigen Maxime, von der du wollen kannst, dass sie allgemeines Gesetz werde. — Immanuel Kant",
+        "Die beste Vorbereitung für morgen ist, heute dein Bestes zu geben. — H. Jackson Brown Jr.",
         "Humor ist der Regenschirm der Weisen. — Erich Kästner",
-        "Perfektion ist nicht erreichbar, aber wenn wir ihr nachjagen, fangen wir Exzellenz. — Vince Lombardi",
-        "Wenn du es nicht messen kannst, kannst du es nicht verbessern. — Lord Kelvin",
-        "Auch aus Steinen, die dir in den Weg gelegt werden, kannst du etwas Schönes bauen. — Goethe",
-        "Don’t panic. — Douglas Adams"
+        "Der Mensch ist, was er täglich tut. — Aristoteles",
+        "Wer etwas will, findet Wege. Wer etwas nicht will, findet Gründe. — Sprichwort",
+        "Man sieht nur mit dem Herzen gut. — Antoine de Saint-Exupéry",
+        "Geduld ist die Kunst, langsam wütend zu werden. — Sprichwort",
+        "Wer den Hafen nicht kennt, in den er segeln will, für den ist kein Wind der richtige. — Seneca",
+        "Kleine Ursachen, große Wirkungen. — Sprichwort",
+        "Gut ist nicht gut genug, wenn Besseres erwartet wird. — Thomas Fuller",
+        "Das Bessere ist der Feind des Guten. — Voltaire",
+        "Perfektion ist nicht erreichbar, aber Exzellenz. — frei nach Vince Lombardi",
+        "Wissen ist Macht. — Francis Bacon",
+        "Kein Meister ist vom Himmel gefallen. — Sprichwort",
+        "Einfach mal machen. — Spruch",
+        "Die Summe kleiner Dinge macht den Unterschied. — Spruch",
+        "Sicherheit geht vor. — Sprichwort",
+        "Ohne Daten nur Meinung. — W. Edwards Deming",
+        "Wer rastet, der rostet. — Sprichwort",
+        "Glück bevorzugt den Vorbereiteten. — Louis Pasteur",
+        "Fehler sind Portale der Entdeckung. — James Joyce",
+        "Die Zeit ist reif, wenn du es bist. — Spruch",
+        "Wer immer tut, was er schon kann, bleibt, was er ist. — Henry Ford",
+        "Das Ganze ist mehr als die Summe seiner Teile. — Aristoteles",
+        "Der Anfang ist die Hälfte des Ganzen. — Aristoteles",
+        "Alles fließt. — Heraklit",
+        "Keine Nachrichten sind auch Nachrichten. — Sprichwort",
+        "Kurzer Prozess, lange Wirkung? Besser umgekehrt. — Spruch",
+        "Messen, nicht schätzen. — Spruch",
+        "Jede Minute zählt. — Spruch",
+        "Tue es ordentlich oder gar nicht. — Sprichwort",
+        "Wer A sagt, muss nicht B sagen — er kann auch erkennen, dass A falsch war. — Bertolt Brecht",
+        "Die Details sind nicht die Details; sie machen das Design. — Charles Eames",
+        "Ohne Ziel kein Weg. — Spruch",
+        "Qualität ist, wenn der Kunde zurückkommt, nicht das Produkt. — Spruch",
+        "Alles hat seine Zeit. — Kohelet",
+        "Das Gegenteil von gut ist gut gemeint. — Sprichwort",
+        "Fokus ist, Nein zu sagen. — Steve Jobs",
+        "Ein Problem ist halb gelöst, wenn es klar definiert ist. — Spruch",
+        "Ein Lächeln kostet nichts. — Sprichwort",
+        "Gute Arbeit braucht Ruhe. — Sprichwort",
+        "Die Vielfalt ist unsere Stärke. — Spruch",
+        "Wer langsamer geht, sieht mehr. — Sprichwort",
+        "Steter Tropfen höhlt den Stein. — Sprichwort",
+        "Erfahrung ist der Name, den jeder seinen Irrtümern gibt. — Oscar Wilde",
+        "Der Zweck heiligt nicht die Mittel. — Sprichwort",
+        "Konzentration schlägt Hektik. — Spruch",
+        "Schnell ist gut, richtig ist besser. — Spruch",
+        "Ein Schritt nach dem anderen. — Sprichwort",
+        "Ausdauer wird früher oder später belohnt. — Sprichwort",
+        "Respekt ist keine Einbahnstraße. — Spruch",
+        "Klarheit schafft Geschwindigkeit. — Spruch",
+        "Die Wahrheit liegt in den Daten. — Spruch"
       ];
+      // Generator für zusätzliche kurze Sinnsprüche (ohne falsche Zuschreibung)
+      const quoteGenA = ["Mut","Geduld","Klarheit","Sorgfalt","Neugier","Fokus","Humor","Disziplin","Leichtigkeit","Gelassenheit"];
+      const quoteGenB = [
+        "ist leise – und sehr stark.","gehört zum Handwerk.","macht den Anfang leicht.",
+        "bringt dich weiter als Tempo.","macht Raum für Qualität.","ist ein täglicher Entschluss.",
+        "öffnet Türen.","hält den Kurs.","schützt vor Chaos.","macht den Unterschied."
+      ];
+      function buildQuote(){
+        const p = a => a[Math.floor(Math.random()*a.length)];
+        return `${p(quoteGenA)} ${p(quoteGenB)} — Spruch`;
+      }
+      // Erzeuge Pool von ~500 Zitaten (Basis + Generator)
+      const quotePool = (() => {
+        const list = [...quoteBase];
+        while (list.length < 520) list.push(buildQuote());
+        return list;
+      })();
 
+      // Anti-Wiederholungs-Logik (Ringpuffer + localStorage)
+      function makePicker(pool, storageKey, noRepeat=10){
+        const hist = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return function(){
+          let tryCount = 0;
+          let item;
+          do {
+            item = pool[Math.floor(Math.random()*pool.length)];
+            tryCount++;
+          } while (hist.includes(item) && tryCount < 50);
+          hist.push(item);
+          while (hist.length > noRepeat) hist.shift();
+          localStorage.setItem(storageKey, JSON.stringify(hist));
+          return item;
+        };
+      }
+      const pickTip   = makePicker(tipPool,   "tipHistory",   20);
+      const pickQuote = makePicker(quotePool, "quoteHistory", 40);
+
+      // UI-Bindings
       const speedSel=document.getElementById("speedSel");
       for(let v=1;v<=12;v++){const o=document.createElement("option");o.value=v;o.textContent=v;if(v===7)o.selected=true;speedSel.appendChild(o);}
       const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel");
@@ -193,34 +322,25 @@
       startSel.value="Start";endSel.value="Hot Wash";
 
       function zeitInSekunden(t){const[m,s]=t.split(":").map(Number);return m*60+s;}
-      function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-
-      function zeigeTippUndZitat(){
-        const tipEl=document.getElementById("zeitTip");
-        const quoteEl=document.getElementById("zeitQuote");
-        tipEl.textContent="Tipp: "+pick(tips);
-        quoteEl.textContent="Zitat: "+pick(quotes);
-        tipEl.style.display="block";
-        quoteEl.style.display="block";
-      }
 
       function berechnenZeit(){
-        const v=parseFloat(speedSel.value);
-        const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
+        const v=parseFloat(speedSel.value),s=startSel.value,e=endSel.value,out=document.getElementById("zeitResult");
         if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen.";return;}
-        const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
+        const iS=punkte.findIndex(p=>p[0]===s),iE=punkte.findIndex(p=>p[0]===e);
         if(iS>iE){out.textContent="Rückwärtslauf ist nicht erlaubt.";return;}
-
-        const d7=zeitInSekunden(punkte[iE][1]) - zeitInSekunden(punkte[iS][1]);
-        const d = d7 * (7 / v);
-
-        // *** Korrekte Normalisierung (nie 60 Sekunden anzeigen) ***
-        const total = Math.round(d);
-        const m = Math.floor(total / 60);
-        const sec = total % 60;
-
+        const d7=zeitInSekunden(punkte[iE][1])-zeitInSekunden(punkte[iS][1]);
+        const total = Math.round(d7*(7/v));
+        const m = Math.floor(total/60), sec = total%60;
         out.textContent = `Von "${s}" bis "${e}" dauert es bei ${v.toFixed(0)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
-        zeigeTippUndZitat();
+
+        // Tipp + Zitat anzeigen (wechselnd, ohne Dauerwiederholung)
+        const tipEl=document.getElementById("zeitTip");
+        tipEl.textContent = "Tipp: " + pickTip();
+        tipEl.style.display="block";
+
+        const qEl=document.getElementById("zeitQuote");
+        qEl.textContent = "Zitat: " + pickQuote();
+        qEl.style.display="block";
       }
 
       document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
