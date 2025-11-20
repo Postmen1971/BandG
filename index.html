@@ -2,32 +2,77 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Galvanik Tools – Strom & Zeit</title>
 <style>
-  .topbar{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(6px);border-bottom:1px solid #e5e7eb;padding:10px 12px;z-index:1000;display:flex;justify-content:center;gap:8px}
-  .tabbtn{border:2px solid #002855;color:#002855;background:#fff;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:bold}
+  /* Allgemeine Anpassungen für bessere Darstellung auf kleinen Bildschirmen */
+  :root{--orange:#F58025;--darkblue:#002855;--lightgray:#f7f7f7}
+  body{
+    font-family:Arial,sans-serif;
+    background:linear-gradient(to bottom right,var(--lightgray),#ffffff);
+    margin:0;
+    /* Anpassung 2: Padding für Rand: Fixe 16px oben/unten und seitlich. */
+    padding: 16px;
+    display:flex;
+    justify-content:center;
+    flex-direction:column;
+    align-items:center;
+    /* Zusätzliches Padding für Topbar-Platzhalter */
+    padding-top: 70px; 
+  }
+
+  .topbar{
+    position:fixed; /* Auf fixed geändert, damit es oben bleibt */
+    top:0;
+    left:0;
+    right:0;
+    background:#ffffffcc;
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid #e5e7eb;
+    padding:10px 16px; /* Etwas mehr seitlicher Rand */
+    z-index:1000;
+    display:flex;
+    justify-content:center;
+    gap:8px;
+  }
+  
+  .tabbtn{border:2px solid #002855;color:#002855;background:#fff;padding:8px 12px; /* Etwas kleiner für iPhone 8 */
+          border-radius:999px;cursor:pointer;font-weight:bold;font-size:14px;}
   .tabbtn.active{background:#F58025;color:#fff;border-color:#F58025}
   section.tab-pane{display:none}section.tab-pane.active{display:block}
 
-  :root{--orange:#F58025;--darkblue:#002855;--lightgray:#f7f7f7}
-  body{font-family:Arial,sans-serif;background:linear-gradient(to bottom right,var(--lightgray),#ffffff);margin:0;
-        padding:30px max(20px, env(safe-area-inset-left)) 30px max(20px, env(safe-area-inset-right));
-        display:flex;justify-content:center;flex-direction:column;align-items:center}
-  .container{width:100%;max-width:500px;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.06);position:relative;margin-top:16px}
-  @media (max-width:430px){.container{padding:22px}label{font-size:16px}input,select,button{font-size:17px}.tabbtn{padding:10px 16px}}
+  .container{
+    width:calc(100% - 32px); /* 100% minus seitliches Body-Padding */
+    max-width:500px;
+    background:#fff;
+    padding:20px; /* Innen-Padding leicht reduziert */
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.06);
+    position:relative;
+    margin-top:0; /* Kein zusätzlicher oberer Margin, da Body-Padding angepasst wurde */
+    margin-bottom: 16px; /* Rand unten */
+  }
+  
+  /* Media Query für sehr kleine Geräte entfernt, da iPhone 8 als Basis gilt. */
   h2{text-align:center;color:var(--orange);margin-top:0}
-  label{display:block;margin-top:16px;font-weight:bold;color:#002855}
-  input[type=number]{width:100%;padding:10px;font-size:18px;margin-top:5px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box}
-  .geschwindigkeit-reihe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
-  .geschwindigkeit-reihe label{background:#fff;border:2px solid #002855;border-radius:50%;width:34px;height:34px;text-align:center;line-height:30px;font-weight:bold;cursor:pointer;font-size:14px;color:#002855;transition:.2s}
-  .geschwindigkeit-reihe label.active{background:#F58025;color:#fff;border-color:#F58025}
-  .ergebnis{margin-top:24px;padding:14px;background:#f0f0f0;font-size:20px;text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc}
-  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:12px;margin-top:10px;color:#888}
+  label{display:block;margin-top:14px; /* Etwas weniger Abstand */
+        font-weight:bold;color:#002855;font-size:16px;}
+  input[type=number], select{
+    width:100%;
+    padding:8px; /* Etwas weniger Padding */
+    font-size:16px; /* Etwas kleiner für bessere Sichtbarkeit */
+    margin-top:4px;
+    border:1px solid #ccc;border-radius:6px;box-sizing:border-box
+  }
+  
+  .ergebnis{margin-top:20px;padding:12px;background:#f0f0f0;font-size:18px; /* Etwas kleiner */
+            text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc}
+  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:11px;margin-top:8px;color:#888}
   #counter{position:fixed;bottom:4px;right:8px;font-size:10px;color:#ccc;font-family:monospace;opacity:.5;z-index:9999}
 
+  /* Zeitrechner spezifische Anpassungen */
   .zeit-container .row{display:flex;gap:8px}
-  .zeit-container select,.zeit-container button{width:100%;padding:10px;font-size:16px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box}
+  .zeit-container select, .zeit-container button{padding:10px;font-size:16px;}
   .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
   .zeit-container button:hover{background:#004d99}
   .zeit-result{margin-top:16px;padding:12px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf}
@@ -46,29 +91,24 @@
   <button id="tabBtnZeit" class="tabbtn">⏱️ Zeitrechner</button>
 </nav>
 
-<!-- Stromrechner -->
 <section id="tab-strom" class="tab-pane active">
   <div class="container">
     <h2>Galvanik-Stromrechner</h2>
 
     <label for="istStrom">Aktueller Strom (A):</label>
-    <input type="number" id="istStrom" placeholder="z. B. 4">
+    <input type="number" id="istStrom" placeholder="z. B. 4" value="4">
 
     <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="number" id="istSchicht" placeholder="z. B. 1.0">
+    <input type="number" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
 
     <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="number" id="zielSchicht" placeholder="z. B. 2.5">
+    <input type="number" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
 
-    <label>Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <div class="geschwindigkeit-reihe" id="istGeschw">
-      <script>document.write([...Array(14)].map((_,i)=>`<label data-value="${i+3}">${i+3}</label>`).join(''));</script>
-    </div>
+    <label for="istGeschw">Aktuelle Bandgeschwindigkeit (m/min):</label>
+    <input type="number" id="istGeschw" placeholder="z. B. 7" value="7">
 
-    <label>Neue Bandgeschwindigkeit (m/min):</label>
-    <div class="geschwindigkeit-reihe" id="neuGeschw">
-      <script>document.write([...Array(14)].map((_,i)=>`<label data-value="${i+3}">${i+3}</label>`).join(''));</script>
-    </div>
+    <label for="neuGeschw">Neue Bandgeschwindigkeit (m/min):</label>
+    <input type="number" id="neuGeschw" placeholder="z. B. 7" value="7">
 
     <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
     <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
@@ -77,57 +117,45 @@
   <div id="counter"></div>
 
   <script>
-    let istWert=null, neuWert=null;
-    function setupAbwahl(containerId,isIst){
-      const labels=document.getElementById(containerId).querySelectorAll("label");
-      labels.forEach(label=>{
-        label.addEventListener("click",()=>{
-          if(label.classList.contains("active")){
-            label.classList.remove("active"); if(isIst) istWert=null; else neuWert=null;
-          }else{
-            labels.forEach(l=>l.classList.remove("active"));
-            label.classList.add("active");
-            if(isIst) istWert=parseFloat(label.dataset.value); else neuWert=parseFloat(label.dataset.value);
-          }
-          berechne();
-        });
-      });
-    }
     function berechne(){
       const I_alt=parseFloat(document.getElementById("istStrom").value);
       const S_alt=parseFloat(document.getElementById("istSchicht").value);
       const S_neu=parseFloat(document.getElementById("zielSchicht").value);
-      if(!I_alt||!S_alt||!S_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
-      if(neuWert!==null&&istWert===null){document.getElementById("ergebnis").innerText="Bitte auch aktuelle Geschwindigkeit auswählen.";return;}
-      const V_alt=istWert||neuWert||1, V_neu=neuWert||V_alt;
+      const V_alt=parseFloat(document.getElementById("istGeschw").value);
+      const V_neu=parseFloat(document.getElementById("neuGeschw").value);
+
+      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
+      
       const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
       document.getElementById("ergebnis").innerText=`Benötigter Strom: ${I_neu.toFixed(2)} A`;
     }
-    document.querySelectorAll("input").forEach(i=>i.addEventListener("input",berechne));
-    setupAbwahl("istGeschw",true); setupAbwahl("neuGeschw",false);
+    
+    document.querySelectorAll("#tab-strom input").forEach(i=>i.addEventListener("input",berechne));
+    
+    document.addEventListener("DOMContentLoaded", berechne);
+
     const key="galvanikCounter"; let count=localStorage.getItem(key); count=count?parseInt(count)+1:1;
     localStorage.setItem(key,count); document.getElementById("counter").innerText=`#${count}`;
   </script>
 </section>
 
-<!-- Zeitrechner + Tipps/Zitate -->
 <section id="tab-zeit" class="tab-pane">
   <div class="container zeit-container">
     <h2>Galvanik-Zeitrechner</h2>
 
     <div class="row">
       <div style="flex:1">
-        <label>Geschwindigkeit (m/min)</label>
-        <select id="speedSel"></select>
+        <label for="speedInput">Geschwindigkeit (m/min)</label>
+        <input type="number" id="speedInput" placeholder="z. B. 7" value="7" min="1">
       </div>
     </div>
     <div class="row">
       <div style="flex:1">
-        <label>Startpunkt</label>
+        <label for="startSel">Startpunkt</label>
         <select id="startSel"></select>
       </div>
       <div style="flex:1">
-        <label>Endpunkt</label>
+        <label for="endSel">Endpunkt</label>
         <select id="endSel"></select>
       </div>
     </div>
@@ -149,8 +177,6 @@
 
   <script>
     /* --- Zeitmarken (Basis: 7 m/min) --- */
-    /* Hinweis: Für Punkte, die real mit 6 m/min gemessen wurden, ist die Zeit hier bereits
-       auf 7 m/min umgerechnet (Faktor 6/7). So bleibt das Modell konsistent. */
     const punkte=[
       ["Start","0:00"],
       ["Hot Wash","5:10"],
@@ -172,11 +198,8 @@
       ["Zinn 7","18:25"],
       ["Zinn 9","19:00"],
       ["Zinn Stripper","19:25"],
-      /* Nach-Fön war real 23:58 @ 6 m/min ⇒ @7 m/min ≈ 20:33 (entspricht hier 20:31 gerundet) */
       ["Nach-Fön","20:31"],
-      /* Speicher war real 26:00 @ 6 m/min ⇒ @7 m/min ≈ 22:17 (entspricht hier) */
       ["Speicher","22:17"],
-      /* NEU: Getriebe vor Befettung: real 30:00 @ 6 m/min ⇒ @7 m/min ≈ 25:43 */
       ["Getriebe vor Befettung","25:43"]
     ];
 
@@ -190,24 +213,27 @@
     function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
     /* --- UI init --- */
-    const speedSel=document.getElementById("speedSel");
-    for(let v=1;v<=12;v++){const o=document.createElement("option");o.value=v;o.textContent=v;if(v===7)o.selected=true;speedSel.appendChild(o);}
     const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel");
     punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
     startSel.value="Start"; endSel.value="Hot Wash";
 
     /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
     function berechnenZeit(){
-      const v=parseFloat(speedSel.value), s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
-      if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen.";return;}
+      const v=parseFloat(document.getElementById("speedInput").value);
+      const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
+      
+      if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen/eingeben.";return;}
+      if(v <= 0){out.textContent="Die Geschwindigkeit muss größer als 0 sein.";return;}
+
       const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
       if(iS>iE){out.textContent="Rückwärtslauf ist nicht erlaubt.";return;}
+
       const tStart7=zeitInSekunden(punkte[iS][1]), tEnd7=zeitInSekunden(punkte[iE][1]);
-      const d7=tEnd7 - tStart7;                // Differenz bei 7 m/min
-      const total=Math.round(d7*(7/v));        // Skaliere auf v m/min
+      const d7=tEnd7 - tStart7;
+      const total=Math.round(d7*(7/v));
       const m=Math.floor(total/60), sec=total%60;
-      out.textContent=`Von "${s}" bis "${e}" dauert es bei ${v.toFixed(0)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
-      renderGeneral(); // Zitat auffrischen
+      out.textContent=`Von "${s}" bis "${e}" dauert es bei ${v.toFixed(1)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
+      renderGeneral();
     }
     document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
 
