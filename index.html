@@ -207,6 +207,38 @@
       color: white;
       border-color: #0056b3;
   }
+
+  /* ===== Kompakt-Darstellung für sehr kleine Bildschirme (z.B. iPhone 5/SE, 320x568) ===== */
+  @media (max-width: 380px), (max-height: 620px) {
+    body{ padding:6px; padding-top:46px; }
+    .topbar{ padding:5px 6px; gap:4px; }
+    .tabbtn{ padding:5px 7px; font-size:10.5px; border-width:1.5px; }
+    .container{ padding:8px; width:calc(100% - 12px); margin-bottom:6px; }
+    h2{ font-size:1rem; margin-bottom:6px; }
+    label{ margin-top:6px; font-size:12.5px; }
+    input[type=number], select{ padding:5px; font-size:13.5px; margin-top:2px; }
+    .ergebnis{ margin-top:8px; padding:6px; font-size:13px; }
+    .zeit-container .row{ gap:4px; }
+    .panel{ margin-top:5px; padding:5px; }
+    .panel h3{ font-size:11px; margin-bottom:3px; }
+    .small{ font-size:9.5px; }
+    .haftungshinweis{ font-size:9px; margin-top:4px; }
+
+    #tab-spule .header{ padding:7px; }
+    #tab-spule .header h2{ font-size:0.95rem; }
+    #tab-spule .section{ padding:7px; }
+    #tab-spule .section-title{ font-size:0.68rem; margin-bottom:4px; }
+    #tab-spule label{ font-size:0.72rem; margin-bottom:2px; }
+    #tab-spule input[type="number"]{ padding:5px; font-size:13px; margin-bottom:4px; }
+    #tab-spule button{ padding:8px; font-size:13px; margin-top:5px; }
+    #tab-spule .switch-container{ padding:4px 0; }
+    #tab-spule .switch-button{ padding:5px 6px; font-size:11px; margin:0 3px; }
+    #tab-spule .result-area{ padding:8px; }
+    #tab-spule .result-group{ margin-bottom:4px; }
+    #tab-spule .result-number{ font-size:1.5rem; }
+    #tab-spule .result-label{ font-size:0.7rem; }
+    #tab-spule .small-output{ font-size:0.85rem; margin-bottom:6px; margin-top:-2px; }
+  }
 </style>
 </head>
 <body>
@@ -509,6 +541,8 @@
 
         <label>**Kontakte pro Meter (Dichte):**</label>
         <input type="number" id="cpm" placeholder="z.B. 200">
+
+        <div style="display:none;">
         <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
         
         <label>Berechneter Referenz-Durchmesser $D_{\text{Ref}}$:</label>
@@ -516,6 +550,7 @@
         
         <label>Kalibrierfaktor $F$ (Fläche pro Meter):</label>
         <span id="outputFactorF" class="small-output">-</span>
+        </div>
     </div>
 
     <div class="section bg-green">
