@@ -82,6 +82,131 @@
   .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
   .panel h3{margin:0 0 6px 0;font-size:14px;color:#333;font-style:normal}
   .small{font-size:12px;color:#666}
+
+  /* ===== Spulenrechner (1:1 aus AzeSpule.html übernommen, isoliert unter #tab-spule) ===== */
+  #tab-spule{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+  #tab-spule .container{
+      background-color: white;
+      max-width: 480px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border: 1px solid #ddd;
+      padding:0;
+  }
+  #tab-spule .header {
+      background-color: #333;
+      color: white;
+      padding: 15px;
+      text-align: center;
+  }
+  #tab-spule .header h2 { margin: 0; font-size: 1.4rem; }
+
+  #tab-spule .section {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+  }
+  #tab-spule .section-title {
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+  }
+
+  #tab-spule .bg-blue { background-color: #eef6ff; }
+  #tab-spule .bg-green { background-color: #ebf9eb; }
+  #tab-spule .bg-result { background-color: #2c3e50; }
+
+  #tab-spule label {
+      display: block;
+      margin-bottom: 5px;
+      margin-top:0;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+  }
+
+  #tab-spule input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      margin-top:0;
+  }
+
+  #tab-spule button {
+      width: 100%;
+      padding: 14px;
+      background-color: #007bff;
+      color: white;
+      font-size: 18px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+  }
+
+  #tab-spule .result-area {
+      text-align: center;
+      padding: 20px;
+      color: white;
+      display: none;
+  }
+  #tab-spule .result-group {
+      margin-bottom: 15px;
+  }
+  #tab-spule .result-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #4cd137;
+      line-height: 1.1;
+  }
+  #tab-spule .result-label {
+      font-size: 0.9rem;
+      color: #ccc;
+  }
+  #tab-spule .error-msg {
+      color: red;
+      text-align: center;
+      padding: 10px;
+      display: none;
+  }
+  #tab-spule .small-output {
+      color: #f7b731;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-top: -5px;
+      margin-bottom: 15px;
+      display: block;
+  }
+
+  #tab-spule .switch-container {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      background-color: #f0f0f0;
+  }
+  #tab-spule .switch-button {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s, color 0.2s;
+      flex-grow: 1;
+      text-align: center;
+      margin: 0 5px;
+  }
+  #tab-spule .switch-button.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #0056b3;
+  }
 </style>
 </head>
 <body>
@@ -89,6 +214,7 @@
 <nav class="topbar">
   <button id="tabBtnStrom" class="tabbtn active">⚡ Stromrechner</button>
   <button id="tabBtnZeit" class="tabbtn">⏱️ Zeitrechner</button>
+  <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
 </nav>
 
 <section id="tab-strom" class="tab-pane active">
@@ -309,15 +435,207 @@
   </script>
 </section>
 
+<section id="tab-spule" class="tab-pane">
+<div class="container">
+    <div class="header">
+        <h2>Spulen-Bestandsrechner (Kalibriert)</h2>
+    </div>
+
+    <div class="switch-container">
+        <div class="switch-button active" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
+        <div class="switch-button" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
+    </div>
+
+    <div class="section" style="padding-top: 10px; padding-bottom: 10px;">
+        <div class="section-title" style="margin-bottom: 0;">
+            Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">98 cm</span>.
+        </div>
+    </div>
+
+    <div class="section bg-blue">
+        <div class="section-title">1. Referenz (Kalibrierung)</div>
+        
+        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **REFERENZ**:</label>
+        <input type="number" id="refHalfD" placeholder="z.B. 31.5">
+        
+        <label>Stückzahl bei diesem Referenz-Zustand:</label>
+        <input type="number" id="refCount" placeholder="z.B. 200000">
+
+        <label>**Kontakte pro Meter (Dichte):**</label>
+        <input type="number" id="cpm" placeholder="z.B. 200">
+        <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
+        
+        <label>Berechneter Referenz-Durchmesser $D_{\text{Ref}}$:</label>
+        <span id="outputRefD" class="small-output">-</span>
+        
+        <label>Kalibrierfaktor $F$ (Fläche pro Meter):</label>
+        <span id="outputFactorF" class="small-output">-</span>
+    </div>
+
+    <div class="section bg-green">
+        <div class="section-title">2. Aktuelle Messung</div>
+        
+        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **AKTUELL**:</label>
+        <input type="number" id="currHalfD" placeholder="z.B. 25.5">
+
+        <label>Berechneter Aktueller-Durchmesser $D_{\text{Aktuell}}$:</label>
+        <span id="outputCurrD" class="small-output">-</span>
+    </div>
+
+    <div id="errorBox" class="error-msg"></div>
+
+    <button onclick="calculate()">BESTAND BERECHNEN</button>
+
+    <div id="resultBox" class="result-area bg-result">
+        <div class="result-group">
+            <div class="result-label">Aktueller Bestand ca.:</div>
+            <div id="resultValue" class="result-number">0</div>
+            <div class="result-label">Stück</div>
+        </div>
+    </div>
+</div>
+
 <script>
-  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit");
-  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit");
+    // FIXE KONSTANTEN
+    const D_INNER = 35.0; // Kern-Durchmesser in cm
+    const PI = Math.PI;
+    
+    // VARIABLE FÜR DIE AKTUELL GEWÄHLTE SPULENGRÖSSE
+    let currentDMax = 98.0; 
+    const D_MAX_98 = 98.0;
+    const D_MAX_76 = 76.0;
+
+    /**
+     * Schaltet zwischen den Spulengrößen um.
+     * @param {number} newMaxD Der neue maximale Durchmesser (98 oder 76).
+     */
+    function setSpoolSize(newMaxD) {
+        currentDMax = newMaxD;
+        
+        document.getElementById('maxDDisplay').innerText = newMaxD + ' cm';
+        document.getElementById('btn-98').classList.remove('active');
+        document.getElementById('btn-76').classList.remove('active');
+        document.getElementById('btn-' + newMaxD).classList.add('active');
+
+        // Output zurücksetzen
+        document.getElementById('outputRefD').innerText = '-';
+        document.getElementById('outputCurrD').innerText = '-';
+        document.getElementById('outputFactorF').innerText = '-';
+        
+        // Fehler und Ergebnis zurücksetzen
+        document.getElementById('errorBox').style.display = 'none';
+        document.getElementById('resultBox').style.display = 'none';
+    }
+
+    /**
+     * Führt die Hauptberechnung durch.
+     */
+    function calculate() {
+        // Elemente holen
+        const elRefHalfD = document.getElementById('refHalfD');
+        const elRefCount = document.getElementById('refCount');
+        const elCPM = document.getElementById('cpm'); // Kontakte pro Meter NEU
+        const elCurrHalfD = document.getElementById('currHalfD');
+        
+        const elResultBox = document.getElementById('resultBox');
+        const elResultVal = document.getElementById('resultValue');
+        const elOutputRefD = document.getElementById('outputRefD');
+        const elOutputCurrD = document.getElementById('outputCurrD');
+        const elOutputFactorF = document.getElementById('outputFactorF');
+        const elError = document.getElementById('errorBox');
+
+        // Werte auslesen
+        const d_ref_half_measured = parseFloat(elRefHalfD.value);
+        const count_ref = parseFloat(elRefCount.value);
+        const cpm = parseFloat(elCPM.value); // NEU: Kontakte pro Meter
+        const d_curr_half_measured = parseFloat(elCurrHalfD.value);
+
+        // Reset Outputs
+        elOutputRefD.innerText = '-';
+        elOutputCurrD.innerText = '-';
+        elOutputFactorF.innerText = '-';
+        elError.style.display = 'none';
+        elResultBox.style.display = 'none';
+
+        // --- 1. DATENPRÜFUNG ---
+        if (isNaN(d_ref_half_measured) || isNaN(count_ref) || isNaN(d_curr_half_measured) || isNaN(cpm) || cpm <= 0) {
+            showError("Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein).");
+            return;
+        }
+
+        // --- 2. BERECHNUNG DER DURCHMESSER ---
+        const d_ref_calculated = currentDMax - (d_ref_half_measured * 2);
+        const d_current_calculated = currentDMax - (d_curr_half_measured * 2);
+
+        // --- 3. GÜLTIGKEITSPRÜFUNG ---
+        if (d_ref_calculated <= D_INNER || d_current_calculated <= D_INNER) {
+            showError("Eine Messung ist zu groß. Der berechnete Durchmesser liegt unter dem Kern (" + D_INNER + " cm).");
+            return;
+        }
+        if (d_ref_calculated > currentDMax || d_current_calculated > currentDMax) {
+            showError("Eine Messung ist zu klein. Der berechnete Durchmesser ist größer als D_Max (" + currentDMax + " cm).");
+            return;
+        }
+
+        // --- 4. KALIBRIERUNG (Flächenfaktor F) ---
+        
+        // 4a. Länge der Referenzspule in Metern
+        const L_ref_m = count_ref / cpm;
+
+        // 4b. Querschnittsfläche der Referenzwicklung in cm²
+        // R_ref = d_ref_calculated / 2; R_inner = D_INNER / 2;
+        // A = PI * (R_ref^2 - R_inner^2)
+        const area_ref_cm2 = PI * (Math.pow(d_ref_calculated / 2, 2) - Math.pow(D_INNER / 2, 2));
+
+        // 4c. Kalibrierfaktor F (Fläche pro Meter)
+        const factor_F = area_ref_cm2 / L_ref_m;
+
+        // --- 5. BERECHNUNG AKTUELLER BESTAND ---
+        
+        // 5a. Aktuelle Querschnittsfläche in cm²
+        const area_curr_cm2 = PI * (Math.pow(d_current_calculated / 2, 2) - Math.pow(D_INNER / 2, 2));
+
+        // 5b. Aktuelle Länge in Metern (Länge = Fläche / Faktor F)
+        const L_curr_m = area_curr_cm2 / factor_F;
+
+        // 5c. Aktuelle Stückzahl (Stückzahl = Länge * CPM)
+        let resultCount = Math.floor(L_curr_m * cpm);
+
+        // --- 6. AUSGABE ---
+        elOutputRefD.innerText = d_ref_calculated.toFixed(1) + ' cm';
+        elOutputCurrD.innerText = d_current_calculated.toFixed(1) + ' cm';
+        elOutputFactorF.innerText = factor_F.toFixed(4) + ' cm²/m';
+        
+        elResultVal.innerText = resultCount.toLocaleString('de-DE');
+        elResultBox.style.display = 'block';
+    }
+
+    function showError(msg) {
+        const elError = document.getElementById('errorBox');
+        elError.innerText = msg;
+        elError.style.display = 'block';
+    }
+
+    // Initialisierung beim Laden
+    window.onload = function() {
+        setSpoolSize(D_MAX_98);
+    };
+</script>
+</section>
+
+<script>
+  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule");
+  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule");
   function activate(t){
-    if(t==="strom"){bS.classList.add("active");bZ.classList.remove("active");pS.classList.add("active");pZ.classList.remove("active");}
-    else{bZ.classList.add("active");bS.classList.remove("active");pZ.classList.add("active");pS.classList.remove("active");}
+    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active");
+    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active");
+    if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
+    else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
+    else{bSp.classList.add("active");pSp.classList.add("active");}
   }
   bS.addEventListener("click",()=>activate("strom"));
   bZ.addEventListener("click",()=>activate("zeit"));
+  bSp.addEventListener("click",()=>activate("spule"));
 </script>
 </body>
 </html>
