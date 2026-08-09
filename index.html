@@ -243,6 +243,28 @@
   <div id="counter"></div>
 
   <script>
+    const STROM_KEY="galvanikStromLetzteWerte";
+    const stromFelder=["istStrom","istSchicht","zielSchicht","istGeschw","neuGeschw"];
+
+    function ladeLetzteStromWerte(){
+      try{
+        const gespeichert=JSON.parse(localStorage.getItem(STROM_KEY));
+        if(gespeichert){
+          stromFelder.forEach(id=>{
+            if(gespeichert[id]!==undefined && gespeichert[id]!=="") document.getElementById(id).value=gespeichert[id];
+          });
+        }
+      }catch(e){}
+    }
+
+    function speichereLetzteStromWerte(){
+      try{
+        const werte={};
+        stromFelder.forEach(id=>{ werte[id]=document.getElementById(id).value; });
+        localStorage.setItem(STROM_KEY, JSON.stringify(werte));
+      }catch(e){}
+    }
+
     function berechne(){
       const I_alt=parseFloat(document.getElementById("istStrom").value);
       const S_alt=parseFloat(document.getElementById("istSchicht").value);
@@ -254,8 +276,10 @@
       
       const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
       document.getElementById("ergebnis").innerText=`Benötigter Strom: ${I_neu.toFixed(2)} A`;
+      speichereLetzteStromWerte();
     }
     
+    ladeLetzteStromWerte();
     document.querySelectorAll("#tab-strom input").forEach(i=>i.addEventListener("input",berechne));
     
     document.addEventListener("DOMContentLoaded", berechne);
@@ -464,13 +488,13 @@
     </div>
 
     <div class="switch-container">
-        <div class="switch-button active" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
-        <div class="switch-button" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
+        <div class="switch-button" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
+        <div class="switch-button active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
     </div>
 
     <div class="section" style="padding-top: 10px; padding-bottom: 10px;">
         <div class="section-title" style="margin-bottom: 0;">
-            Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">98 cm</span>.
+            Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
         </div>
     </div>
 
@@ -523,7 +547,7 @@
     const PI = Math.PI;
     
     // VARIABLE FÜR DIE AKTUELL GEWÄHLTE SPULENGRÖSSE
-    let currentDMax = 98.0; 
+    let currentDMax = 76.0; 
     const D_MAX_98 = 98.0;
     const D_MAX_76 = 76.0;
 
@@ -640,7 +664,7 @@
 
     // Initialisierung beim Laden
     window.onload = function() {
-        setSpoolSize(D_MAX_98);
+        setSpoolSize(D_MAX_76);
     };
 </script>
 </section>
