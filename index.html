@@ -212,12 +212,12 @@
 <body>
 
 <nav class="topbar">
-  <button id="tabBtnStrom" class="tabbtn active">⚡ Stromrechner</button>
-  <button id="tabBtnZeit" class="tabbtn">⏱️ Zeitrechner</button>
+  <button id="tabBtnStrom" class="tabbtn">⚡ Stromrechner</button>
+  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeitrechner</button>
   <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
 </nav>
 
-<section id="tab-strom" class="tab-pane active">
+<section id="tab-strom" class="tab-pane">
   <div class="container">
     <h2>Galvanik-Stromrechner</h2>
 
@@ -265,7 +265,7 @@
   </script>
 </section>
 
-<section id="tab-zeit" class="tab-pane">
+<section id="tab-zeit" class="tab-pane active">
   <div class="container zeit-container">
     <h2>Galvanik-Zeitrechner</h2>
 
@@ -339,9 +339,30 @@
     function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
     /* --- UI init --- */
-    const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel");
+    const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel"),speedInput=document.getElementById("speedInput");
     punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
-    startSel.value="Start"; endSel.value="Hot Wash";
+
+    /* --- Letzte Suche wiederherstellen (localStorage) --- */
+    const ZEIT_KEY="galvanikZeitLetzteSuche";
+    function ladeLetzteSuche(){
+      try{
+        const gespeichert=JSON.parse(localStorage.getItem(ZEIT_KEY));
+        if(gespeichert){
+          if(gespeichert.speed) speedInput.value=gespeichert.speed;
+          if(gespeichert.start && punkte.some(p=>p[0]===gespeichert.start)) startSel.value=gespeichert.start;
+          if(gespeichert.end && punkte.some(p=>p[0]===gespeichert.end)) endSel.value=gespeichert.end;
+        }
+      }catch(e){}
+    }
+    ladeLetzteSuche();
+    if(!startSel.value) startSel.value="Start";
+    if(!endSel.value) endSel.value="Hot Wash";
+
+    function speichereLetzteSuche(){
+      try{
+        localStorage.setItem(ZEIT_KEY, JSON.stringify({speed:speedInput.value, start:startSel.value, end:endSel.value}));
+      }catch(e){}
+    }
 
     /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
     function berechnenZeit(){
@@ -359,6 +380,7 @@
       const total=Math.round(d7*(7/v));
       const m=Math.floor(total/60), sec=total%60;
       out.textContent=`Von "${s}" bis "${e}" dauert es bei ${v.toFixed(1)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
+      speichereLetzteSuche();
       renderGeneral();
     }
     document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
