@@ -53,7 +53,6 @@
     margin-bottom: 16px; /* Rand unten */
   }
   
-  /* Media Query für sehr kleine Geräte entfernt, da iPhone 8 als Basis gilt. */
   h2{text-align:center;color:var(--orange);margin-top:0}
   label{display:block;margin-top:14px; /* Etwas weniger Abstand */
         font-weight:bold;color:#002855;font-size:16px;}
@@ -98,20 +97,20 @@
   #tab-spule .header {
       background-color: #333;
       color: white;
-      padding: 15px;
+      padding: 8px;
       text-align: center;
   }
-  #tab-spule .header h2 { margin: 0; font-size: 1.4rem; }
+  #tab-spule .header h2 { margin: 0; font-size: 1rem; }
 
   #tab-spule .section {
-      padding: 15px;
+      padding: 8px;
       border-bottom: 1px solid #eee;
   }
   #tab-spule .section-title {
       font-weight: bold;
       color: #555;
-      margin-bottom: 10px;
-      font-size: 0.8rem;
+      margin-bottom: 4px;
+      font-size: 0.68rem;
   }
 
   #tab-spule .bg-blue { background-color: #eef6ff; }
@@ -120,124 +119,94 @@
 
   #tab-spule label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 2px;
       margin-top:0;
       font-weight: 600;
       color: #333;
-      font-size: 0.9rem;
+      font-size: 0.74rem;
   }
 
   #tab-spule input[type="number"] {
       width: 100%;
-      padding: 10px;
-      font-size: 16px;
+      padding: 6px;
+      font-size: 13.5px;
       border: 2px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       margin-top:0;
   }
 
   #tab-spule button {
       width: 100%;
-      padding: 14px;
+      padding: 9px;
       background-color: #007bff;
       color: white;
-      font-size: 18px;
+      font-size: 14px;
       border: none;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
-      margin-top: 10px;
+      margin-top: 6px;
   }
 
   #tab-spule .result-area {
       text-align: center;
-      padding: 20px;
+      padding: 8px;
       color: white;
       display: none;
   }
   #tab-spule .result-group {
-      margin-bottom: 15px;
+      margin-bottom: 4px;
   }
   #tab-spule .result-number {
-      font-size: 2.5rem;
+      font-size: 1.6rem;
       font-weight: bold;
       color: #4cd137;
       line-height: 1.1;
   }
   #tab-spule .result-label {
-      font-size: 0.9rem;
+      font-size: 0.72rem;
       color: #ccc;
   }
   #tab-spule .error-msg {
       color: red;
       text-align: center;
-      padding: 10px;
+      padding: 6px;
+      font-size: 0.78rem;
       display: none;
   }
   #tab-spule .small-output {
       color: #f7b731;
       font-weight: bold;
-      font-size: 1.2rem;
-      margin-top: -5px;
-      margin-bottom: 15px;
+      font-size: 0.9rem;
+      margin-top: -2px;
+      margin-bottom: 6px;
       display: block;
   }
 
   #tab-spule .switch-container {
       display: flex;
       justify-content: space-around;
-      padding: 10px 0;
+      padding: 5px 0;
       background-color: #f0f0f0;
   }
   #tab-spule .switch-button {
-      padding: 10px 15px;
+      padding: 6px 8px;
       border: 1px solid #ddd;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 0.8rem;
       transition: background-color 0.2s, color 0.2s;
       flex-grow: 1;
       text-align: center;
-      margin: 0 5px;
+      margin: 0 4px;
   }
   #tab-spule .switch-button.active {
       background-color: #007bff;
       color: white;
       border-color: #0056b3;
-  }
-
-  /* ===== Kompakt-Darstellung für sehr kleine Bildschirme (z.B. iPhone 5/SE, 320x568) ===== */
-  @media (max-width: 380px), (max-height: 620px) {
-    body{ padding:6px; padding-top:46px; }
-    .topbar{ padding:5px 6px; gap:4px; }
-    .tabbtn{ padding:5px 7px; font-size:10.5px; border-width:1.5px; }
-    .container{ padding:8px; width:calc(100% - 12px); margin-bottom:6px; }
-    h2{ font-size:1rem; margin-bottom:6px; }
-    label{ margin-top:6px; font-size:12.5px; }
-    input[type=number], select{ padding:5px; font-size:13.5px; margin-top:2px; }
-    .ergebnis{ margin-top:8px; padding:6px; font-size:13px; }
-    .zeit-container .row{ gap:4px; }
-    .panel{ margin-top:5px; padding:5px; }
-    .panel h3{ font-size:11px; margin-bottom:3px; }
-    .small{ font-size:9.5px; }
-    .haftungshinweis{ font-size:9px; margin-top:4px; }
-
-    #tab-spule .header{ padding:7px; }
-    #tab-spule .header h2{ font-size:0.95rem; }
-    #tab-spule .section{ padding:7px; }
-    #tab-spule .section-title{ font-size:0.68rem; margin-bottom:4px; }
-    #tab-spule label{ font-size:0.72rem; margin-bottom:2px; }
-    #tab-spule input[type="number"]{ padding:5px; font-size:13px; margin-bottom:4px; }
-    #tab-spule button{ padding:8px; font-size:13px; margin-top:5px; }
-    #tab-spule .switch-container{ padding:4px 0; }
-    #tab-spule .switch-button{ padding:5px 6px; font-size:11px; margin:0 3px; }
-    #tab-spule .result-area{ padding:8px; }
-    #tab-spule .result-group{ margin-bottom:4px; }
-    #tab-spule .result-number{ font-size:1.5rem; }
-    #tab-spule .result-label{ font-size:0.7rem; }
-    #tab-spule .small-output{ font-size:0.85rem; margin-bottom:6px; margin-top:-2px; }
   }
 </style>
 </head>
@@ -516,7 +485,7 @@
 <section id="tab-spule" class="tab-pane">
 <div class="container">
     <div class="header">
-        <h2>Spulen-Bestandsrechner (Kalibriert)</h2>
+        <h2>Spulen-Bestandsrechner</h2>
     </div>
 
     <div class="switch-container">
@@ -524,7 +493,7 @@
         <div class="switch-button active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
     </div>
 
-    <div class="section" style="padding-top: 10px; padding-bottom: 10px;">
+    <div class="section" style="padding-top: 5px; padding-bottom: 5px;">
         <div class="section-title" style="margin-bottom: 0;">
             Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
         </div>
