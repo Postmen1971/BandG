@@ -129,7 +129,7 @@
   #tab-spule input[type="number"] {
       width: 100%;
       padding: 6px;
-      font-size: 13.5px;
+      font-size: 16px;
       border: 2px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
@@ -315,9 +315,9 @@
     <div class="zeit-result" id="zeitResult">Bitte wähle Start, Ende und Geschwindigkeit.</div>
 
     <div class="panel tip-panel">
-      <h3>Tipp des Tages</h3>
-      <div id="tipOfDay">–</div>
-      <div class="small">Wechselt automatisch täglich.</div>
+      <h3>😄 Superwitz</h3>
+      <div id="jokeOfDay">Witz wird geladen…</div>
+      <div class="small">Bei jedem Öffnen ein neuer Witz.</div>
     </div>
 
     <div class="panel quote-panel">
@@ -410,25 +410,40 @@
     }
     document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
 
-    /* --- 365 feste Galvanik-Tipps (deterministisch aus Bausteinen) --- */
-    const tipBereich=["Nickel","Palladium","Gold","Zinn","Spülen","Vorbehandlung","Kontaktierung","Anoden","Kathoden","Stripper","U-Turn","Trocknung"];
-    const tipAktion=["Stromdichte prüfen","Temperaturfenster kontrollieren","pH stabil halten","Leitfähigkeit messen","Zugaben nach Analyse dosieren","Durchfluss erhöhen","Rühren optimieren","Filter prüfen oder wechseln","Anodenfilm inspizieren","Kontaktflächen reinigen","Bandführung justieren","Drag-Out minimieren","Oberflächenspannung senken","Proben dokumentieren","Stromrampe testen","Verweilzeit verifizieren","Luftblasen vermeiden","Spülkaskade überprüfen","Rückführung aktivieren","Dosiersperren prüfen","Anodenkörbe gleichmäßig verteilen","Ionenbelastung beobachten","Badoberfläche entspannen","Kathodenbewegung anpassen","Badansatz nach SOP prüfen"];
-    const tipBed=["bei höherer Bandgeschwindigkeit","bei niedrigen Temperaturen","nach Stillstand","bei Qualitätsabweichungen","vor Schichtwechsel","nach Filterwechsel","bei geänderter Stromstärke","bei hoher Teilelast","bei Kantenunterdeckung","bei Fleckenbildung","bei steigender Rauheit","bei Glanzverlust"];
-    const tipDetail=["Messwerte protokollieren","Soll/Ist vergleichen","Zeitstempel setzen","Kontaktfedern schonen","gleichmäßige Strömung sichern","Leitwert in der Spüle loggen","Badschaum entfernen","Rauheit dokumentieren","Fühler kalibrieren","Stromzuführung auf Erwärmung prüfen","Zugaben in kleinen Schritten vornehmen","Überläufe klar halten","Sicherheitskette testen"];
-    function buildTip(i){
-      const b=tipBereich[i%tipBereich.length];
-      const a=tipAktion[(i*3)%tipAktion.length];
-      const c=tipBed[(i*5+7)%tipBed.length];
-      const d=tipDetail[(i*11+3)%tipDetail.length];
-      switch(i%4){
-        case 0: return `${b}: ${a} ${c} – ${d}.`;
-        case 1: return `${b}: ${c}, daher ${a} (${d}).`;
-        case 2: return `${b}: Zur Stabilität ${a}; zusätzlich ${d}.`;
-        default: return `${b}: ${a}. Danach ${d}.`;
+    /* --- Superwitz: bei jedem Start ein neuer Witz von einer Internet-Witz-API --- */
+    const FALLBACK_WITZE=[
+      "Treffen sich zwei Jäger. Beide tot.",
+      "Kommt ein Pferd in die Bar. Sagt der Barkeeper: 'Na, warum so ein langes Gesicht?'",
+      "Ich habe meiner Frau gesagt, sie solle sich was Schönes zum Anziehen wünschen. Jetzt strickt sie sich einen Pullover.",
+      "Was ist grün und steht vor der Tür? Ein Klopfsalat.",
+      "Chef zum Mitarbeiter: 'Sie kommen ja heute schon wieder zu spät!' – 'Ja, das ist unheimlich, jeden Tag zwei Minuten früher.'",
+      "Warum können Geister so schlecht lügen? Man sieht durch sie hindurch.",
+      "Sagt der Lehrer: 'Nennen Sie mir zwei Pronomen!' Antwortet der Schüler: 'Wer, ich?'",
+      "Ich wollte einen Witz über Zeitreisen machen, aber der ist euch nicht gefallen."
+    ];
+
+    function zeigeFallbackWitz(){
+      const w=FALLBACK_WITZE[Math.floor(Math.random()*FALLBACK_WITZE.length)];
+      document.getElementById('jokeOfDay').textContent=w;
+    }
+
+    async function ladeSuperwitz(){
+      const el=document.getElementById('jokeOfDay');
+      try{
+        const res=await fetch('https://v2.jokeapi.dev/joke/Any?lang=de&blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode', {cache:"no-store"});
+        if(!res.ok) throw new Error('Netzwerkfehler');
+        const data=await res.json();
+        if(data.error){ throw new Error('API-Fehler'); }
+        if(data.type==='single'){
+          el.textContent=data.joke;
+        }else{
+          el.textContent=`${data.setup} — ${data.delivery}`;
+        }
+      }catch(e){
+        zeigeFallbackWitz();
       }
     }
-    const TIPS365=[...Array(365)].map((_,i)=>buildTip(i));
-    document.getElementById('tipOfDay').textContent = TIPS365[(dayOfYear()-1)%365];
+    ladeSuperwitz();
 
     /* --- Zitat des Tages (Allgemein): Autor, wenn bekannt --- */
     const KNOWN_QUOTES = [
