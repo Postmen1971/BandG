@@ -520,9 +520,12 @@
       "Manchester City","Liverpool","Arsenal",
       "Paris SG"
     ];
+    // Nationale Ligen + europäische Wettbewerbe + Freundschaftsspiele + UEFA Super Cup: deckt AUCH Auswärtsspiele ab
+    // (die teambasierte Abfrage zeigt mit dem kostenlosen Zugang laut TheSportsDB nur Heimspiele!)
+    const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v4";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v6";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -532,6 +535,15 @@
     function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
     function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
     function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    function istLieblingsverein(ev){
+      const heim=(ev.strHomeTeam||"").toLowerCase();
+      const gast=(ev.strAwayTeam||"").toLowerCase();
+      return LIEBLINGSVEREINE.some(v=>{
+        const vn=v.toLowerCase();
+        return heim.includes(vn) || gast.includes(vn);
+      });
+    }
 
     async function holeTeamId(name, cache){
       if(FESTE_TEAM_IDS[name]) return FESTE_TEAM_IDS[name];
@@ -567,6 +579,15 @@
         if(!res.ok) return [];
         const data=await res.json();
         return (data && data.results) ? data.results : [];
+      }catch(e){ return []; }
+    }
+
+    async function holeNaechsteSpieleFuerWettbewerb(ligaId){
+      try{
+        const res=await fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"});
+        if(!res.ok) return [];
+        const data=await res.json();
+        return (data && data.events) ? data.events.filter(istLieblingsverein) : [];
       }catch(e){ return []; }
     }
 
@@ -606,19 +627,27 @@
       const teamIdCache=ladeTeamIdCache();
       let alleSpiele=[];
 
+      // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele)
       for(const teamName of LIEBLINGSVEREINE){
         const id=await holeTeamId(teamName, teamIdCache);
-        await warteMs(100);
+        await warteMs(90);
         if(!id) continue;
 
         const [nachfolgende, letzte]=await Promise.all([
           holeNaechsteSpieleFuerTeam(id),
           holeLetzteSpieleFuerTeam(id)
         ]);
-        await warteMs(100);
+        await warteMs(90);
 
         alleSpiele.push(...nachfolgende.slice(0,3).map(verarbeiteEvent));
         alleSpiele.push(...letzte.slice(0,3).map(verarbeiteEvent));
+      }
+
+      // 2) Ligabasiert: fängt zusätzlich Auswärtsspiele ab (teambasierte Abfrage zeigt im Free-Tier nur Heimspiele)
+      for(const ligaId of WETTBEWERB_IDS){
+        const events=await holeNaechsteSpieleFuerWettbewerb(ligaId);
+        await warteMs(90);
+        alleSpiele.push(...events.map(verarbeiteEvent));
       }
 
       // Veraltete "geplant"-Einträge ohne Ergebnis entfernen (Anstoß liegt schon > 3h zurück, aber kein Score bekannt -> nicht mehr relevant)
@@ -627,7 +656,7 @@
       // Nur behalten: geplante (zukünftige) Spiele + laufende/beendete Spiele der letzten 12 Stunden
       alleSpiele=alleSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
 
-      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen, oder next+last überschneiden).
+      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen, oder next+last/liga überschneiden).
       // Bei doppeltem Spiel gewinnt die Version MIT Ergebnis (live/beendet) gegenüber der Version ohne Ergebnis.
       const rang={geplant:0, live:1, beendet:2};
       const karte=new Map();
