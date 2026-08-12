@@ -79,6 +79,11 @@
   .panel{margin-top:12px;padding:10px;border-radius:6px;border:1px solid #e5e7eb}
   .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
   .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
+  .football-panel{background:#eefaf0;border-color:#bfe8cb;color:#0f3d1e;font-style:normal}
+  .football-panel .liga{font-weight:bold;margin-top:8px;color:#0b4f0b}
+  .football-panel .liga:first-child{margin-top:0}
+  .football-panel .spiel{padding:3px 0;font-size:13px}
+  .football-panel .spiel .datum{color:#777;font-size:11px}
   .panel h3{margin:0 0 6px 0;font-size:14px;color:#333;font-style:normal}
   .small{font-size:12px;color:#666}
 
@@ -324,6 +329,12 @@
       <h3>Zitat des Tages (Allgemein)</h3>
       <div id="quoteGeneral">–</div>
     </div>
+
+    <div class="panel football-panel">
+      <h3>⚽ Topspiele</h3>
+      <div id="footballBox">Spiele werden geladen…</div>
+      <div class="small">Nächste Spiele deiner Lieblingsvereine.</div>
+    </div>
   </div>
 
   <script>
@@ -445,55 +456,129 @@
     }
     ladeSuperwitz();
 
-    /* --- Zitat des Tages (Allgemein): Autor, wenn bekannt --- */
-    const KNOWN_QUOTES = [
+    /* --- Zitat des Tages (Allgemein): live von Internet-Zitate-APIs --- */
+    const FALLBACK_QUOTES=[
       {text:"Der Weg ist das Ziel.", author:"Konfuzius (zugeschrieben)"},
-      {text:"Alles fließt.", author:"Heraklit"},
-      {text:"Wer rastet, der rostet.", author:"Sprichwort"},
-      {text:"Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen.", author:"Goethe"},
-      {text:"In der Ruhe liegt die Kraft.", author:"Sprichwort"},
-      {text:"Wege entstehen dadurch, dass man sie geht.", author:"Franz Kafka"},
       {text:"Wissen ist Macht.", author:"Francis Bacon"},
-      {text:"Man sieht nur mit dem Herzen gut.", author:"Antoine de Saint-Exupéry"},
-      {text:"Ohne Daten nur Meinung.", author:"W. Edwards Deming"},
-      {text:"Das Bessere ist der Feind des Guten.", author:"Voltaire"},
-      {text:"Handle nur nach der Maxime, die du zugleich wollen kannst als allgemeines Gesetz.", author:"Immanuel Kant"},
-      {text:"Nicht die Dinge beunruhigen uns, sondern die Meinungen über die Dinge.", author:"Epiktet"},
+      {text:"In der Ruhe liegt die Kraft.", author:"Sprichwort"},
       {text:"Der Anfang ist die Hälfte des Ganzen.", author:"Aristoteles"},
-      {text:"Per aspera ad astra.", author:"Lateinisches Motto"},
-      {text:"Humor ist der Regenschirm der Weisen.", author:"Erich Kästner"},
-      {text:"Der Mensch ist, was er täglich tut.", author:"Aristoteles"},
-      {text:"Wer immer tut, was er schon kann, bleibt, was er ist.", author:"Henry Ford"},
-      {text:"Die Einfachheit ist die höchste Stufe der Vollendung.", author:"Leonardo da Vinci"},
-      {text:"Glück bevorzugt den Vorbereiteten.", author:"Louis Pasteur"},
-      {text:"Erfahrung ist der Name, den jeder seinen Irrtümern gibt.", author:"Oscar Wilde"},
-      {text:"Ohne Fleiß kein Preis.", author:"Sprichwort"},
-      {text:"Kein Meister ist vom Himmel gefallen.", author:"Sprichwort"},
-      {text:"Steter Tropfen höhlt den Stein.", author:"Sprichwort"},
-      {text:"Ausdauer wird früher oder später belohnt.", author:"Sprichwort"},
-      {text:"Auch der längste Weg beginnt mit dem ersten Schritt.", author:"Laozi (zugeschrieben)"},
-      {text:"Der Zweck heiligt nicht die Mittel.", author:"Sprichwort"},
-      {text:"Gib jedem Tag die Chance, der schönste deines Lebens zu werden.", author:"Mark Twain (zugeschrieben)"},
-      {text:"Wer etwas will, findet Wege. Wer etwas nicht will, findet Gründe.", author:"Sprichwort"},
-      {text:"Mut steht am Anfang des Handelns, Glück am Ende.", author:"Demokrit"},
-      {text:"Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", author:"Ludwig Wittgenstein"},
-      {text:"Der Kopf ist rund, damit das Denken die Richtung wechseln kann.", author:"Francis Picabia"},
+      {text:"Man sieht nur mit dem Herzen gut.", author:"Antoine de Saint-Exupéry"},
+      {text:"Das Bessere ist der Feind des Guten.", author:"Voltaire"},
       {text:"Probleme kann man niemals mit derselben Denkweise lösen, durch die sie entstanden sind.", author:"Albert Einstein (zugeschrieben)"}
     ];
-    const qSub=["Mut","Geduld","Klarheit","Sorgfalt","Neugier","Fokus","Disziplin","Gelassenheit","Achtsamkeit","Verantwortung","Weitsicht","Bescheidenheit","Präzision","Qualität","Lernen","Übung","Ausdauer","Respekt","Teamgeist","Neuanfang","Ruhe","Tempo","Ordnung","Offenheit","Vertrauen","Humor","Logik","Intuition","Erfahrung","Neugierde"];
-    const qVerb=["ist","bleibt","wirkt","schafft","bringt","führt zu","fordert","ermöglicht","ordnet","schärft"];
-    const qPred=["leise — und stark","die Grundlage von Qualität","der beste Anfang","mehr als Tempo","Raum für Lösungen","Sicherheit im Prozess","Ruhe in der Entscheidung","Klarheit im Kopf","Reserven für schwere Tage","Wert statt Aufwand","den Unterschied","Zeit zum Nachdenken"];
-    const qTail=["— Spruch","— Sprichwort","— Weisheit","— Leitsatz","— Werkstattregel"];
-    function buildAph(i){return `${qSub[i%qSub.length]} ${qVerb[(i*7)%qVerb.length]} ${qPred[(i*13)%qPred.length]}. ${qTail[(i*17)%qTail.length]}`;}
-    const QUOTES1000=(()=>{const arr=[]; for(let i=0;i<1000;i++) arr.push(buildAph(i)); return arr;})();
-    const ALL_GENERAL_QUOTES=[...QUOTES1000, ...KNOWN_QUOTES];
 
-    function renderGeneral(){
-      const q=pick(ALL_GENERAL_QUOTES);
-      if(typeof q==="string"){ document.getElementById('quoteGeneral').textContent=q; }
-      else { document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`; }
+    function zeigeFallbackZitat(){
+      const q=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];
+      document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
+    }
+
+    async function renderGeneral(){
+      const el=document.getElementById('quoteGeneral');
+      el.textContent="Zitat wird geladen…";
+      try{
+        const res=await fetch('https://dummyjson.com/quotes/random', {cache:"no-store"});
+        if(!res.ok) throw new Error('Netzwerkfehler');
+        const data=await res.json();
+        if(!data.quote) throw new Error('Ungültige Antwort');
+        el.textContent=`${data.quote} — ${data.author}`;
+      }catch(e1){
+        try{
+          const res2=await fetch('https://zenquotes.io/api/quotes/random', {cache:"no-store"});
+          if(!res2.ok) throw new Error('Netzwerkfehler2');
+          const data2=await res2.json();
+          const item=Array.isArray(data2)?data2[0]:data2;
+          if(!item || !item.q) throw new Error('Ungültige Antwort2');
+          el.textContent=`${item.q} — ${item.a}`;
+        }catch(e2){
+          zeigeFallbackZitat();
+        }
+      }
     }
     renderGeneral();
+
+    /* --- Fußball-Topspiele: nächste Spiele der Lieblingsvereine (TheSportsDB, kostenlos) --- */
+    const LIGEN=[
+      {land:"🇹🇷 Türkei", ligaId:"4339", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor"]},
+      {land:"🇩🇪 Deutschland", ligaId:"4331", teams:["Dortmund","Bayern","Stuttgart"]},
+      {land:"🇪🇸 Spanien", ligaId:"4335", teams:["Real Madrid","Barcelona"]},
+      {land:"🇮🇹 Italien", ligaId:"4332", teams:["Juventus","Inter","Napoli"]},
+      {land:"🏴 England", ligaId:"4328", teams:["Manchester City","Liverpool","Arsenal"]},
+      {land:"🇫🇷 Frankreich", ligaId:"4334", teams:["Paris"]},
+      {land:"🏆 Champions League", ligaId:"4480", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]},
+      {land:"🏆 Europa League", ligaId:"4481", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]},
+      {land:"🏆 Conference League", ligaId:"5071", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]}
+    ];
+    const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele";
+    const FIXTURES_TTL_MS=1000*60*60*3; // 3 Stunden Cache
+
+    function enthaeltFavorit(event, favoriten){
+      const heim=(event.strHomeTeam||"").toLowerCase();
+      const gast=(event.strAwayTeam||"").toLowerCase();
+      return favoriten.some(f=>{
+        const fn=f.toLowerCase();
+        return heim.includes(fn) || gast.includes(fn);
+      });
+    }
+
+    async function holeLigaSpiele(ligaId){
+      try{
+        const res=await fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"});
+        if(!res.ok) return [];
+        const data=await res.json();
+        return (data && data.events) ? data.events : [];
+      }catch(e){ return []; }
+    }
+
+    function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    async function ladeFussballTopspiele(){
+      // Cache prüfen
+      try{
+        const cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY));
+        if(cached && (Date.now()-cached.zeitstempel < FIXTURES_TTL_MS)){
+          zeigeFussballErgebnis(cached.daten);
+          return;
+        }
+      }catch(e){}
+
+      let alleSpiele=[];
+
+      for(const liga of LIGEN){
+        const alleEvents=await holeLigaSpiele(liga.ligaId);
+        const gefiltert=alleEvents.filter(ev=>enthaeltFavorit(ev, liga.teams));
+
+        alleSpiele.push(...gefiltert.map(ev=>({
+          heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
+          datum: ev.dateEvent, zeit: (ev.strTime||"").slice(0,5),
+          liga: ev.strLeague
+        })));
+
+        await warteMs(150); // API schonen
+      }
+
+      alleSpiele.sort((a,b)=> new Date(a.datum+'T'+(a.zeit||'00:00')+':00') - new Date(b.datum+'T'+(b.zeit||'00:00')+':00'));
+
+      try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:alleSpiele})); }catch(e){}
+
+      zeigeFussballErgebnis(alleSpiele);
+    }
+
+    function zeigeFussballErgebnis(spiele){
+      const box=document.getElementById('footballBox');
+      if(!spiele || spiele.length===0){
+        box.innerHTML='Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
+        return;
+      }
+      let html='';
+      spiele.forEach(s=>{
+        const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}</span></div>`;
+      });
+      box.innerHTML=html;
+    }
+
+    ladeFussballTopspiele();
   </script>
 </section>
 
