@@ -472,6 +472,19 @@
       document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
     }
 
+    async function uebersetzeInsDeutsche(text){
+      try{
+        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|de`, {cache:"no-store"});
+        if(!res.ok) throw new Error('Übersetzungsfehler');
+        const data=await res.json();
+        const uebersetzt=data && data.responseData && data.responseData.translatedText;
+        if(!uebersetzt) throw new Error('Keine Übersetzung erhalten');
+        return uebersetzt;
+      }catch(e){
+        return text; // Falls Übersetzung fehlschlägt: Original anzeigen statt nichts
+      }
+    }
+
     async function renderGeneral(){
       const el=document.getElementById('quoteGeneral');
       el.textContent="Zitat wird geladen…";
@@ -480,7 +493,8 @@
         if(!res.ok) throw new Error('Netzwerkfehler');
         const data=await res.json();
         if(!data.quote) throw new Error('Ungültige Antwort');
-        el.textContent=`${data.quote} — ${data.author}`;
+        const deutsch=await uebersetzeInsDeutsche(data.quote);
+        el.textContent=`${deutsch} — ${data.author}`;
       }catch(e1){
         try{
           const res2=await fetch('https://zenquotes.io/api/quotes/random', {cache:"no-store"});
@@ -488,7 +502,8 @@
           const data2=await res2.json();
           const item=Array.isArray(data2)?data2[0]:data2;
           if(!item || !item.q) throw new Error('Ungültige Antwort2');
-          el.textContent=`${item.q} — ${item.a}`;
+          const deutsch2=await uebersetzeInsDeutsche(item.q);
+          el.textContent=`${deutsch2} — ${item.a}`;
         }catch(e2){
           zeigeFallbackZitat();
         }
@@ -496,41 +511,45 @@
     }
     renderGeneral();
 
-    /* --- Fußball-Topspiele: nächste Spiele der Lieblingsvereine (TheSportsDB, kostenlos) --- */
-    const LIGEN=[
-      {land:"🇹🇷 Türkei", ligaId:"4339", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor"]},
-      {land:"🇩🇪 Deutschland", ligaId:"4331", teams:["Dortmund","Bayern","Stuttgart"]},
-      {land:"🇪🇸 Spanien", ligaId:"4335", teams:["Real Madrid","Barcelona"]},
-      {land:"🇮🇹 Italien", ligaId:"4332", teams:["Juventus","Inter","Napoli"]},
-      {land:"🏴 England", ligaId:"4328", teams:["Manchester City","Liverpool","Arsenal"]},
-      {land:"🇫🇷 Frankreich", ligaId:"4334", teams:["Paris"]},
-      {land:"🏆 Champions League", ligaId:"4480", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]},
-      {land:"🏆 Europa League", ligaId:"4481", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]},
-      {land:"🏆 Conference League", ligaId:"5071", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]}
+    /* --- Fußball-Topspiele: ALLE nächsten Spiele der Lieblingsvereine, unabhängig vom Wettbewerb (Liga, Pokal, Supercup, Freundschaftsspiel, Champions League etc.) --- */
+    const LIEBLINGSVEREINE=[
+      "Galatasaray","Besiktas","Fenerbahce","Trabzonspor",
+      "Borussia Dortmund","Bayern Munich","VfB Stuttgart",
+      "Real Madrid","Barcelona",
+      "Juventus","Inter Milan","Napoli",
+      "Manchester City","Liverpool","Arsenal",
+      "Paris SG"
     ];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
+    const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
     const FIXTURES_CACHE_KEY="galvanikFussballSpiele";
     const FIXTURES_TTL_MS=1000*60*60*3; // 3 Stunden Cache
 
-    function enthaeltFavorit(event, favoriten){
-      const heim=(event.strHomeTeam||"").toLowerCase();
-      const gast=(event.strAwayTeam||"").toLowerCase();
-      return favoriten.some(f=>{
-        const fn=f.toLowerCase();
-        return heim.includes(fn) || gast.includes(fn);
-      });
+    function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
+    function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
+    function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    async function holeTeamId(name, cache){
+      if(cache[name]) return cache[name];
+      try{
+        const res=await fetch(`${SPORTSDB_BASE}/searchteams.php?t=${encodeURIComponent(name)}`, {cache:"no-store"});
+        const data=await res.json();
+        if(data && data.teams && data.teams.length){
+          cache[name]=data.teams[0].idTeam;
+          return cache[name];
+        }
+      }catch(e){}
+      return null;
     }
 
-    async function holeLigaSpiele(ligaId){
+    async function holeNaechsteSpieleFuerTeam(teamId){
       try{
-        const res=await fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"});
+        const res=await fetch(`${SPORTSDB_BASE}/eventsnext.php?id=${teamId}`, {cache:"no-store"});
         if(!res.ok) return [];
         const data=await res.json();
         return (data && data.events) ? data.events : [];
       }catch(e){ return []; }
     }
-
-    function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
     async function ladeFussballTopspiele(){
       // Cache prüfen
@@ -542,26 +561,37 @@
         }
       }catch(e){}
 
+      const teamIdCache=ladeTeamIdCache();
       let alleSpiele=[];
 
-      for(const liga of LIGEN){
-        const alleEvents=await holeLigaSpiele(liga.ligaId);
-        const gefiltert=alleEvents.filter(ev=>enthaeltFavorit(ev, liga.teams));
+      for(const teamName of LIEBLINGSVEREINE){
+        const id=await holeTeamId(teamName, teamIdCache);
+        await warteMs(120);
+        if(!id) continue;
+        const events=await holeNaechsteSpieleFuerTeam(id);
+        await warteMs(120);
 
-        alleSpiele.push(...gefiltert.map(ev=>({
+        alleSpiele.push(...events.slice(0,3).map(ev=>({
           heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
           datum: ev.dateEvent, zeit: (ev.strTime||"").slice(0,5),
-          liga: ev.strLeague
+          wettbewerb: ev.strLeague
         })));
-
-        await warteMs(150); // API schonen
       }
 
-      alleSpiele.sort((a,b)=> new Date(a.datum+'T'+(a.zeit||'00:00')+':00') - new Date(b.datum+'T'+(b.zeit||'00:00')+':00'));
+      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen)
+      const gesehen=new Set();
+      const eindeutig=[];
+      for(const s of alleSpiele){
+        const key=s.heim+'|'+s.auswaerts+'|'+s.datum;
+        if(!gesehen.has(key)){ gesehen.add(key); eindeutig.push(s); }
+      }
 
-      try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:alleSpiele})); }catch(e){}
+      eindeutig.sort((a,b)=> new Date(a.datum+'T'+(a.zeit||'00:00')+':00') - new Date(b.datum+'T'+(b.zeit||'00:00')+':00'));
 
-      zeigeFussballErgebnis(alleSpiele);
+      speichereTeamIdCache(teamIdCache);
+      try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:eindeutig})); }catch(e){}
+
+      zeigeFussballErgebnis(eindeutig);
     }
 
     function zeigeFussballErgebnis(spiele){
@@ -573,7 +603,7 @@
       let html='';
       spiele.forEach(s=>{
         const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}</span></div>`;
+        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
       });
       box.innerHTML=html;
     }
