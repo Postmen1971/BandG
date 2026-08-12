@@ -522,8 +522,8 @@
     ];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v2";
-    const FIXTURES_TTL_MS=1000*60*60*3; // 3 Stunden Cache
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v4";
+    const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
     // (z.B. Paris SG: Herren-Profimannschaft, nicht Frauen/Jugend/eSport)
@@ -561,6 +561,38 @@
       }catch(e){ return []; }
     }
 
+    async function holeLetzteSpieleFuerTeam(teamId){
+      try{
+        const res=await fetch(`${SPORTSDB_BASE}/eventslast.php?id=${teamId}`, {cache:"no-store"});
+        if(!res.ok) return [];
+        const data=await res.json();
+        return (data && data.results) ? data.results : [];
+      }catch(e){ return []; }
+    }
+
+    const ERGEBNIS_SICHTBAR_STUNDEN=12; // Endstand bleibt so lange sichtbar
+
+    function verarbeiteEvent(ev){
+      const heimTor=ev.intHomeScore, gastTor=ev.intAwayScore;
+      const hatErgebnis = heimTor!==null && heimTor!==undefined && gastTor!==null && gastTor!==undefined;
+      const datum=ev.dateEvent, zeit=(ev.strTime||"").slice(0,5);
+      const kickoff=new Date(datum+'T'+(zeit||'00:00')+':00');
+      const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
+
+      let status="geplant"; // geplant | live | beendet
+      if(hatErgebnis){
+        const beendetLtStatus=/finished|ft|match finished/i.test(ev.strStatus||"");
+        if(beendetLtStatus || stundenSeitAnstoss>2.5){ status="beendet"; }
+        else{ status="live"; }
+      }
+
+      return {
+        heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
+        datum, zeit, wettbewerb: ev.strLeague,
+        heimTor, gastTor, status, kickoff, stundenSeitAnstoss
+      };
+    }
+
     async function ladeFussballTopspiele(){
       // Cache prüfen
       try{
@@ -576,27 +608,39 @@
 
       for(const teamName of LIEBLINGSVEREINE){
         const id=await holeTeamId(teamName, teamIdCache);
-        await warteMs(120);
+        await warteMs(100);
         if(!id) continue;
-        const events=await holeNaechsteSpieleFuerTeam(id);
-        await warteMs(120);
 
-        alleSpiele.push(...events.slice(0,3).map(ev=>({
-          heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
-          datum: ev.dateEvent, zeit: (ev.strTime||"").slice(0,5),
-          wettbewerb: ev.strLeague
-        })));
+        const [nachfolgende, letzte]=await Promise.all([
+          holeNaechsteSpieleFuerTeam(id),
+          holeLetzteSpieleFuerTeam(id)
+        ]);
+        await warteMs(100);
+
+        alleSpiele.push(...nachfolgende.slice(0,3).map(verarbeiteEvent));
+        alleSpiele.push(...letzte.slice(0,3).map(verarbeiteEvent));
       }
 
-      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen)
-      const gesehen=new Set();
-      const eindeutig=[];
+      // Veraltete "geplant"-Einträge ohne Ergebnis entfernen (Anstoß liegt schon > 3h zurück, aber kein Score bekannt -> nicht mehr relevant)
+      alleSpiele=alleSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > 3));
+
+      // Nur behalten: geplante (zukünftige) Spiele + laufende/beendete Spiele der letzten 12 Stunden
+      alleSpiele=alleSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
+
+      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen, oder next+last überschneiden).
+      // Bei doppeltem Spiel gewinnt die Version MIT Ergebnis (live/beendet) gegenüber der Version ohne Ergebnis.
+      const rang={geplant:0, live:1, beendet:2};
+      const karte=new Map();
       for(const s of alleSpiele){
         const key=s.heim+'|'+s.auswaerts+'|'+s.datum;
-        if(!gesehen.has(key)){ gesehen.add(key); eindeutig.push(s); }
+        const bestehend=karte.get(key);
+        if(!bestehend || rang[s.status] > rang[bestehend.status]){
+          karte.set(key, s);
+        }
       }
+      const eindeutig=[...karte.values()];
 
-      eindeutig.sort((a,b)=> new Date(a.datum+'T'+(a.zeit||'00:00')+':00') - new Date(b.datum+'T'+(b.zeit||'00:00')+':00'));
+      eindeutig.sort((a,b)=> a.kickoff - b.kickoff);
 
       speichereTeamIdCache(teamIdCache);
       try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:eindeutig})); }catch(e){}
@@ -613,7 +657,15 @@
       let html='';
       spiele.forEach(s=>{
         const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
+        let ergebnisTeil;
+        if(s.status==="live"){
+          ergebnisTeil=`<strong style="color:#e63946">🔴 LIVE ${s.heimTor}:${s.gastTor}</strong>`;
+        }else if(s.status==="beendet"){
+          ergebnisTeil=`Endstand ${s.heimTor}:${s.gastTor}`;
+        }else{
+          ergebnisTeil=`${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}`;
+        }
+        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
       });
       box.innerHTML=html;
     }
