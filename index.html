@@ -522,20 +522,30 @@
     ];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v2";
     const FIXTURES_TTL_MS=1000*60*60*3; // 3 Stunden Cache
+
+    // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
+    // (z.B. Paris SG: Herren-Profimannschaft, nicht Frauen/Jugend/eSport)
+    const FESTE_TEAM_IDS={ "Paris SG": "133714" };
 
     function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
     function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
     function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
     async function holeTeamId(name, cache){
+      if(FESTE_TEAM_IDS[name]) return FESTE_TEAM_IDS[name];
       if(cache[name]) return cache[name];
       try{
         const res=await fetch(`${SPORTSDB_BASE}/searchteams.php?t=${encodeURIComponent(name)}`, {cache:"no-store"});
         const data=await res.json();
         if(data && data.teams && data.teams.length){
-          cache[name]=data.teams[0].idTeam;
+          // Bevorzugt die Herren-Fußball-Profimannschaft (nicht Frauen/Jugend/Reserve/eSport)
+          const passend = data.teams.find(t =>
+            (t.strSport||"").toLowerCase()==="soccer" &&
+            !/women|damen|frauen|youth|jugend|reserve|\bII\b|esports|futsal/i.test(t.strTeam||"")
+          ) || data.teams[0];
+          cache[name]=passend.idTeam;
           return cache[name];
         }
       }catch(e){}
