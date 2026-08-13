@@ -1,912 +1,674 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Galvanik Tools – Strom & Zeit</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Anstoß — Deine Vereine, live im Blick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-  /* Allgemeine Anpassungen für bessere Darstellung auf kleinen Bildschirmen */
-  :root{--orange:#F58025;--darkblue:#002855;--lightgray:#f7f7f7}
+  :root{
+    --bg: #F5F1E7;
+    --bg-elevated: #FFFFFF;
+    --card: #FFFFFF90;
+    --card-solid: #FFFFFF;
+    --line: #E3DDCC;
+    --turf: #1B7A4E;
+    --turf-dim: #DCF0E3;
+    --flood: #B4790C;
+    --flood-dim: #F1E1B8;
+    --live: #C93E3E;
+    --text: #1C2330;
+    --text-dim: #626B7A;
+    --text-faint: #97A0AD;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0;}
   body{
-    font-family:Arial,sans-serif;
-    background:linear-gradient(to bottom right,var(--lightgray),#ffffff);
-    margin:0;
-    /* Anpassung 2: Padding für Rand: Fixe 16px oben/unten und seitlich. */
-    padding: 16px;
-    display:flex;
-    justify-content:center;
-    flex-direction:column;
-    align-items:center;
-    /* Zusätzliches Padding für Topbar-Platzhalter */
-    padding-top: 70px; 
+    background: radial-gradient(circle at 50% -10%, #FFFFFF 0%, #F5F1E7 55%), var(--bg);
+    color: var(--text);
+    font-family: 'Work Sans', sans-serif;
+    min-height: 100vh;
+    display:flex; justify-content:center;
   }
-
-  .topbar{
-    position:fixed; /* Auf fixed geändert, damit es oben bleibt */
-    top:0;
-    left:0;
-    right:0;
-    background:#ffffffcc;
-    backdrop-filter:blur(6px);
-    border-bottom:1px solid #e5e7eb;
-    padding:10px 16px; /* Etwas mehr seitlicher Rand */
-    z-index:1000;
-    display:flex;
-    justify-content:center;
-    gap:8px;
-  }
-  
-  .tabbtn{border:2px solid #002855;color:#002855;background:#fff;padding:8px 12px; /* Etwas kleiner für iPhone 8 */
-          border-radius:999px;cursor:pointer;font-weight:bold;font-size:14px;}
-  .tabbtn.active{background:#F58025;color:#fff;border-color:#F58025}
-  section.tab-pane{display:none}section.tab-pane.active{display:block}
-
-  .container{
-    width:calc(100% - 32px); /* 100% minus seitliches Body-Padding */
-    max-width:500px;
-    background:#fff;
-    padding:20px; /* Innen-Padding leicht reduziert */
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.06);
-    position:relative;
-    margin-top:0; /* Kein zusätzlicher oberer Margin, da Body-Padding angepasst wurde */
-    margin-bottom: 16px; /* Rand unten */
-  }
-  
-  h2{text-align:center;color:var(--orange);margin-top:0}
-  label{display:block;margin-top:14px; /* Etwas weniger Abstand */
-        font-weight:bold;color:#002855;font-size:16px;}
-  input[type=number], select{
+  .device{
     width:100%;
-    padding:8px; /* Etwas weniger Padding */
-    font-size:16px; /* Etwas kleiner für bessere Sichtbarkeit */
-    margin-top:4px;
-    border:1px solid #ccc;border-radius:6px;box-sizing:border-box
-  }
-  
-  .ergebnis{margin-top:20px;padding:12px;background:#f0f0f0;font-size:18px; /* Etwas kleiner */
-            text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc}
-  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:11px;margin-top:8px;color:#888}
-  #counter{position:fixed;bottom:4px;right:8px;font-size:10px;color:#ccc;font-family:monospace;opacity:.5;z-index:9999}
-
-  /* Zeitrechner spezifische Anpassungen */
-  .zeit-container .row{display:flex;gap:8px}
-  .zeit-container select, .zeit-container button{padding:10px;font-size:16px;}
-  .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
-  .zeit-container button:hover{background:#004d99}
-  .zeit-result{margin-top:16px;padding:12px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf}
-
-  .panel{margin-top:12px;padding:10px;border-radius:6px;border:1px solid #e5e7eb}
-  .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
-  .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
-  .football-panel{background:#eefaf0;border-color:#bfe8cb;color:#0f3d1e;font-style:normal}
-  .football-panel .liga{font-weight:bold;margin-top:8px;color:#0b4f0b}
-  .football-panel .liga:first-child{margin-top:0}
-  .football-panel .spiel{padding:3px 0;font-size:13px}
-  .football-panel .spiel .datum{color:#777;font-size:11px}
-  .panel h3{margin:0 0 6px 0;font-size:14px;color:#333;font-style:normal}
-  .small{font-size:12px;color:#666}
-
-  /* ===== Spulenrechner (1:1 aus AzeSpule.html übernommen, isoliert unter #tab-spule) ===== */
-  #tab-spule{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
-  #tab-spule .container{
-      background-color: white;
-      max-width: 480px;
-      width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow: hidden;
-      border: 1px solid #ddd;
-      padding:0;
-  }
-  #tab-spule .header {
-      background-color: #333;
-      color: white;
-      padding: 8px;
-      text-align: center;
-  }
-  #tab-spule .header h2 { margin: 0; font-size: 1rem; }
-
-  #tab-spule .section {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-  }
-  #tab-spule .section-title {
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 4px;
-      font-size: 0.68rem;
+    max-width: 430px;
+    min-height:100vh;
+    background: var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
   }
 
-  #tab-spule .bg-blue { background-color: #eef6ff; }
-  #tab-spule .bg-green { background-color: #ebf9eb; }
-  #tab-spule .bg-result { background-color: #2c3e50; }
-
-  #tab-spule label {
-      display: block;
-      margin-bottom: 2px;
-      margin-top:0;
-      font-weight: 600;
-      color: #333;
-      font-size: 0.74rem;
+  /* ---------- Header ---------- */
+  header.top{
+    position:sticky; top:0; z-index:20;
+    background: linear-gradient(180deg, rgba(245,241,231,0.98) 70%, rgba(245,241,231,0.85));
+    backdrop-filter: blur(10px);
+    padding: 10px 16px 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brandrow{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;}
+  .brand{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .brand .dot{color:var(--flood);}
+  .clock{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
   }
 
-  #tab-spule input[type="number"] {
-      width: 100%;
-      padding: 6px;
-      font-size: 16px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-      margin-bottom: 4px;
-      margin-top:0;
+  nav.tabs{
+    display:flex;
+    gap: 4px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    padding-bottom: 8px;
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex: 0 0 auto;
+    font-family:'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 11px;
+    cursor:pointer;
+    transition: all .15s ease;
+    white-space:nowrap;
+  }
+  .tab.live-tab{ display:flex; align-items:center; gap:6px; }
+  .tab.live-tab .pulse{
+    width:6px; height:6px; border-radius:50%; background: var(--live);
+    box-shadow: 0 0 0 0 rgba(225,76,76,0.6);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(225,76,76,.55);}
+    70%{box-shadow:0 0 0 6px rgba(225,76,76,0);}
+    100%{box-shadow:0 0 0 0 rgba(225,76,76,0);}
+  }
+  .tab.active{
+    background: var(--turf);
+    border-color: var(--turf);
+    color: #06140D;
   }
 
-  #tab-spule button {
-      width: 100%;
-      padding: 9px;
-      background-color: #007bff;
-      color: white;
-      font-size: 14px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 6px;
+  /* ---------- Länderspiel banner ---------- */
+  .natl-banner{
+    margin: 10px 16px 0 16px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(180,121,12,0.12), rgba(180,121,12,0.02));
+    border: 1px solid var(--flood-dim);
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-size: 10.5px;
+    line-height:1.3;
+    color: #7A5714;
+  }
+  .natl-banner b{ font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:.3px; text-transform:uppercase; font-size:10px; }
+
+  /* ---------- Main list ---------- */
+  main{ padding: 8px 16px 90px 16px; flex:1; }
+
+  .day-heading{
+    font-family:'Oswald', sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 14px 2px 6px 2px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .day-heading:first-child{ margin-top:2px; }
+  .day-heading::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
   }
 
-  #tab-spule .result-area {
-      text-align: center;
-      padding: 8px;
-      color: white;
-      display: none;
+  .match-card{
+    background: var(--card-solid);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 7px 8px 7px 11px;
+    margin-bottom: 6px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    position:relative;
+    transition: border-color .15s ease;
+    box-shadow: 0 1px 2px rgba(28,35,48,0.05);
   }
-  #tab-spule .result-group {
-      margin-bottom: 4px;
+  .match-card.is-live{
+    border-color: rgba(201,62,62,0.45);
+    background: linear-gradient(180deg, rgba(201,62,62,0.06), var(--card-solid) 40%);
   }
-  #tab-spule .result-number {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: #4cd137;
-      line-height: 1.1;
+  .match-card .comp-strip{
+    position:absolute; left:0; top:7px; bottom:7px; width:3px; border-radius:3px;
+    background: var(--turf);
   }
-  #tab-spule .result-label {
-      font-size: 0.72rem;
-      color: #ccc;
+  .match-card.comp-cl .comp-strip{ background: #3D6FE0; }
+  .match-card.comp-natl .comp-strip{ background: var(--flood); }
+  .match-card.comp-pokal .comp-strip{ background: #B45FE0; }
+
+  .mc-time{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight:600;
+    color: var(--text-dim);
+    width: 34px;
+    text-align:center;
+    flex-shrink:0;
+    line-height:1.1;
   }
-  #tab-spule .error-msg {
-      color: red;
-      text-align: center;
-      padding: 6px;
-      font-size: 0.78rem;
-      display: none;
+  .mc-time small{ display:block; font-size:8px; color:var(--text-faint); font-weight:500; margin-top:1px;}
+  .mc-time.live-time{ color: var(--live); }
+  .mc-time.live-time small{ color: var(--live); }
+
+  .mc-body{ flex:1; min-width:0; }
+  .mc-teams{
+    font-family:'Oswald', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+    display:flex; align-items:center; gap:4px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    line-height:1.25;
   }
-  #tab-spule .small-output {
-      color: #f7b731;
-      font-weight: bold;
-      font-size: 0.9rem;
-      margin-top: -2px;
-      margin-bottom: 6px;
-      display: block;
+  .mc-teams .vs{ color: var(--text-faint); font-size:9.5px; font-weight:400;}
+  .mc-comp{
+    font-size: 9.5px;
+    color: var(--text-dim);
+    margin-top: 1px;
+    display:flex; align-items:center; gap:4px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .mc-comp .fav-flag{ font-size:9.5px; }
+
+  .mc-score{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size: 13px;
+    color: var(--live);
+    width: 28px;
+    text-align:center;
+    flex-shrink:0;
   }
 
-  #tab-spule .switch-container {
-      display: flex;
-      justify-content: space-around;
-      padding: 5px 0;
-      background-color: #f0f0f0;
+  .tv-btn{
+    flex-shrink:0;
+    width: 28px; height:28px;
+    border-radius: 8px;
+    background: rgba(180,121,12,0.08);
+    border: 1px solid var(--flood-dim);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .15s ease;
   }
-  #tab-spule .switch-button {
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.8rem;
-      transition: background-color 0.2s, color 0.2s;
-      flex-grow: 1;
-      text-align: center;
-      margin: 0 4px;
+  .tv-btn:active{ transform: scale(0.92); background: rgba(180,121,12,0.18); }
+  .tv-btn svg{ width:14px; height:14px; stroke: var(--flood); }
+  .tv-btn.no-data{ opacity:0.35; pointer-events:none; }
+
+  .empty-state{
+    text-align:center;
+    padding: 60px 20px;
+    color: var(--text-faint);
   }
-  #tab-spule .switch-button.active {
-      background-color: #007bff;
-      color: white;
-      border-color: #0056b3;
+  .empty-state .icon{ font-size:32px; margin-bottom:10px; }
+  .empty-state .title{ font-family:'Oswald',sans-serif; font-size:15px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;}
+
+  /* ---------- Bottom fav strip ---------- */
+  .fav-strip{
+    position:sticky; bottom:0; z-index:15;
+    background: linear-gradient(0deg, rgba(245,241,231,0.98) 75%, rgba(245,241,231,0.7));
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 7px 12px calc(7px + env(safe-area-inset-bottom)) 12px;
+    display:flex;
+    gap: 8px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .fav-strip::-webkit-scrollbar{display:none;}
+  .fav-chip{
+    flex:0 0 auto;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    width: 38px;
+    opacity: 0.5;
+    transition: opacity .15s ease;
+  }
+  .fav-chip.selected{ opacity:1; }
+  .fav-chip .crest{
+    width:26px; height:26px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px;
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--line);
+    box-shadow: 0 1px 2px rgba(28,35,48,0.06);
+  }
+  .fav-chip.selected .crest{ border-color: var(--turf); }
+  .fav-chip .fname{ font-size:8.5px; color:var(--text-faint); letter-spacing:.2px; text-align:center; line-height:1.1;}
+  .fav-chip.selected .fname{ color: var(--text-dim); }
+
+  /* ---------- TV Popup ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:100;
+    background: rgba(28,22,10,0.4);
+    backdrop-filter: blur(3px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition: opacity .2s ease;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .device .overlay{ position:absolute; }
+
+  .tv-sheet{
+    width:100%; max-width:430px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-bottom:none;
+    border-radius: 20px 20px 0 0;
+    max-height: 82vh;
+    display:flex; flex-direction:column;
+    transform: translateY(100%);
+    transition: transform .28s cubic-bezier(.2,.9,.25,1);
+    box-shadow: 0 -8px 30px rgba(28,22,10,0.12);
+  }
+  .overlay.open .tv-sheet{ transform: translateY(0); }
+
+  .tv-sheet .grabber{ width:36px; height:4px; background:var(--line); border-radius:3px; margin:10px auto 4px auto;}
+
+  .tv-sheet header{
+    padding: 12px 18px 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display:flex; align-items:flex-start; justify-content:space-between;
+  }
+  .tv-sheet .tv-title{ font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--flood); margin-bottom:3px;}
+  .tv-sheet .tv-match{ font-family:'Oswald',sans-serif; font-size:16px; font-weight:600; }
+  .tv-sheet .tv-meta{ font-size:11px; color:var(--text-faint); margin-top:2px;}
+  .tv-close{
+    width:30px; height:30px; border-radius:50%;
+    background: var(--bg); border:1px solid var(--line);
+    color: var(--text-dim); font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0; margin-left:10px;
+  }
+
+  .tv-list{ overflow-y:auto; padding: 6px 0 18px 0; }
+  .tv-group{ padding: 12px 18px 4px 18px; }
+  .tv-group-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:8px;
+  }
+  .tv-group-label::after{ content:""; flex:1; height:1px; background:var(--line);}
+  .tv-channel{
+    display:flex; align-items:center; gap:12px;
+    padding: 9px 6px;
+    border-radius:10px;
+  }
+  .tv-channel + .tv-channel{ border-top: 1px solid #EDE8DB; }
+  .tv-flag{ font-size:20px; width:26px; text-align:center; flex-shrink:0;}
+  .tv-chan-name{ font-size:13.5px; font-weight:600; color:var(--text);}
+  .tv-chan-country{ font-size:10.5px; color:var(--text-faint); margin-top:1px;}
+  .tv-chan-tag{
+    margin-left:auto;
+    font-size: 9px;
+    font-family:'JetBrains Mono',monospace;
+    padding: 3px 7px;
+    border-radius:5px;
+    background: var(--turf-dim);
+    color: #146239;
+    flex-shrink:0;
+  }
+  .tv-chan-tag.ppv{ background: #FBE3C7; color:#8A4B12; }
+
+  footer.credit{
+    text-align:center;
+    font-size:10px;
+    color: var(--text-faint);
+    padding: 10px 0 4px 0;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
   }
 </style>
 </head>
 <body>
+<div class="device">
 
-<nav class="topbar">
-  <button id="tabBtnStrom" class="tabbtn">⚡ Stromrechner</button>
-  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeitrechner</button>
-  <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
-</nav>
+  <header class="top">
+    <div class="brandrow">
+      <div class="brand">ANSTOSS<span class="dot">.</span></div>
+      <div class="clock" id="clock">Do, 13. Aug</div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="alle">Übersicht</button>
+      <button class="tab" data-tab="heute">Heute</button>
+      <button class="tab live-tab" data-tab="live"><span class="pulse"></span>Live</button>
+      <button class="tab" data-tab="favoriten">Favoriten</button>
+      <button class="tab" data-tab="natl">Nationalteams</button>
+    </nav>
+  </header>
 
-<section id="tab-strom" class="tab-pane">
-  <div class="container">
-    <h2>Galvanik-Stromrechner</h2>
-
-    <label for="istStrom">Aktueller Strom (A):</label>
-    <input type="number" id="istStrom" placeholder="z. B. 4" value="4">
-
-    <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="number" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
-
-    <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="number" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
-
-    <label for="istGeschw">Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <input type="number" id="istGeschw" placeholder="z. B. 7" value="7">
-
-    <label for="neuGeschw">Neue Bandgeschwindigkeit (m/min):</label>
-    <input type="number" id="neuGeschw" placeholder="z. B. 7" value="7">
-
-    <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
-    <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
+  <div class="natl-banner" id="natlBanner">
+    <span>🇪🇺</span>
+    <span><b>Länderspielpause</b><br>Europäische Nationalteams spielen diese Woche — automatisch eingeblendet.</span>
   </div>
 
-  <div id="counter"></div>
+  <main id="main"></main>
 
-  <script>
-    const STROM_KEY="galvanikStromLetzteWerte";
-    const stromFelder=["istStrom","istSchicht","zielSchicht","istGeschw","neuGeschw"];
+  <div class="fav-strip" id="favStrip"></div>
+</div>
 
-    function ladeLetzteStromWerte(){
-      try{
-        const gespeichert=JSON.parse(localStorage.getItem(STROM_KEY));
-        if(gespeichert){
-          stromFelder.forEach(id=>{
-            if(gespeichert[id]!==undefined && gespeichert[id]!=="") document.getElementById(id).value=gespeichert[id];
-          });
-        }
-      }catch(e){}
-    }
-
-    function speichereLetzteStromWerte(){
-      try{
-        const werte={};
-        stromFelder.forEach(id=>{ werte[id]=document.getElementById(id).value; });
-        localStorage.setItem(STROM_KEY, JSON.stringify(werte));
-      }catch(e){}
-    }
-
-    function berechne(){
-      const I_alt=parseFloat(document.getElementById("istStrom").value);
-      const S_alt=parseFloat(document.getElementById("istSchicht").value);
-      const S_neu=parseFloat(document.getElementById("zielSchicht").value);
-      const V_alt=parseFloat(document.getElementById("istGeschw").value);
-      const V_neu=parseFloat(document.getElementById("neuGeschw").value);
-
-      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
-      
-      const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
-      document.getElementById("ergebnis").innerText=`Benötigter Strom: ${I_neu.toFixed(2)} A`;
-      speichereLetzteStromWerte();
-    }
-    
-    ladeLetzteStromWerte();
-    document.querySelectorAll("#tab-strom input").forEach(i=>i.addEventListener("input",berechne));
-    
-    document.addEventListener("DOMContentLoaded", berechne);
-
-    const key="galvanikCounter"; let count=localStorage.getItem(key); count=count?parseInt(count)+1:1;
-    localStorage.setItem(key,count); document.getElementById("counter").innerText=`#${count}`;
-  </script>
-</section>
-
-<section id="tab-zeit" class="tab-pane active">
-  <div class="container zeit-container">
-    <h2>Galvanik-Zeitrechner</h2>
-
-    <div class="row">
-      <div style="flex:1">
-        <label for="speedInput">Geschwindigkeit (m/min)</label>
-        <input type="number" id="speedInput" placeholder="z. B. 7" value="7" min="1">
+<div class="overlay" id="overlay">
+  <div class="tv-sheet" id="tvSheet">
+    <div class="grabber"></div>
+    <header>
+      <div>
+        <div class="tv-title">TV-Übertragung</div>
+        <div class="tv-match" id="tvMatchTitle">—</div>
+        <div class="tv-meta" id="tvMatchMeta">—</div>
       </div>
-    </div>
-    <div class="row">
-      <div style="flex:1">
-        <label for="startSel">Startpunkt</label>
-        <select id="startSel"></select>
-      </div>
-      <div style="flex:1">
-        <label for="endSel">Endpunkt</label>
-        <select id="endSel"></select>
-      </div>
-    </div>
-
-    <button id="calcBtn">Zeit berechnen</button>
-    <div class="zeit-result" id="zeitResult">Bitte wähle Start, Ende und Geschwindigkeit.</div>
-
-    <div class="panel tip-panel">
-      <h3>😄 Superwitz</h3>
-      <div id="jokeOfDay">Witz wird geladen…</div>
-      <div class="small">Bei jedem Öffnen ein neuer Witz.</div>
-    </div>
-
-    <div class="panel quote-panel">
-      <h3>Zitat des Tages (Allgemein)</h3>
-      <div id="quoteGeneral">–</div>
-    </div>
-
-    <div class="panel football-panel">
-      <h3>⚽ Topspiele</h3>
-      <div id="footballBox">Spiele werden geladen…</div>
-      <div class="small">Nächste Spiele deiner Lieblingsvereine.</div>
-    </div>
+      <div class="tv-close" id="tvClose">✕</div>
+    </header>
+    <div class="tv-list" id="tvList"></div>
+    <footer class="credit">Sortiert nach Sprache &amp; Region · Beispieldaten</footer>
   </div>
-
-  <script>
-    /* --- Zeitmarken (Basis: 7 m/min) --- */
-    const punkte=[
-      ["Start","0:00"],
-      ["Hot Wash","5:10"],
-      ["Nickel 1","6:32"],
-      ["Nickel 6","7:25"],
-      ["Nickel 12","8:27"],
-      ["Pd 1","9:10"],
-      ["Pd 3","9:40"],
-      ["Pd 5","10:12"],
-      ["Pd 7","10:40"],
-      ["U-Turn Mitte","11:47"],
-      ["Gold 1","14:52"],
-      ["Gold 3","15:22"],
-      ["Gold 5","15:40"],
-      ["Gold Stripper","16:11"],
-      ["Zinn 1","17:20"],
-      ["Zinn 3","17:41"],
-      ["Zinn 5","18:03"],
-      ["Zinn 7","18:25"],
-      ["Zinn 9","19:00"],
-      ["Zinn Stripper","19:25"],
-      ["Nach-Fön","20:31"],
-      ["Speicher","22:17"],
-      ["Getriebe vor Befettung","25:43"]
-    ];
-
-    /* --- Helfer --- */
-    function zeitInSekunden(t){const[m,s]=t.split(":").map(Number);return m*60+s;}
-    function dayOfYear(d=new Date()){
-      const start=new Date(d.getFullYear(),0,0);
-      const diff=d - start + ((start.getTimezoneOffset()-d.getTimezoneOffset())*60*1000);
-      return Math.floor(diff/(1000*60*60*24));
-    }
-    function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-
-    /* --- UI init --- */
-    const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel"),speedInput=document.getElementById("speedInput");
-    punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
-
-    /* --- Letzte Suche wiederherstellen (localStorage) --- */
-    const ZEIT_KEY="galvanikZeitLetzteSuche";
-    function ladeLetzteSuche(){
-      try{
-        const gespeichert=JSON.parse(localStorage.getItem(ZEIT_KEY));
-        if(gespeichert){
-          if(gespeichert.speed) speedInput.value=gespeichert.speed;
-          if(gespeichert.start && punkte.some(p=>p[0]===gespeichert.start)) startSel.value=gespeichert.start;
-          if(gespeichert.end && punkte.some(p=>p[0]===gespeichert.end)) endSel.value=gespeichert.end;
-        }
-      }catch(e){}
-    }
-    ladeLetzteSuche();
-    if(!startSel.value) startSel.value="Start";
-    if(!endSel.value) endSel.value="Hot Wash";
-
-    function speichereLetzteSuche(){
-      try{
-        localStorage.setItem(ZEIT_KEY, JSON.stringify({speed:speedInput.value, start:startSel.value, end:endSel.value}));
-      }catch(e){}
-    }
-
-    /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
-    function berechnenZeit(){
-      const v=parseFloat(document.getElementById("speedInput").value);
-      const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
-      
-      if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen/eingeben.";return;}
-      if(v <= 0){out.textContent="Die Geschwindigkeit muss größer als 0 sein.";return;}
-
-      const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
-      if(iS>iE){out.textContent="Rückwärtslauf ist nicht erlaubt.";return;}
-
-      const tStart7=zeitInSekunden(punkte[iS][1]), tEnd7=zeitInSekunden(punkte[iE][1]);
-      const d7=tEnd7 - tStart7;
-      const total=Math.round(d7*(7/v));
-      const m=Math.floor(total/60), sec=total%60;
-      out.textContent=`Von "${s}" bis "${e}" dauert es bei ${v.toFixed(1)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
-      speichereLetzteSuche();
-      renderGeneral();
-    }
-    document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
-
-    /* --- Superwitz: bei jedem Start ein neuer Witz von einer Internet-Witz-API --- */
-    const FALLBACK_WITZE=[
-      "Treffen sich zwei Jäger. Beide tot.",
-      "Kommt ein Pferd in die Bar. Sagt der Barkeeper: 'Na, warum so ein langes Gesicht?'",
-      "Ich habe meiner Frau gesagt, sie solle sich was Schönes zum Anziehen wünschen. Jetzt strickt sie sich einen Pullover.",
-      "Was ist grün und steht vor der Tür? Ein Klopfsalat.",
-      "Chef zum Mitarbeiter: 'Sie kommen ja heute schon wieder zu spät!' – 'Ja, das ist unheimlich, jeden Tag zwei Minuten früher.'",
-      "Warum können Geister so schlecht lügen? Man sieht durch sie hindurch.",
-      "Sagt der Lehrer: 'Nennen Sie mir zwei Pronomen!' Antwortet der Schüler: 'Wer, ich?'",
-      "Ich wollte einen Witz über Zeitreisen machen, aber der ist euch nicht gefallen."
-    ];
-
-    function zeigeFallbackWitz(){
-      const w=FALLBACK_WITZE[Math.floor(Math.random()*FALLBACK_WITZE.length)];
-      document.getElementById('jokeOfDay').textContent=w;
-    }
-
-    async function ladeSuperwitz(){
-      const el=document.getElementById('jokeOfDay');
-      try{
-        const res=await fetch('https://v2.jokeapi.dev/joke/Any?lang=de&blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode', {cache:"no-store"});
-        if(!res.ok) throw new Error('Netzwerkfehler');
-        const data=await res.json();
-        if(data.error){ throw new Error('API-Fehler'); }
-        if(data.type==='single'){
-          el.textContent=data.joke;
-        }else{
-          el.textContent=`${data.setup} — ${data.delivery}`;
-        }
-      }catch(e){
-        zeigeFallbackWitz();
-      }
-    }
-    ladeSuperwitz();
-
-    /* --- Zitat des Tages (Allgemein): live von Internet-Zitate-APIs --- */
-    const FALLBACK_QUOTES=[
-      {text:"Der Weg ist das Ziel.", author:"Konfuzius (zugeschrieben)"},
-      {text:"Wissen ist Macht.", author:"Francis Bacon"},
-      {text:"In der Ruhe liegt die Kraft.", author:"Sprichwort"},
-      {text:"Der Anfang ist die Hälfte des Ganzen.", author:"Aristoteles"},
-      {text:"Man sieht nur mit dem Herzen gut.", author:"Antoine de Saint-Exupéry"},
-      {text:"Das Bessere ist der Feind des Guten.", author:"Voltaire"},
-      {text:"Probleme kann man niemals mit derselben Denkweise lösen, durch die sie entstanden sind.", author:"Albert Einstein (zugeschrieben)"}
-    ];
-
-    function zeigeFallbackZitat(){
-      const q=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];
-      document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
-    }
-
-    async function uebersetzeInsDeutsche(text){
-      try{
-        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|de`, {cache:"no-store"});
-        if(!res.ok) throw new Error('Übersetzungsfehler');
-        const data=await res.json();
-        const uebersetzt=data && data.responseData && data.responseData.translatedText;
-        if(!uebersetzt) throw new Error('Keine Übersetzung erhalten');
-        return uebersetzt;
-      }catch(e){
-        return text; // Falls Übersetzung fehlschlägt: Original anzeigen statt nichts
-      }
-    }
-
-    async function renderGeneral(){
-      const el=document.getElementById('quoteGeneral');
-      el.textContent="Zitat wird geladen…";
-      try{
-        const res=await fetch('https://dummyjson.com/quotes/random', {cache:"no-store"});
-        if(!res.ok) throw new Error('Netzwerkfehler');
-        const data=await res.json();
-        if(!data.quote) throw new Error('Ungültige Antwort');
-        const deutsch=await uebersetzeInsDeutsche(data.quote);
-        el.textContent=`${deutsch} — ${data.author}`;
-      }catch(e1){
-        try{
-          const res2=await fetch('https://zenquotes.io/api/quotes/random', {cache:"no-store"});
-          if(!res2.ok) throw new Error('Netzwerkfehler2');
-          const data2=await res2.json();
-          const item=Array.isArray(data2)?data2[0]:data2;
-          if(!item || !item.q) throw new Error('Ungültige Antwort2');
-          const deutsch2=await uebersetzeInsDeutsche(item.q);
-          el.textContent=`${deutsch2} — ${item.a}`;
-        }catch(e2){
-          zeigeFallbackZitat();
-        }
-      }
-    }
-    renderGeneral();
-
-    /* --- Fußball-Topspiele: ALLE nächsten Spiele der Lieblingsvereine, unabhängig vom Wettbewerb (Liga, Pokal, Supercup, Freundschaftsspiel, Champions League etc.) --- */
-    const LIEBLINGSVEREINE=[
-      "Galatasaray","Besiktas","Fenerbahce","Trabzonspor",
-      "Borussia Dortmund","Bayern Munich","VfB Stuttgart",
-      "Real Madrid","Barcelona",
-      "Juventus","Inter Milan","Napoli",
-      "Manchester City","Liverpool","Arsenal",
-      "Paris SG"
-    ];
-    // Nationale Ligen + europäische Wettbewerbe + Freundschaftsspiele + UEFA Super Cup: deckt AUCH Auswärtsspiele ab
-    // (die teambasierte Abfrage zeigt mit dem kostenlosen Zugang laut TheSportsDB nur Heimspiele!)
-    const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
-    const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
-    const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v6";
-    const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
-
-    // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
-    // (z.B. Paris SG: Herren-Profimannschaft, nicht Frauen/Jugend/eSport)
-    const FESTE_TEAM_IDS={ "Paris SG": "133714" };
-
-    function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
-    function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
-    function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
-
-    function istLieblingsverein(ev){
-      const heim=(ev.strHomeTeam||"").toLowerCase();
-      const gast=(ev.strAwayTeam||"").toLowerCase();
-      return LIEBLINGSVEREINE.some(v=>{
-        const vn=v.toLowerCase();
-        return heim.includes(vn) || gast.includes(vn);
-      });
-    }
-
-    async function holeTeamId(name, cache){
-      if(FESTE_TEAM_IDS[name]) return FESTE_TEAM_IDS[name];
-      if(cache[name]) return cache[name];
-      try{
-        const res=await fetch(`${SPORTSDB_BASE}/searchteams.php?t=${encodeURIComponent(name)}`, {cache:"no-store"});
-        const data=await res.json();
-        if(data && data.teams && data.teams.length){
-          // Bevorzugt die Herren-Fußball-Profimannschaft (nicht Frauen/Jugend/Reserve/eSport)
-          const passend = data.teams.find(t =>
-            (t.strSport||"").toLowerCase()==="soccer" &&
-            !/women|damen|frauen|youth|jugend|reserve|\bII\b|esports|futsal/i.test(t.strTeam||"")
-          ) || data.teams[0];
-          cache[name]=passend.idTeam;
-          return cache[name];
-        }
-      }catch(e){}
-      return null;
-    }
-
-    async function holeNaechsteSpieleFuerTeam(teamId){
-      try{
-        const res=await fetch(`${SPORTSDB_BASE}/eventsnext.php?id=${teamId}`, {cache:"no-store"});
-        if(!res.ok) return [];
-        const data=await res.json();
-        return (data && data.events) ? data.events : [];
-      }catch(e){ return []; }
-    }
-
-    async function holeLetzteSpieleFuerTeam(teamId){
-      try{
-        const res=await fetch(`${SPORTSDB_BASE}/eventslast.php?id=${teamId}`, {cache:"no-store"});
-        if(!res.ok) return [];
-        const data=await res.json();
-        return (data && data.results) ? data.results : [];
-      }catch(e){ return []; }
-    }
-
-    async function holeNaechsteSpieleFuerWettbewerb(ligaId){
-      try{
-        const res=await fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"});
-        if(!res.ok) return [];
-        const data=await res.json();
-        return (data && data.events) ? data.events.filter(istLieblingsverein) : [];
-      }catch(e){ return []; }
-    }
-
-    const ERGEBNIS_SICHTBAR_STUNDEN=12; // Endstand bleibt so lange sichtbar
-
-    function verarbeiteEvent(ev){
-      const heimTor=ev.intHomeScore, gastTor=ev.intAwayScore;
-      const hatErgebnis = heimTor!==null && heimTor!==undefined && gastTor!==null && gastTor!==undefined;
-      const datum=ev.dateEvent, zeit=(ev.strTime||"").slice(0,5);
-      const kickoff=new Date(datum+'T'+(zeit||'00:00')+':00');
-      const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
-
-      let status="geplant"; // geplant | live | beendet
-      if(hatErgebnis){
-        const beendetLtStatus=/finished|ft|match finished/i.test(ev.strStatus||"");
-        if(beendetLtStatus || stundenSeitAnstoss>2.5){ status="beendet"; }
-        else{ status="live"; }
-      }
-
-      return {
-        heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
-        datum, zeit, wettbewerb: ev.strLeague,
-        heimTor, gastTor, status, kickoff, stundenSeitAnstoss
-      };
-    }
-
-    async function ladeFussballTopspiele(){
-      // Cache prüfen
-      try{
-        const cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY));
-        if(cached && (Date.now()-cached.zeitstempel < FIXTURES_TTL_MS)){
-          zeigeFussballErgebnis(cached.daten);
-          return;
-        }
-      }catch(e){}
-
-      const teamIdCache=ladeTeamIdCache();
-      let alleSpiele=[];
-
-      // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele)
-      for(const teamName of LIEBLINGSVEREINE){
-        const id=await holeTeamId(teamName, teamIdCache);
-        await warteMs(90);
-        if(!id) continue;
-
-        const [nachfolgende, letzte]=await Promise.all([
-          holeNaechsteSpieleFuerTeam(id),
-          holeLetzteSpieleFuerTeam(id)
-        ]);
-        await warteMs(90);
-
-        alleSpiele.push(...nachfolgende.slice(0,3).map(verarbeiteEvent));
-        alleSpiele.push(...letzte.slice(0,3).map(verarbeiteEvent));
-      }
-
-      // 2) Ligabasiert: fängt zusätzlich Auswärtsspiele ab (teambasierte Abfrage zeigt im Free-Tier nur Heimspiele)
-      for(const ligaId of WETTBEWERB_IDS){
-        const events=await holeNaechsteSpieleFuerWettbewerb(ligaId);
-        await warteMs(90);
-        alleSpiele.push(...events.map(verarbeiteEvent));
-      }
-
-      // Veraltete "geplant"-Einträge ohne Ergebnis entfernen (Anstoß liegt schon > 3h zurück, aber kein Score bekannt -> nicht mehr relevant)
-      alleSpiele=alleSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > 3));
-
-      // Nur behalten: geplante (zukünftige) Spiele + laufende/beendete Spiele der letzten 12 Stunden
-      alleSpiele=alleSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
-
-      // Duplikate entfernen (z.B. wenn zwei Lieblingsvereine gegeneinander spielen, oder next+last/liga überschneiden).
-      // Bei doppeltem Spiel gewinnt die Version MIT Ergebnis (live/beendet) gegenüber der Version ohne Ergebnis.
-      const rang={geplant:0, live:1, beendet:2};
-      const karte=new Map();
-      for(const s of alleSpiele){
-        const key=s.heim+'|'+s.auswaerts+'|'+s.datum;
-        const bestehend=karte.get(key);
-        if(!bestehend || rang[s.status] > rang[bestehend.status]){
-          karte.set(key, s);
-        }
-      }
-      const eindeutig=[...karte.values()];
-
-      eindeutig.sort((a,b)=> a.kickoff - b.kickoff);
-
-      speichereTeamIdCache(teamIdCache);
-      try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:eindeutig})); }catch(e){}
-
-      zeigeFussballErgebnis(eindeutig);
-    }
-
-    function zeigeFussballErgebnis(spiele){
-      const box=document.getElementById('footballBox');
-      if(!spiele || spiele.length===0){
-        box.innerHTML='Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
-        return;
-      }
-      let html='';
-      spiele.forEach(s=>{
-        const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-        let ergebnisTeil;
-        if(s.status==="live"){
-          ergebnisTeil=`<strong style="color:#e63946">🔴 LIVE ${s.heimTor}:${s.gastTor}</strong>`;
-        }else if(s.status==="beendet"){
-          ergebnisTeil=`Endstand ${s.heimTor}:${s.gastTor}`;
-        }else{
-          ergebnisTeil=`${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}`;
-        }
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
-      });
-      box.innerHTML=html;
-    }
-
-    ladeFussballTopspiele();
-  </script>
-</section>
-
-<section id="tab-spule" class="tab-pane">
-<div class="container">
-    <div class="header">
-        <h2>Spulen-Bestandsrechner</h2>
-    </div>
-
-    <div class="switch-container">
-        <div class="switch-button" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
-        <div class="switch-button active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
-    </div>
-
-    <div class="section" style="padding-top: 5px; padding-bottom: 5px;">
-        <div class="section-title" style="margin-bottom: 0;">
-            Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
-        </div>
-    </div>
-
-    <div class="section bg-blue">
-        <div class="section-title">1. Referenz (Kalibrierung)</div>
-        
-        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **REFERENZ**:</label>
-        <input type="number" id="refHalfD" placeholder="z.B. 31.5">
-        
-        <label>Stückzahl bei diesem Referenz-Zustand:</label>
-        <input type="number" id="refCount" placeholder="z.B. 200000">
-
-        <label>**Kontakte pro Meter (Dichte):**</label>
-        <input type="number" id="cpm" placeholder="z.B. 200">
-
-        <div style="display:none;">
-        <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
-        
-        <label>Berechneter Referenz-Durchmesser $D_{\text{Ref}}$:</label>
-        <span id="outputRefD" class="small-output">-</span>
-        
-        <label>Kalibrierfaktor $F$ (Fläche pro Meter):</label>
-        <span id="outputFactorF" class="small-output">-</span>
-        </div>
-    </div>
-
-    <div class="section bg-green">
-        <div class="section-title">2. Aktuelle Messung</div>
-        
-        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **AKTUELL**:</label>
-        <input type="number" id="currHalfD" placeholder="z.B. 25.5">
-
-        <label>Berechneter Aktueller-Durchmesser $D_{\text{Aktuell}}$:</label>
-        <span id="outputCurrD" class="small-output">-</span>
-    </div>
-
-    <div id="errorBox" class="error-msg"></div>
-
-    <button onclick="calculate()">BESTAND BERECHNEN</button>
-
-    <div id="resultBox" class="result-area bg-result">
-        <div class="result-group">
-            <div class="result-label">Aktueller Bestand ca.:</div>
-            <div id="resultValue" class="result-number">0</div>
-            <div class="result-label">Stück</div>
-        </div>
-    </div>
 </div>
 
 <script>
-    // FIXE KONSTANTEN
-    const D_INNER = 35.0; // Kern-Durchmesser in cm
-    const PI = Math.PI;
-    
-    // VARIABLE FÜR DIE AKTUELL GEWÄHLTE SPULENGRÖSSE
-    let currentDMax = 76.0; 
-    const D_MAX_98 = 98.0;
-    const D_MAX_76 = 76.0;
+/* ---------------- Mock data ---------------- */
+const TEAMS = {
+  gala:  {name:"Galatasaray", short:"GS", crest:"🟨🟥", country:"TR"},
+  fener: {name:"Fenerbahçe", short:"FB", crest:"🟡🔵", country:"TR"},
+  besik: {name:"Beşiktaş", short:"BJK", crest:"⚫⚪", country:"TR"},
+  trab:  {name:"Trabzonspor", short:"TS", crest:"🟣🔵", country:"TR"},
+  bayern:{name:"Bayern München", short:"FCB", crest:"🔴", country:"DE"},
+  vfb:   {name:"VfB Stuttgart", short:"VfB", crest:"⚪🔴", country:"DE"},
+  bvb:   {name:"Borussia Dortmund", short:"BVB", crest:"🟡⚫", country:"DE"},
+  rbl:   {name:"RB Leipzig", short:"RBL", crest:"⚪🔴", country:"DE"},
+  b04:   {name:"Bayer Leverkusen", short:"B04", crest:"🔴⚫", country:"DE"},
+  psg:   {name:"Paris Saint-Germain", short:"PSG", crest:"🔵🔴", country:"FR"},
+  real:  {name:"Real Madrid", short:"RMA", crest:"⚪", country:"ES"},
+  barca: {name:"FC Barcelona", short:"FCB", crest:"🔵🔴", country:"ES"},
+  milan: {name:"AC Mailand", short:"ACM", crest:"🔴⚫", country:"IT"},
+  inter: {name:"Inter Mailand", short:"INT", crest:"🔵⚫", country:"IT"},
+  napoli:{name:"SSC Neapel", short:"NAP", crest:"🔵", country:"IT"},
+  juve:  {name:"Juventus Turin", short:"JUV", crest:"⚪⚫", country:"IT"},
+  ars:   {name:"Arsenal", short:"ARS", crest:"🔴⚪", country:"EN"},
+  mu:    {name:"Manchester United", short:"MUN", crest:"🔴", country:"EN"},
+  mc:    {name:"Manchester City", short:"MCI", crest:"🔵", country:"EN"},
+  liv:   {name:"Liverpool", short:"LIV", crest:"🔴", country:"EN"},
+};
 
-    /**
-     * Schaltet zwischen den Spulengrößen um.
-     * @param {number} newMaxD Der neue maximale Durchmesser (98 oder 76).
-     */
-    function setSpoolSize(newMaxD) {
-        currentDMax = newMaxD;
-        
-        document.getElementById('maxDDisplay').innerText = newMaxD + ' cm';
-        document.getElementById('btn-98').classList.remove('active');
-        document.getElementById('btn-76').classList.remove('active');
-        document.getElementById('btn-' + newMaxD).classList.add('active');
+const FLAGS = {DE:"🇩🇪",TR:"🇹🇷",FR:"🇫🇷",ES:"🇪🇸",IT:"🇮🇹",EN:"🏴",AT:"🇦🇹",CH:"🇨🇭",US:"🇺🇸",BR:"🇧🇷",SA:"🇸🇦",QA:"🇶🇦",PL:"🇵🇱",NL:"🇳🇱",EU:"🇪🇺"};
 
-        // Output zurücksetzen
-        document.getElementById('outputRefD').innerText = '-';
-        document.getElementById('outputCurrD').innerText = '-';
-        document.getElementById('outputFactorF').innerText = '-';
-        
-        // Fehler und Ergebnis zurücksetzen
-        document.getElementById('errorBox').style.display = 'none';
-        document.getElementById('resultBox').style.display = 'none';
+function tvChannels(list){ return list; }
+
+const MATCHES = [
+  { id:1, day:"Heute", date:"13. Aug", time:"20:45", status:"live", minute:"67'", scoreA:1, scoreB:1,
+    home:"bayern", away:"b04", comp:"Bundesliga", compClass:"", fav:true,
+    tv: {
+      de:[{c:"Sky Sport Bundesliga",country:"Deutschland",tag:"HD"},{c:"DAZN",country:"Deutschland",tag:""}],
+      tr:[{c:"S Sport 2",country:"Türkei",tag:""}],
+      en:[{c:"Sky Sports Football",country:"Großbritannien",tag:"HD"}],
+      eu:[{c:"Canal+ Sport",country:"Frankreich",tag:""},{c:"DAZN",country:"Spanien",tag:""}],
+      world:[{c:"ESPN+",country:"USA",tag:"PPV"},{c:"beIN Sports",country:"Katar",tag:""}]
+    }},
+  { id:2, day:"Heute", date:"13. Aug", time:"21:00", status:"upcoming",
+    home:"gala", away:"fener", comp:"Süper Lig", compClass:"", fav:true,
+    tv:{
+      tr:[{c:"beIN Sports 1",country:"Türkei",tag:"HD"}],
+      de:[{c:"Sportdigital FUSSBALL",country:"Deutschland",tag:""}],
+      en:[],
+      eu:[{c:"beIN Sports",country:"Frankreich",tag:""}],
+      world:[{c:"beIN Sports MENA",country:"Saudi-Arabien",tag:""}]
+    }},
+  { id:3, day:"Morgen", date:"14. Aug", time:"18:30", status:"upcoming",
+    home:"real", away:"barca", comp:"LaLiga", compClass:"", fav:true,
+    tv:{
+      de:[{c:"DAZN",country:"Deutschland",tag:"HD"}],
+      tr:[{c:"S Sport",country:"Türkei",tag:""}],
+      en:[{c:"Premier Sports",country:"Großbritannien",tag:""}],
+      eu:[{c:"Movistar+",country:"Spanien",tag:"HD"},{c:"DAZN",country:"Italien",tag:""}],
+      world:[{c:"ESPN Deportes",country:"USA",tag:""},{c:"beIN Sports",country:"Katar",tag:""}]
+    }},
+  { id:4, day:"Morgen", date:"14. Aug", time:"20:00", status:"upcoming",
+    home:"psg", away:"milan", comp:"Champions League", compClass:"comp-cl", fav:true,
+    tv:{
+      de:[{c:"DAZN",country:"Deutschland",tag:"HD"},{c:"Amazon Prime Video",country:"Deutschland",tag:""}],
+      tr:[{c:"S Sport 2",country:"Türkei",tag:""}],
+      en:[{c:"TNT Sports",country:"Großbritannien",tag:"HD"}],
+      eu:[{c:"Canal+",country:"Frankreich",tag:""},{c:"Sky Sport",country:"Italien",tag:""}],
+      world:[{c:"Paramount+",country:"USA",tag:"PPV"}]
+    }},
+  { id:5, day:"Sa, 16. Aug", date:"16. Aug", time:"15:30", status:"upcoming",
+    home:"ars", away:"liv", comp:"Premier League", compClass:"", fav:true,
+    tv:{
+      en:[{c:"Sky Sports Main Event",country:"Großbritannien",tag:"HD"}],
+      de:[{c:"Sky Sport Premier League",country:"Deutschland",tag:""}],
+      tr:[{c:"S Sport",country:"Türkei",tag:""}],
+      eu:[{c:"Canal+",country:"Frankreich",tag:""}],
+      world:[{c:"Peacock",country:"USA",tag:"PPV"},{c:"beIN Sports",country:"Katar",tag:""}]
+    }},
+  { id:6, day:"Sa, 16. Aug", date:"16. Aug", time:"18:30", status:"upcoming",
+    home:"bvb", away:"rbl", comp:"Bundesliga", compClass:"", fav:true,
+    tv:{ de:[{c:"Sky Sport Bundesliga",country:"Deutschland",tag:"HD"}], tr:[{c:"S Sport 2",country:"Türkei",tag:""}], en:[], eu:[{c:"DAZN",country:"Niederlande",tag:""}], world:[] }},
+  { id:7, day:"So, 17. Aug", date:"17. Aug", time:"19:00", status:"upcoming",
+    home:"trab", away:"besik", comp:"Süper Lig", compClass:"", fav:true,
+    tv:{ tr:[{c:"beIN Sports 1",country:"Türkei",tag:"HD"}], de:[{c:"Sportdigital FUSSBALL",country:"Deutschland",tag:""}], en:[], eu:[], world:[] }},
+  { id:8, day:"So, 17. Aug", date:"17. Aug", time:"21:00", status:"upcoming",
+    home:"inter", away:"juve", comp:"Coppa Italia", compClass:"comp-pokal", fav:true,
+    tv:{ de:[{c:"DAZN",country:"Deutschland",tag:""}], tr:[], en:[{c:"TNT Sports",country:"Großbritannien",tag:""}], eu:[{c:"Sky Sport",country:"Italien",tag:"HD"}], world:[] }},
+  { id:9, day:"Länderspiel", date:"18. Aug", time:"20:45", status:"national", flagA:"DE", flagB:"FR", nameA:"Deutschland", nameB:"Frankreich",
+    comp:"Nations League", compClass:"comp-natl", fav:true,
+    tv:{ de:[{c:"RTL",country:"Deutschland",tag:"HD"}], tr:[{c:"TRT Spor",country:"Türkei",tag:""}], en:[{c:"ITV1",country:"Großbritannien",tag:""}], eu:[{c:"TF1",country:"Frankreich",tag:"HD"}], world:[] }},
+  { id:10, day:"Länderspiel", date:"18. Aug", time:"20:45", status:"national", flagA:"ES", flagB:"IT", nameA:"Spanien", nameB:"Italien",
+    comp:"Nations League", compClass:"comp-natl", fav:false,
+    tv:{ de:[{c:"MagentaSport",country:"Deutschland",tag:""}], tr:[], en:[{c:"Premier Sports",country:"Großbritannien",tag:""}], eu:[{c:"RAI 1",country:"Italien",tag:"HD"},{c:"TVE",country:"Spanien",tag:""}], world:[] }},
+];
+
+const LANG_GROUPS = [
+  {key:"de", label:"Deutschsprachig"},
+  {key:"tr", label:"Türkischsprachig"},
+  {key:"en", label:"Englischsprachig"},
+  {key:"eu", label:"Weitere europäische Sender"},
+  {key:"world", label:"Weltweit"},
+];
+
+/* ---------------- Rendering ---------------- */
+const main = document.getElementById('main');
+const favStrip = document.getElementById('favStrip');
+let activeTab = 'alle';
+
+function teamLabel(id){ const t = TEAMS[id]; return t ? t.name : id; }
+function teamCrest(id){ const t = TEAMS[id]; return t ? t.crest : "⚽"; }
+
+function renderFavStrip(){
+  const favTeamIds = ['bayern','gala','real','psg','bvb','ars','fener','barca'];
+  favStrip.innerHTML = favTeamIds.map(id => {
+    const t = TEAMS[id];
+    return `<div class="fav-chip selected">
+      <div class="crest">${t.crest}</div>
+      <div class="fname">${t.short}</div>
+    </div>`;
+  }).join('');
+}
+
+function matchRow(m){
+  const hasTv = Object.values(m.tv).some(arr => arr.length);
+  let timeBlock, teamsBlock, scoreBlock = '';
+
+  if(m.status === 'national'){
+    timeBlock = `<div class="mc-time">${m.time}<small>${m.date}</small></div>`;
+    teamsBlock = `<div class="mc-teams">${FLAGS[m.flagA]||''} ${m.nameA} <span class="vs">–</span> ${m.nameB} ${FLAGS[m.flagB]||''}</div>`;
+  } else {
+    timeBlock = m.status === 'live'
+      ? `<div class="mc-time live-time">${m.minute}<small>LIVE</small></div>`
+      : `<div class="mc-time">${m.time}<small>${m.date}</small></div>`;
+    teamsBlock = `<div class="mc-teams">${teamCrest(m.home)} ${teamLabel(m.home)} <span class="vs">vs</span> ${teamLabel(m.away)} ${teamCrest(m.away)}</div>`;
+    if(m.status === 'live'){
+      scoreBlock = `<div class="mc-score">${m.scoreA}:${m.scoreB}</div>`;
     }
-
-    /**
-     * Führt die Hauptberechnung durch.
-     */
-    function calculate() {
-        // Elemente holen
-        const elRefHalfD = document.getElementById('refHalfD');
-        const elRefCount = document.getElementById('refCount');
-        const elCPM = document.getElementById('cpm'); // Kontakte pro Meter NEU
-        const elCurrHalfD = document.getElementById('currHalfD');
-        
-        const elResultBox = document.getElementById('resultBox');
-        const elResultVal = document.getElementById('resultValue');
-        const elOutputRefD = document.getElementById('outputRefD');
-        const elOutputCurrD = document.getElementById('outputCurrD');
-        const elOutputFactorF = document.getElementById('outputFactorF');
-        const elError = document.getElementById('errorBox');
-
-        // Werte auslesen
-        const d_ref_half_measured = parseFloat(elRefHalfD.value);
-        const count_ref = parseFloat(elRefCount.value);
-        const cpm = parseFloat(elCPM.value); // NEU: Kontakte pro Meter
-        const d_curr_half_measured = parseFloat(elCurrHalfD.value);
-
-        // Reset Outputs
-        elOutputRefD.innerText = '-';
-        elOutputCurrD.innerText = '-';
-        elOutputFactorF.innerText = '-';
-        elError.style.display = 'none';
-        elResultBox.style.display = 'none';
-
-        // --- 1. DATENPRÜFUNG ---
-        if (isNaN(d_ref_half_measured) || isNaN(count_ref) || isNaN(d_curr_half_measured) || isNaN(cpm) || cpm <= 0) {
-            showError("Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein).");
-            return;
-        }
-
-        // --- 2. BERECHNUNG DER DURCHMESSER ---
-        const d_ref_calculated = currentDMax - (d_ref_half_measured * 2);
-        const d_current_calculated = currentDMax - (d_curr_half_measured * 2);
-
-        // --- 3. GÜLTIGKEITSPRÜFUNG ---
-        if (d_ref_calculated <= D_INNER || d_current_calculated <= D_INNER) {
-            showError("Eine Messung ist zu groß. Der berechnete Durchmesser liegt unter dem Kern (" + D_INNER + " cm).");
-            return;
-        }
-        if (d_ref_calculated > currentDMax || d_current_calculated > currentDMax) {
-            showError("Eine Messung ist zu klein. Der berechnete Durchmesser ist größer als D_Max (" + currentDMax + " cm).");
-            return;
-        }
-
-        // --- 4. KALIBRIERUNG (Flächenfaktor F) ---
-        
-        // 4a. Länge der Referenzspule in Metern
-        const L_ref_m = count_ref / cpm;
-
-        // 4b. Querschnittsfläche der Referenzwicklung in cm²
-        // R_ref = d_ref_calculated / 2; R_inner = D_INNER / 2;
-        // A = PI * (R_ref^2 - R_inner^2)
-        const area_ref_cm2 = PI * (Math.pow(d_ref_calculated / 2, 2) - Math.pow(D_INNER / 2, 2));
-
-        // 4c. Kalibrierfaktor F (Fläche pro Meter)
-        const factor_F = area_ref_cm2 / L_ref_m;
-
-        // --- 5. BERECHNUNG AKTUELLER BESTAND ---
-        
-        // 5a. Aktuelle Querschnittsfläche in cm²
-        const area_curr_cm2 = PI * (Math.pow(d_current_calculated / 2, 2) - Math.pow(D_INNER / 2, 2));
-
-        // 5b. Aktuelle Länge in Metern (Länge = Fläche / Faktor F)
-        const L_curr_m = area_curr_cm2 / factor_F;
-
-        // 5c. Aktuelle Stückzahl (Stückzahl = Länge * CPM)
-        let resultCount = Math.floor(L_curr_m * cpm);
-
-        // --- 6. AUSGABE ---
-        elOutputRefD.innerText = d_ref_calculated.toFixed(1) + ' cm';
-        elOutputCurrD.innerText = d_current_calculated.toFixed(1) + ' cm';
-        elOutputFactorF.innerText = factor_F.toFixed(4) + ' cm²/m';
-        
-        elResultVal.innerText = resultCount.toLocaleString('de-DE');
-        elResultBox.style.display = 'block';
-    }
-
-    function showError(msg) {
-        const elError = document.getElementById('errorBox');
-        elError.innerText = msg;
-        elError.style.display = 'block';
-    }
-
-    // Initialisierung beim Laden
-    window.onload = function() {
-        setSpoolSize(D_MAX_76);
-    };
-</script>
-</section>
-
-<script>
-  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule");
-  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule");
-  function activate(t){
-    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active");
-    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active");
-    if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
-    else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
-    else{bSp.classList.add("active");pSp.classList.add("active");}
   }
-  bS.addEventListener("click",()=>activate("strom"));
-  bZ.addEventListener("click",()=>activate("zeit"));
-  bSp.addEventListener("click",()=>activate("spule"));
+
+  return `
+  <div class="match-card ${m.compClass} ${m.status==='live' ? 'is-live':''}" data-id="${m.id}">
+    <div class="comp-strip"></div>
+    ${timeBlock}
+    <div class="mc-body">
+      ${teamsBlock}
+      <div class="mc-comp">${m.fav ? '<span class="fav-flag">★</span>' : ''}${m.comp}</div>
+    </div>
+    ${scoreBlock}
+    <div class="tv-btn ${hasTv ? '' : 'no-data'}" data-tv="${m.id}" aria-label="TV-Sender anzeigen">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="13" rx="2"/>
+        <path d="M8 3l4 4 4-4"/>
+      </svg>
+    </div>
+  </div>`;
+}
+
+function groupByDay(matches){
+  const order = [];
+  const map = {};
+  matches.forEach(m => {
+    if(!map[m.day]){ map[m.day] = []; order.push(m.day); }
+    map[m.day].push(m);
+  });
+  return order.map(day => ({day, items: map[day]}));
+}
+
+function render(){
+  let data = MATCHES;
+  const natlBanner = document.getElementById('natlBanner');
+
+  if(activeTab === 'heute'){
+    data = MATCHES.filter(m => m.day === 'Heute');
+    natlBanner.style.display = 'none';
+  } else if(activeTab === 'live'){
+    data = MATCHES.filter(m => m.status === 'live');
+    natlBanner.style.display = 'none';
+  } else if(activeTab === 'favoriten'){
+    data = MATCHES.filter(m => m.fav);
+    natlBanner.style.display = 'none';
+  } else if(activeTab === 'natl'){
+    data = MATCHES.filter(m => m.status === 'national');
+    natlBanner.style.display = 'none';
+  } else {
+    natlBanner.style.display = 'flex';
+  }
+
+  if(data.length === 0){
+    main.innerHTML = `<div class="empty-state">
+      <div class="icon">⚽</div>
+      <div class="title">Keine Spiele</div>
+      <div>Für diesen Bereich stehen aktuell keine Begegnungen an.</div>
+    </div>`;
+    return;
+  }
+
+  const groups = groupByDay(data);
+  main.innerHTML = groups.map(g => `
+    <div class="day-heading">${g.day}</div>
+    ${g.items.map(matchRow).join('')}
+  `).join('');
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if(!btn) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  activeTab = btn.dataset.tab;
+  render();
+});
+
+/* ---------------- TV Popup ---------------- */
+const overlay = document.getElementById('overlay');
+const tvList = document.getElementById('tvList');
+const tvMatchTitle = document.getElementById('tvMatchTitle');
+const tvMatchMeta = document.getElementById('tvMatchMeta');
+
+function openTv(id){
+  const m = MATCHES.find(mm => mm.id === Number(id));
+  if(!m) return;
+  const title = m.status === 'national' ? `${m.nameA} – ${m.nameB}` : `${teamLabel(m.home)} – ${teamLabel(m.away)}`;
+  tvMatchTitle.textContent = title;
+  tvMatchMeta.textContent = `${m.comp} · ${m.date}, ${m.time} Uhr`;
+
+  let html = '';
+  LANG_GROUPS.forEach(g => {
+    const chans = m.tv[g.key] || [];
+    if(!chans.length) return;
+    html += `<div class="tv-group">
+      <div class="tv-group-label">${g.label}</div>
+      ${chans.map(ch => `
+        <div class="tv-channel">
+          <div class="tv-flag">${FLAGS[countryFlag(ch.country)] || flagFromName(ch.country)}</div>
+          <div>
+            <div class="tv-chan-name">${ch.c}</div>
+            <div class="tv-chan-country">${ch.country}</div>
+          </div>
+          ${ch.tag ? `<div class="tv-chan-tag ${ch.tag==='PPV'?'ppv':''}">${ch.tag}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>`;
+  });
+  if(!html){
+    html = `<div class="empty-state"><div class="icon">📡</div><div class="title">Keine Senderdaten</div><div>Für dieses Spiel liegen noch keine TV-Infos vor.</div></div>`;
+  }
+  tvList.innerHTML = html;
+  overlay.classList.add('open');
+}
+
+function countryFlag(name){
+  const map = {"Deutschland":"DE","Türkei":"TR","Großbritannien":"EN","Frankreich":"FR","Spanien":"ES","Italien":"IT","USA":"US","Katar":"QA","Saudi-Arabien":"SA","Niederlande":"NL"};
+  return map[name];
+}
+function flagFromName(name){
+  const code = countryFlag(name);
+  return code ? FLAGS[code] : "🌍";
+}
+
+main.addEventListener('click', e => {
+  const tvBtn = e.target.closest('.tv-btn');
+  if(tvBtn && !tvBtn.classList.contains('no-data')){
+    openTv(tvBtn.dataset.tv);
+  }
+});
+
+document.getElementById('tvClose').addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+/* ---------------- Init ---------------- */
+renderFavStrip();
+render();
 </script>
 </body>
 </html>
