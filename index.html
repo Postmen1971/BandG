@@ -525,7 +525,7 @@
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v6";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v7";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -599,10 +599,11 @@
       const datum=ev.dateEvent, zeit=(ev.strTime||"").slice(0,5);
       const kickoff=new Date(datum+'T'+(zeit||'00:00')+':00');
       const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
+      const rohStatus=ev.strStatus||"";
 
       let status="geplant"; // geplant | live | beendet
       if(hatErgebnis){
-        const beendetLtStatus=/finished|ft|match finished/i.test(ev.strStatus||"");
+        const beendetLtStatus=/finished|ft|match finished/i.test(rohStatus);
         if(beendetLtStatus || stundenSeitAnstoss>2.5){ status="beendet"; }
         else{ status="live"; }
       }
@@ -610,7 +611,7 @@
       return {
         heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
         datum, zeit, wettbewerb: ev.strLeague,
-        heimTor, gastTor, status, kickoff, stundenSeitAnstoss
+        heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus
       };
     }
 
@@ -677,6 +678,16 @@
       zeigeFussballErgebnis(eindeutig);
     }
 
+    function formatiereSpielminute(rohStatus){
+      const s=(rohStatus||"").trim();
+      if(/^\d+['’]?\+?\d*$/.test(s)) return s.replace(/['’]/,'')+"'"; // z.B. "63" oder "45+2" -> "63'"
+      if(/^\d+$/.test(s)) return s+"'";
+      if(/ht|halbzeit|half.?time/i.test(s)) return "HZ";
+      if(/^1h$/i.test(s)) return "1. HZ";
+      if(/^2h$/i.test(s)) return "2. HZ";
+      return s || "LIVE";
+    }
+
     function zeigeFussballErgebnis(spiele){
       const box=document.getElementById('footballBox');
       if(!spiele || spiele.length===0){
@@ -688,7 +699,8 @@
         const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
         let ergebnisTeil;
         if(s.status==="live"){
-          ergebnisTeil=`<strong style="color:#e63946">🔴 LIVE ${s.heimTor}:${s.gastTor}</strong>`;
+          const minute=formatiereSpielminute(s.rohStatus);
+          ergebnisTeil=`<strong style="color:#e63946">🔴 ${s.heimTor}:${s.gastTor} (${minute})</strong>`;
         }else if(s.status==="beendet"){
           ergebnisTeil=`Endstand ${s.heimTor}:${s.gastTor}`;
         }else{
