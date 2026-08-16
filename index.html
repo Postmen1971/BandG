@@ -528,7 +528,7 @@
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v10";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v11";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -776,7 +776,7 @@
         let fallbackSpiele=[...proxyErgebnis.spiele, ...openligaErgebnis.spiele];
 
         if(fallbackSpiele.length>0){
-          fallbackSpiele=fallbackSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > 3));
+          fallbackSpiele=fallbackSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > ERGEBNIS_SICHTBAR_STUNDEN));
           fallbackSpiele=fallbackSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
           fallbackSpiele.sort((a,b)=> a.kickoff - b.kickoff);
           zeigeFussballErgebnis(fallbackSpiele, false, true);
@@ -787,8 +787,9 @@
         return;
       }
 
-      // Veraltete "geplant"-Einträge ohne Ergebnis entfernen (Anstoß liegt schon > 3h zurück, aber kein Score bekannt -> nicht mehr relevant)
-      alleSpiele=alleSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > 3));
+      // Alte "geplant"-Einträge ohne Ergebnis erst nach den vollen 12 Stunden entfernen
+      // (nicht schon nach 3h - Ergebnis kann verspätet von der Quelle kommen)
+      alleSpiele=alleSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > ERGEBNIS_SICHTBAR_STUNDEN));
 
       // Nur behalten: geplante (zukünftige) Spiele + laufende/beendete Spiele der letzten 12 Stunden
       alleSpiele=alleSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
@@ -842,6 +843,8 @@
           ergebnisTeil=`<strong style="color:#e63946">🔴 ${s.heimTor}:${s.gastTor} (${minute})</strong>`;
         }else if(s.status==="beendet"){
           ergebnisTeil=`Endstand ${s.heimTor}:${s.gastTor}`;
+        }else if(s.stundenSeitAnstoss>0){
+          ergebnisTeil=`Angepfiffen ${datumStr}, ${s.zeit} Uhr – Ergebnis folgt`;
         }else{
           ergebnisTeil=`${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}`;
         }
