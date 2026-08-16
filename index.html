@@ -527,7 +527,7 @@
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v7";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v10";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -569,31 +569,33 @@
     async function holeNaechsteSpieleFuerTeam(teamId){
       try{
         const res=await fetch(`${SPORTSDB_BASE}/eventsnext.php?id=${teamId}`, {cache:"no-store"});
-        if(!res.ok) return [];
+        if(!res.ok) return {ok:false, events:[]};
         const data=await res.json();
-        return (data && data.events) ? data.events : [];
-      }catch(e){ return []; }
+        return {ok:true, events:(data && data.events) ? data.events : []};
+      }catch(e){ return {ok:false, events:[]}; }
     }
 
     async function holeLetzteSpieleFuerTeam(teamId){
       try{
         const res=await fetch(`${SPORTSDB_BASE}/eventslast.php?id=${teamId}`, {cache:"no-store"});
-        if(!res.ok) return [];
+        if(!res.ok) return {ok:false, events:[]};
         const data=await res.json();
-        return (data && data.results) ? data.results : [];
-      }catch(e){ return []; }
+        return {ok:true, events:(data && data.results) ? data.results : []};
+      }catch(e){ return {ok:false, events:[]}; }
     }
 
     async function holeNaechsteSpieleFuerWettbewerb(ligaId){
       try{
         const res=await fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"});
-        if(!res.ok) return [];
+        if(!res.ok) return {ok:false, events:[]};
         const data=await res.json();
-        return (data && data.events) ? data.events.filter(istLieblingsverein) : [];
-      }catch(e){ return []; }
+        const events=(data && data.events) ? data.events.filter(istLieblingsverein) : [];
+        return {ok:true, events};
+      }catch(e){ return {ok:false, events:[]}; }
     }
 
     const ERGEBNIS_SICHTBAR_STUNDEN=12; // Endstand bleibt so lange sichtbar
+    const BUNDESLIGA_VEREINE=["Dortmund","Bayern","Stuttgart"];
 
     function verarbeiteEvent(ev){
       const heimTor=ev.intHomeScore, gastTor=ev.intAwayScore;
@@ -617,18 +619,114 @@
       };
     }
 
-    async function ladeFussballTopspiele(){
-      // Cache prüfen
+    // Rückfallebene: OpenLigaDB (kostenlos, ohne Anmeldung, browserfreundlich/CORS-erlaubt) -
+    // deckt nur die Bundesliga ab, springt ein wenn TheSportsDB nicht erreichbar ist.
+    async function holeOpenLigaDbSpiele(){
       try{
-        const cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY));
-        if(cached && (Date.now()-cached.zeitstempel < FIXTURES_TTL_MS)){
-          zeigeFussballErgebnis(cached.daten);
-          return;
-        }
-      }catch(e){}
+        const res=await fetch('https://api.openligadb.de/getmatchdata/bl1', {cache:"no-store"});
+        if(!res.ok) return {ok:false, spiele:[]};
+        const data=await res.json();
+        if(!Array.isArray(data)) return {ok:false, spiele:[]};
+
+        const passend=data.filter(m=>{
+          const heim=(m.team1 && m.team1.teamName)||"";
+          const gast=(m.team2 && m.team2.teamName)||"";
+          return BUNDESLIGA_VEREINE.some(v=> heim.includes(v) || gast.includes(v));
+        });
+
+        const spiele=passend.map(m=>{
+          const kickoff=new Date(m.matchDateTime);
+          const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
+          let heimTor=null, gastTor=null;
+          if(m.matchResults && m.matchResults.length){
+            const endergebnis=m.matchResults.find(r=>r.resultTypeID===2) || m.matchResults[m.matchResults.length-1];
+            heimTor=endergebnis.pointsTeam1; gastTor=endergebnis.pointsTeam2;
+          }
+          let status="geplant";
+          if(m.matchIsFinished){ status="beendet"; }
+          else if(stundenSeitAnstoss>0 && stundenSeitAnstoss<=2.5 && heimTor!==null){ status="live"; }
+
+          return {
+            heim: m.team1 ? m.team1.teamName : "?", auswaerts: m.team2 ? m.team2.teamName : "?",
+            datum: kickoff.toISOString().slice(0,10), zeit: kickoff.toTimeString().slice(0,5),
+            wettbewerb: "Bundesliga",
+            heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus:""
+          };
+        });
+        return {ok:true, spiele};
+      }catch(e){ return {ok:false, spiele:[]}; }
+    }
+
+    // Rückfallebene 2: eigener Cloudflare-Worker-Proxy zu football-data.org
+    // (umgeht CORS-Sperre) - deckt England, Spanien, Italien, Frankreich + Champions League ab.
+    const FOOTBALL_DATA_PROXY = "https://bold-moon-1924.kizilkaya-aziz.workers.dev";
+    const FOOTBALL_DATA_WETTBEWERBE = [
+      {code:"PL", name:"Premier League", teams:["Manchester City","Liverpool","Arsenal"]},
+      {code:"PD", name:"La Liga", teams:["Real Madrid","Barcelona","Barça"]},
+      {code:"SA", name:"Serie A", teams:["Juventus","Inter","Napoli"]},
+      {code:"FL1", name:"Ligue 1", teams:["Paris"]},
+      {code:"CL", name:"Champions League", teams:["Galatasaray","Besiktas","Fenerbahce","Trabzonspor","Dortmund","Bayern","Stuttgart","Real Madrid","Barcelona","Juventus","Inter","Napoli","Manchester City","Liverpool","Arsenal","Paris"]}
+    ];
+
+    async function holeFootballDataProxySpiele(){
+      let alle=[];
+      let mindestensEinErfolg=false;
+
+      for(const wb of FOOTBALL_DATA_WETTBEWERBE){
+        try{
+          const res=await fetch(`${FOOTBALL_DATA_PROXY}/?comp=${wb.code}`, {cache:"no-store"});
+          if(!res.ok) continue;
+          const data=await res.json();
+          if(!data || !Array.isArray(data.matches)) continue;
+          mindestensEinErfolg=true;
+
+          const passend=data.matches.filter(m=>{
+            const heim=(m.homeTeam && m.homeTeam.name)||"";
+            const gast=(m.awayTeam && m.awayTeam.name)||"";
+            return wb.teams.some(v=> heim.includes(v) || gast.includes(v));
+          });
+
+          alle.push(...passend.map(m=>{
+            const kickoff=new Date(m.utcDate);
+            const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
+            const heimTor = m.score && m.score.fullTime ? m.score.fullTime.home : null;
+            const gastTor = m.score && m.score.fullTime ? m.score.fullTime.away : null;
+            let status="geplant";
+            if(m.status==="FINISHED"){ status="beendet"; }
+            else if(m.status==="IN_PLAY" || m.status==="PAUSED" || m.status==="LIVE"){ status="live"; }
+
+            return {
+              heim: m.homeTeam ? m.homeTeam.name : "?", auswaerts: m.awayTeam ? m.awayTeam.name : "?",
+              datum: kickoff.toISOString().slice(0,10), zeit: kickoff.toTimeString().slice(0,5),
+              wettbewerb: wb.name,
+              heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus:""
+            };
+          }));
+        }catch(e){}
+        await warteMs(80);
+      }
+
+      return {ok:mindestensEinErfolg, spiele:alle};
+    }
+
+    async function ladeFussballTopspiele(versuch){
+      versuch = versuch || 1;
+
+      // Cache prüfen (nur beim ersten Versuch)
+      if(versuch===1){
+        try{
+          const cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY));
+          if(cached && (Date.now()-cached.zeitstempel < FIXTURES_TTL_MS)){
+            zeigeFussballErgebnis(cached.daten, true);
+            return;
+          }
+        }catch(e){}
+      }
 
       const teamIdCache=ladeTeamIdCache();
       let alleSpiele=[];
+      let erfolgreicheAbfragen=0;
+      let gesamtAbfragen=0;
 
       // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele)
       for(const teamName of LIEBLINGSVEREINE){
@@ -642,15 +740,50 @@
         ]);
         await warteMs(90);
 
-        alleSpiele.push(...nachfolgende.slice(0,3).map(verarbeiteEvent));
-        alleSpiele.push(...letzte.slice(0,3).map(verarbeiteEvent));
+        gesamtAbfragen+=2;
+        if(nachfolgende.ok) erfolgreicheAbfragen++;
+        if(letzte.ok) erfolgreicheAbfragen++;
+
+        alleSpiele.push(...nachfolgende.events.slice(0,3).map(verarbeiteEvent));
+        alleSpiele.push(...letzte.events.slice(0,3).map(verarbeiteEvent));
       }
 
       // 2) Ligabasiert: fängt zusätzlich Auswärtsspiele ab (teambasierte Abfrage zeigt im Free-Tier nur Heimspiele)
       for(const ligaId of WETTBEWERB_IDS){
-        const events=await holeNaechsteSpieleFuerWettbewerb(ligaId);
+        const ergebnis=await holeNaechsteSpieleFuerWettbewerb(ligaId);
         await warteMs(90);
-        alleSpiele.push(...events.map(verarbeiteEvent));
+        gesamtAbfragen++;
+        if(ergebnis.ok) erfolgreicheAbfragen++;
+        alleSpiele.push(...ergebnis.events.map(verarbeiteEvent));
+      }
+
+      // Quelle nicht erreichbar? (so gut wie alle Abfragen fehlgeschlagen) -> automatisch nochmal versuchen,
+      // danach Rückfallebenen probieren: 1) Cloudflare-Worker-Proxy zu football-data.org (England, Spanien,
+      // Italien, Frankreich, Champions League), 2) OpenLigaDB (nur Bundesliga). Beide zusammen kombiniert.
+      const erfolgsquote = gesamtAbfragen>0 ? erfolgreicheAbfragen/gesamtAbfragen : 0;
+      if(erfolgsquote < 0.2){
+        if(versuch < 2){
+          await warteMs(2000);
+          return ladeFussballTopspiele(versuch+1);
+        }
+
+        const [proxyErgebnis, openligaErgebnis] = await Promise.all([
+          holeFootballDataProxySpiele(),
+          holeOpenLigaDbSpiele()
+        ]);
+
+        let fallbackSpiele=[...proxyErgebnis.spiele, ...openligaErgebnis.spiele];
+
+        if(fallbackSpiele.length>0){
+          fallbackSpiele=fallbackSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > 3));
+          fallbackSpiele=fallbackSpiele.filter(s => s.status==="geplant" || s.stundenSeitAnstoss <= ERGEBNIS_SICHTBAR_STUNDEN);
+          fallbackSpiele.sort((a,b)=> a.kickoff - b.kickoff);
+          zeigeFussballErgebnis(fallbackSpiele, false, true);
+          return;
+        }
+
+        zeigeFussballFehler();
+        return;
       }
 
       // Veraltete "geplant"-Einträge ohne Ergebnis entfernen (Anstoß liegt schon > 3h zurück, aber kein Score bekannt -> nicht mehr relevant)
@@ -677,7 +810,7 @@
       speichereTeamIdCache(teamIdCache);
       try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:eindeutig})); }catch(e){}
 
-      zeigeFussballErgebnis(eindeutig);
+      zeigeFussballErgebnis(eindeutig, false);
     }
 
     function formatiereSpielminute(rohStatus){
@@ -690,13 +823,16 @@
       return s || "LIVE";
     }
 
-    function zeigeFussballErgebnis(spiele){
+    function zeigeFussballErgebnis(spiele, ausCache, istFallback){
       const box=document.getElementById('footballBox');
+      const fallbackHinweis = istFallback
+        ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">⚠️ Hauptquelle nicht erreichbar – zeige nur Bundesliga (Rückfallebene).</div>'
+        : '';
       if(!spiele || spiele.length===0){
-        box.innerHTML='Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
+        box.innerHTML=fallbackHinweis+'Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
         return;
       }
-      let html='';
+      let html=fallbackHinweis;
       spiele.forEach(s=>{
         const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
         let ergebnisTeil;
@@ -711,6 +847,20 @@
         html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
       });
       box.innerHTML=html;
+    }
+
+    function zeigeFussballFehler(){
+      const box=document.getElementById('footballBox');
+      box.innerHTML='⚠️ Fußball-Daten aktuell nicht erreichbar (Quelle überlastet oder kein Internet). '
+        + '<a href="#" id="fussballRetryBtn" style="color:#0066cc;text-decoration:underline;">Erneut versuchen</a>';
+      const btn=document.getElementById('fussballRetryBtn');
+      if(btn){
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          box.innerHTML='Spiele werden geladen…';
+          ladeFussballTopspiele(1);
+        });
+      }
     }
 
     ladeFussballTopspiele();
