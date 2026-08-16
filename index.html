@@ -528,12 +528,12 @@
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v11";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v12";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
     // (z.B. Paris SG: Herren-Profimannschaft, nicht Frauen/Jugend/eSport)
-    const FESTE_TEAM_IDS={ "Paris SG": "133714" };
+    const FESTE_TEAM_IDS={ "Paris SG": "133714", "Barcelona": "133739" };
 
     function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
     function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
