@@ -711,7 +711,7 @@
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v12";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v13";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -781,11 +781,20 @@
     const ERGEBNIS_SICHTBAR_STUNDEN=12; // Endstand bleibt so lange sichtbar
     const BUNDESLIGA_VEREINE=["Dortmund","Bayern","Stuttgart"];
 
+    // Wandelt einen gültigen Date-Zeitpunkt in Berliner Zeit (MEZ/MESZ, automatisch mit Sommerzeit) um.
+    function berlinUhrzeit(date){
+      return date.toLocaleTimeString('de-DE', {timeZone:'Europe/Berlin', hour:'2-digit', minute:'2-digit'});
+    }
+    function berlinDatum(date){
+      return date.toLocaleDateString('de-DE', {timeZone:'Europe/Berlin', day:'2-digit', month:'2-digit'});
+    }
+
     function verarbeiteEvent(ev){
       const heimTor=ev.intHomeScore, gastTor=ev.intAwayScore;
       const hatErgebnis = heimTor!==null && heimTor!==undefined && gastTor!==null && gastTor!==undefined;
-      const datum=ev.dateEvent, zeit=(ev.strTime||"").slice(0,5);
-      const kickoff=new Date(datum+'T'+(zeit||'00:00')+':00');
+      const rohZeit=(ev.strTime||"").slice(0,5);
+      // TheSportsDB liefert Datum/Zeit in UTC -> als UTC parsen (Z-Suffix), dann in Berliner Zeit anzeigen
+      const kickoff=new Date(ev.dateEvent+'T'+(rohZeit||'00:00')+':00Z');
       const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
       const rohStatus=ev.strStatus||"";
 
@@ -798,7 +807,7 @@
 
       return {
         heim: ev.strHomeTeam, auswaerts: ev.strAwayTeam,
-        datum, zeit, wettbewerb: ev.strLeague,
+        datum: berlinDatum(kickoff), zeit: berlinUhrzeit(kickoff), wettbewerb: ev.strLeague,
         heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus
       };
     }
@@ -832,7 +841,7 @@
 
           return {
             heim: m.team1 ? m.team1.teamName : "?", auswaerts: m.team2 ? m.team2.teamName : "?",
-            datum: kickoff.toISOString().slice(0,10), zeit: kickoff.toTimeString().slice(0,5),
+            datum: berlinDatum(kickoff), zeit: berlinUhrzeit(kickoff),
             wettbewerb: "Bundesliga",
             heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus:""
           };
@@ -881,7 +890,7 @@
 
             return {
               heim: m.homeTeam ? m.homeTeam.name : "?", auswaerts: m.awayTeam ? m.awayTeam.name : "?",
-              datum: kickoff.toISOString().slice(0,10), zeit: kickoff.toTimeString().slice(0,5),
+              datum: berlinDatum(kickoff), zeit: berlinUhrzeit(kickoff),
               wettbewerb: wb.name,
               heimTor, gastTor, status, kickoff, stundenSeitAnstoss, rohStatus:""
             };
@@ -1019,7 +1028,7 @@
       }
       let html=fallbackHinweis;
       spiele.forEach(s=>{
-        const datumStr=new Date(s.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+        const datumStr=s.datum;
         let ergebnisTeil;
         if(s.status==="live"){
           const minute=formatiereSpielminute(s.rohStatus);
