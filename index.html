@@ -586,42 +586,32 @@
       document.getElementById('jokeOfDay').textContent=w;
     }
 
-    const WITZE_POOL_CACHE_KEY="galvanikWitzePool_v1";
-    const WITZE_POOL_TTL_MS=1000*60*60*24; // 1 Tag Cache
-
-    function parseFlachwitzeReadme(text){
-      // Jede Zeile mit ausreichender Länge, ohne Markdown-Überschriften/Links, gilt als eigener Witz
-      return text.split('\n')
-        .map(z=>z.trim())
-        .filter(z=> z.length>15 && z.length<300 && !z.startsWith('#') && !z.startsWith('[') && !z.startsWith('!') && !/^(Dies ist|Gerne weitere)/.test(z));
-    }
-
-    async function holeErweitertenWitzPool(){
+    // JokeAPI (jokeapi.dev) - kostenlos, ohne API-Key. Kategorie "Pun" (Wortspiele) wird
+    // bewusst NICHT abgefragt, da Wortspiel-Witze ausdrücklich nicht gewünscht sind.
+    async function holeJokeApiWitz(){
       try{
-        const cached=JSON.parse(localStorage.getItem(WITZE_POOL_CACHE_KEY));
-        if(cached && (Date.now()-cached.zeitstempel < WITZE_POOL_TTL_MS) && cached.witze && cached.witze.length>50){
-          return cached.witze;
-        }
-      }catch(e){}
-
-      try{
-        const res=await fetch('https://raw.githubusercontent.com/derphilipp/Flachwitze/main/README.md', {cache:"no-store"});
+        const res=await fetch(
+          'https://v2.jokeapi.dev/joke/Misc,Dark,Spooky,Christmas,Programming?lang=de&blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode&type=single',
+          {cache:"no-store"}
+        );
         if(!res.ok) throw new Error('Netzwerkfehler');
-        const text=await res.text();
-        const witzeAusListe=parseFlachwitzeReadme(text);
-        const kombiniert=[...GUTE_WITZE, ...witzeAusListe];
-        try{ localStorage.setItem(WITZE_POOL_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), witze:kombiniert})); }catch(e){}
-        return kombiniert;
+        const data=await res.json();
+        if(data.error || !data.joke) throw new Error('Keine Antwort');
+        return data.joke;
       }catch(e){
-        return GUTE_WITZE;
+        return null;
       }
     }
 
     async function ladeSuperwitz(){
-      // Kuratierte, handverlesene Witze + große, von der Community gepflegte Wortwitz-Sammlung
-      // (github.com/derphilipp/Flachwitze) - deutlich besser als generische, zufällige Witz-APIs.
-      const pool = await holeErweitertenWitzPool();
-      zeigeGutenWitz(pool);
+      // Erst versuchen: frischer Witz von JokeAPI (ohne Wortspiel-Kategorie).
+      // Klappt das nicht, kuratierte, handverlesene Witze als Rückfallebene.
+      const apiWitz = await holeJokeApiWitz();
+      if(apiWitz){
+        document.getElementById('jokeOfDay').textContent = apiWitz;
+      }else{
+        zeigeGutenWitz(GUTE_WITZE);
+      }
     }
     ladeSuperwitz();
 
