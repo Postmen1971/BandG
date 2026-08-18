@@ -424,38 +424,148 @@
     }
     document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
 
-    /* --- Superwitz: bei jedem Start ein neuer Witz von einer Internet-Witz-API --- */
-    const FALLBACK_WITZE=[
-      "Treffen sich zwei Jäger. Beide tot.",
-      "Kommt ein Pferd in die Bar. Sagt der Barkeeper: 'Na, warum so ein langes Gesicht?'",
-      "Ich habe meiner Frau gesagt, sie solle sich was Schönes zum Anziehen wünschen. Jetzt strickt sie sich einen Pullover.",
-      "Was ist grün und steht vor der Tür? Ein Klopfsalat.",
-      "Chef zum Mitarbeiter: 'Sie kommen ja heute schon wieder zu spät!' – 'Ja, das ist unheimlich, jeden Tag zwei Minuten früher.'",
-      "Warum können Geister so schlecht lügen? Man sieht durch sie hindurch.",
-      "Sagt der Lehrer: 'Nennen Sie mir zwei Pronomen!' Antwortet der Schüler: 'Wer, ich?'",
-      "Ich wollte einen Witz über Zeitreisen machen, aber der ist euch nicht gefallen."
+    /* --- Superwitz: bei jedem Start ein guter, handverlesener Witz --- */
+    const GUTE_WITZE=[
+      "Fragt der Chef: 'Warum kommen Sie erst um 11 Uhr?' – 'Wegen der Verkehrsschilder.' – 'Was für Verkehrsschilder?' – 'Vorsicht, Arbeit beginnt um 8 Uhr.'",
+      "Zwei Kannibalen essen einen Clown. Fragt der eine: 'Schmeckt der komisch?'",
+      "Ich habe eine Leiter aus Zwiebeln gebaut. Damit kann man richtig hoch steigen, ohne dass es einem an die Nieren geht.",
+      "Sagt der Arzt zum Patienten: 'Ich hab schlechte Nachrichten und noch schlechtere.' – 'Die schlechten zuerst.' – 'Sie haben noch 24 Stunden zu leben.' – 'Und die noch schlechteren?' – 'Ich wollte es Ihnen schon gestern sagen.'",
+      "Was ist der Unterschied zwischen einer Katze und einem Komma? Die Katze hat Pfoten vorne, das Komma hat Pause hinten.",
+      "Treffen sich zwei Freunde. Sagt der eine: 'Ich hab meiner Frau zum Geburtstag ein Grab gekauft.' – 'Wieso das denn?' – 'Na, letztes Jahr hat sie sich auch nichts gewünscht, was man mehrmals benutzen kann.'",
+      "Kommt ein Skelett in die Bar und bestellt ein Bier und einen Mopp.",
+      "Warum können Marathonläufer so gut rechnen? Weil sie ständig einen Läufer im Kopf haben.",
+      "Sagt der Chef zu seinem neuen Mitarbeiter: 'Wenn Sie einen Fehler machen, tun Sie so, als wär es Absicht.' Am nächsten Tag verschüttet der Mitarbeiter Kaffee über das ganze Büro und ruft: 'Kunst!'",
+      "Was sagt ein Vulkan zum anderen? Ich lava dich.",
+      "Zwei Blondinen springen von einer Brücke. Warum? Weil sie den Sprung ins kalte Wasser wagen wollten.",
+      "Kellner, ist das ein Haar in meiner Suppe? Nein, das ist mein Toupet, ich muss die Küche verlassen.",
+      "Warum tragen Bienen gestreifte Anzüge? Weil die geringelten in der Reinigung sind.",
+      "Chef fragt den Mitarbeiter: 'Warum haben Sie sich für diesen Beruf entschieden?' – 'Wegen der spannenden Aufgaben und der Herausforderung.' – 'Und warum sind Sie dann seit 15 Jahren hier?'",
+      "Kommt ein Mann zum Zahnarzt. Der Zahnarzt sagt: 'Das wird wehtun.' Der Mann fragt: 'Warum?' Der Zahnarzt: 'Ich bin Ihnen gerade auf den Fuß getreten.'",
+      "Sitzen zwei Särge im Wartezimmer. Sagt der eine: 'Hustest du auch schon so lange?'",
+      "Meine Oma sagte immer: 'Was dich nicht umbringt, macht dich stärker.' Bis es sie dann doch umgebracht hat.",
+      "Ich hab meiner Frau gesagt, dass ich Ärger mit meinem Gedächtnis habe. Sie meinte: 'Welcher Ärger?'",
+      "Zwei Särge unterhalten sich beim Bestatter. Fragt der eine: 'Kommst du auch aus Eiche?' – 'Nein, aus Altersgründen.'",
+      "Warum bringen Selbstmörder immer eine Leiter mit? Für den Fall, dass es doch nicht klappt.",
+      "Ein Mann kommt in die Notaufnahme: 'Doktor, ich hab Amnesie!' Der Arzt: 'Seit wann?' Der Mann: 'Seit wann was?'",
+      "Sagt der Bestatter zum Angehörigen: 'Wollen Sie eine Feuerbestattung oder Erdbestattung?' – 'Was ist günstiger?' – 'Feuer, aber es dauert ein bisschen mit der Auszahlung der Asche.'",
+      "Auf meinem Grabstein soll später stehen: 'Er wollte gerade aufhören zu rauchen.'",
+      "Ich hab meinem Anwalt gesagt, ich will nach meinem Tod alles der Wissenschaft spenden. Er meinte, dafür müsste ich erstmal was leisten.",
+      "Warum haben Gespenster so wenig Erfolg beim Lügen? Weil man ihnen alles durchschaut.",
+      "Sagt der Arzt: 'Ich muss Ihnen leider mitteilen, dass Sie nur noch 10 Sekunden zu leben haben.' Der Patient: 'Kann ich noch was—' Der Arzt: '9, 8, 7...'",
+      "Mein Opa hat auf dem Sterbebett gesagt: 'Nie im Leben verkaufe ich meine Lebensversicherung.' Es war sein letzter Satz, aber wenigstens konsequent.",
+      "Ein Mann fällt vom zwanzigsten Stock. Auf Höhe des zehnten Stocks ruft er: 'Bis hierhin lief alles gut!'",
+      "Ich hab neulich einen Sarg-Discounter entdeckt. Werbeslogan: 'Bei uns liegen Sie günstig.'",
+      "Warum nehmen Geister nie den Fahrstuhl? Weil das drückt aufs Gemüt.",
+      "Zwei Freunde beim Grab des dritten: 'War er ein guter Mensch?' – 'Na ja, er hat wenigstens niemandem geschadet, außer sich selbst - und den Kollegen, denen er im Weg stand.'",
+      "Meine Lebensversicherung hat mich angerufen und gefragt, ob bei mir alles in Ordnung sei. Ich glaub, die hoffen auf was anderes.",
+      "Ich hab meinem Chef gesagt, ich brauch einen Tag frei, weil bei uns jemand gestorben ist. Er hat gefragt wer. Ich meinte: 'Meine Motivation.'",
+      "Der Optimist sagt: Das Glas ist halb voll. Der Pessimist sagt: Das Glas ist halb leer. Der Bestatter sagt: Das Glas reicht noch für die Nachfeier.",
+      "Ich war beim Wahrsager. Er sagte, ich hätte nur noch kurze Zeit zu leben. Ich fragte: 'Wie lange denn?' Er meinte: '10... 9... 8...'",
+      "Sagt der Arzt: 'Sie haben noch ein Jahr.' Fragt der Patient: 'Und wenn ich mich gesund ernähre?' Arzt: 'Dann kommt es Ihnen wie zwei vor.'",
+      "Warum haben Mumien keine Angst vor dem Tod? Sie haben ihn schon länger hinter sich.",
+      "Mein Therapeut meinte, ich solle über meine dunklen Gedanken reden. Jetzt reden wir beide nicht mehr, er ist in Rente gegangen.",
+      "Ein Mann springt von der Brücke. Ein Passant ruft: 'Warum tun Sie das?' Der Mann: 'Kredit abbezahlt, jetzt bin ich frei!'",
+      "Was ist der Unterschied zwischen einem Optimisten und einem Skelett? Keiner, beide haben nichts mehr zu verlieren.",
+      "Ich hab meinem Anwalt gesagt: 'Regeln Sie alles für den Fall meines Todes.' Er meinte: 'Sie haben also endlich ein Testament gemacht?' Ich: 'Nein, ich hab einfach aufgehört, die Miete zu zahlen.'",
+      "Der Sensenmann klopft an. Fragt der Bewohner: 'Kommen Sie zu mir?' Sensenmann: 'Nein, ich verkauf nur Zeitschriften-Abos, das mit der Sense ist Privatvergnügen.'",
+      "Warum sind Beerdigungen so leise? Weil da niemand mehr was zu sagen hat.",
+      "Ich hab dem Notarzt gesagt, es sei dringend. Er fragte: 'Wie dringend?' Ich: 'Na ja, ich hab schon die Kerzen für die Trauerfeier bestellt.'",
+      "Auf dem Totenschein meines Nachbarn stand als Todesursache: 'Hat sich zu Tode gefreut.' Er hatte im Lotto gewonnen und dann direkt seine Steuererklärung gesehen.",
+      "Warum ist der Friedhof der ruhigste Ort der Stadt? Weil da alle unter der Erde bleiben, außer den Sorgen, die kommen wieder hoch.",
+
+      // Fußball-Witze
+      "Fragt der Trainer: 'Was ist Offside?' Antwortet der Spieler: 'Das, was ich immer bin, wenn ich mal ein Tor schieße.'",
+      "Warum können Fußballer so schlecht rechnen? Weil sie immer erst nach dem Elfmeter zählen, wie viele Chancen sie vergeben haben.",
+      "Kommt ein Schiedsrichter zum Optiker. Sagt der Optiker: 'Tut mir leid, gegen Betriebsblindheit kann ich nichts machen.'",
+      "Fragt der Reporter den Trainer: 'Wie erklären Sie sich die 0:6-Niederlage?' – 'Ganz einfach: Wir hätten mehr Tore schießen müssen als der Gegner.'",
+      "Warum nehmen Torhüter immer ihr Handy mit ins Tor? Für den Fall, dass mal wieder nichts reinkommt.",
+      "Sagt der Trainer in der Halbzeitpause: 'Jungs, wir müssen anders spielen!' Fragt ein Spieler: 'Wie denn?' – 'Besser.'",
+      "Was ist der Unterschied zwischen einem Fußballfan und einem Baby? Irgendwann hört das Baby auf zu weinen.",
+      "Fragt der Journalist: 'Glauben Sie an Wunder?' Der Trainer: 'Muss ich wohl, wir stehen im Abstiegskampf.'",
+      "Warum bringt der Stürmer immer einen Regenschirm mit? Für den Fall, dass es Chancen regnet, die er dann trotzdem nicht nutzt.",
+      "Kommt ein Fan zum Arzt: 'Doktor, ich hab Herzrasen.' – 'Seit wann?' – 'Seit dem Elfmeterschießen letzte Woche.'",
+
+      // Dialekt-Witze
+      "Fragt der Norddeutsche den Bayern: 'Wie sagt ihr zu Guten Morgen?' – 'Grias di.' – 'Und zu Auf Wiedersehen?' – 'Servus.' – 'Praktisch, ihr braucht ja gar keine Uhr.'",
+      "Treffen sich ein Schwabe und ein Berliner. Sagt der Schwabe: 'Des macht mr net.' Sagt der Berliner: 'Wat willste damit sagen, wa?' Am Ende verstehen sich beide nur über Kopfnicken.",
+      "Warum spart der Schwabe beim Reden Buchstaben? Damit noch was für den Kontostand übrig bleibt.",
+      "Fragt der Sachse: 'Wat machn mer heit?' Der Rheinländer versteht nur Bahnhof, aber lacht trotzdem mit, wie immer.",
+      "Kommt ein Bayer nach Hamburg und bestellt eine Weißwurst. Der Kellner fragt: 'Mit oder ohne Senf?' Der Bayer: 'Hauptsach ned mit Fischsoß'n.'",
+      "Warum verstehen sich Kölner und Düsseldorfer beim Bier nie ganz? Weil der eine Kölsch bestellt und der andere sich beleidigt fühlt, wenn man's Alt nennt.",
+      "Ruft der Ostfriese beim Wetterbericht an: 'Wat mook wi morgen?' – 'Regen.' – 'Und übermorgen?' – 'Auch Regen.' – 'Gut, dann weiß ich Bescheid für's ganze Jahr.'",
+      "Sagt der Berliner zum Touristen: 'Wat guckste?' Der Tourist: 'Ich hab nur gefragt, wo der Bahnhof ist.' – 'Da kannste ooch fragen, wa.'",
+
+      // Büro- & Chef-Witze
+      "Sagt der Chef: 'Wir sind hier eine große Familie!' – Fragt der Mitarbeiter: 'Heißt das, ich erbe irgendwann die Firma?'",
+      "Meeting-Einladung: 'Kurzes Update, 15 Minuten.' Zwei Stunden später ist noch nicht mal die Agenda durch.",
+      "Fragt der Chef beim Bewerbungsgespräch: 'Wo sehen Sie sich in 5 Jahren?' – 'Ehrlich gesagt, in Ihrem Büro.'",
+      "Sagt der Praktikant: 'Ich hab eine Idee, wie wir Zeit sparen können.' Der Chef: 'Sehr gut, dann fangen Sie mal mit den Meetings über Zeitersparnis an.'",
+      "Warum hat der Chef immer offene Bürotür-Politik? Damit er sieht, wer pünktlich geht.",
+      "E-Mail vom Chef um 23 Uhr: 'Keine Eile, aber bis morgen früh brauch ich das.'",
+      "Sagt der Mitarbeiter: 'Ich brauch mehr Gehalt, die Preise steigen ja überall.' Der Chef: 'Ja, deshalb steigt auch meine Rendite nicht mehr so wie früher.'",
+      "Warum lieben Chefs das Wort 'Synergie'? Weil man damit 'mehr Arbeit, gleiches Geld' viel eleganter verpacken kann.",
+
+      // Handwerker-Witze
+      "Ruft der Kunde beim Handwerker an: 'Wann kommen Sie?' – 'Zwischen 8 und 16 Uhr.' – 'An welchem Tag?' – 'Das sag ich dann kurzfristig.'",
+      "Fragt der Azubi: 'Wie lang dauert das Projekt?' Der Meister: 'Doppelt so lang, wie ich sage, plus die Zeit, bis das Material da ist.'",
+      "Warum haben Handwerker immer einen Bleistift hinterm Ohr? Damit sie ihn garantiert nicht finden, wenn sie ihn brauchen.",
+      "Sagt der Kunde: 'Das war aber schnell repariert!' Der Handwerker: 'Ja, der Fehler war klein. Die Anfahrt war das Problem.'",
+      "Kommt der Handwerker zur vereinbarten Zeit. Alle im Haus erschrecken sich zu Tode.",
+      "Fragt der Meister den Lehrling: 'Wie misst man zweimal?' – 'Genau. Und dann schneidet man trotzdem einmal falsch.'",
+      "Warum bringen gute Handwerker immer Ersatzteile mit? Weil beim ersten Versuch eh meistens was kaputtgeht, was vorher noch ganz war.",
+
+      // Technik- & IT-Witze
+      "Fragt der Chef den Programmierer: 'Wie lange dauert das noch?' – 'Es funktioniert doch schon fast, nur noch ein kleiner Bug.' (Das war vor drei Wochen.)",
+      "Warum haben Programmierer Angst vor echten Menschen? Weil die sich nicht wie erwartet verhalten und man dafür keine Fehlermeldung bekommt.",
+      "Support-Hotline: 'Haben Sie es schon mal aus- und wieder eingeschaltet?' – 'Ja.' – 'Und jetzt nochmal, aber diesmal wirklich.'",
+      "Warum ist der Computer immer traurig? Er hat zu viele ungelöste Probleme und niemand fragt ihn, wie es ihm geht.",
+      "Sagt der IT-Mitarbeiter: 'Es ist kein Bug, das ist ein Feature.' Sagt der Kunde: 'Dann will ich das Feature zurückgeben.'",
+      "Zwei Bits treffen sich. Fragt das eine: 'Bist du 0 oder 1?' – 'Kommt drauf an, wer fragt.'",
+      "Warum benutzen Programmierer gerne dunklen Modus? Weil Bugs sich im Hellen besser verstecken können, sagen sie zumindest."
     ];
 
-    function zeigeFallbackWitz(){
-      const w=FALLBACK_WITZE[Math.floor(Math.random()*FALLBACK_WITZE.length)];
+    function zeigeGutenWitz(pool){
+      const liste = (pool && pool.length) ? pool : GUTE_WITZE;
+      const w=liste[Math.floor(Math.random()*liste.length)];
       document.getElementById('jokeOfDay').textContent=w;
     }
 
-    async function ladeSuperwitz(){
-      const el=document.getElementById('jokeOfDay');
+    const WITZE_POOL_CACHE_KEY="galvanikWitzePool_v1";
+    const WITZE_POOL_TTL_MS=1000*60*60*24; // 1 Tag Cache
+
+    function parseFlachwitzeReadme(text){
+      // Jede Zeile mit ausreichender Länge, ohne Markdown-Überschriften/Links, gilt als eigener Witz
+      return text.split('\n')
+        .map(z=>z.trim())
+        .filter(z=> z.length>15 && z.length<300 && !z.startsWith('#') && !z.startsWith('[') && !z.startsWith('!') && !/^(Dies ist|Gerne weitere)/.test(z));
+    }
+
+    async function holeErweitertenWitzPool(){
       try{
-        const res=await fetch('https://v2.jokeapi.dev/joke/Any?lang=de&blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode', {cache:"no-store"});
-        if(!res.ok) throw new Error('Netzwerkfehler');
-        const data=await res.json();
-        if(data.error){ throw new Error('API-Fehler'); }
-        if(data.type==='single'){
-          el.textContent=data.joke;
-        }else{
-          el.textContent=`${data.setup} — ${data.delivery}`;
+        const cached=JSON.parse(localStorage.getItem(WITZE_POOL_CACHE_KEY));
+        if(cached && (Date.now()-cached.zeitstempel < WITZE_POOL_TTL_MS) && cached.witze && cached.witze.length>50){
+          return cached.witze;
         }
+      }catch(e){}
+
+      try{
+        const res=await fetch('https://raw.githubusercontent.com/derphilipp/Flachwitze/main/README.md', {cache:"no-store"});
+        if(!res.ok) throw new Error('Netzwerkfehler');
+        const text=await res.text();
+        const witzeAusListe=parseFlachwitzeReadme(text);
+        const kombiniert=[...GUTE_WITZE, ...witzeAusListe];
+        try{ localStorage.setItem(WITZE_POOL_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), witze:kombiniert})); }catch(e){}
+        return kombiniert;
       }catch(e){
-        zeigeFallbackWitz();
+        return GUTE_WITZE;
       }
+    }
+
+    async function ladeSuperwitz(){
+      // Kuratierte, handverlesene Witze + große, von der Community gepflegte Wortwitz-Sammlung
+      // (github.com/derphilipp/Flachwitze) - deutlich besser als generische, zufällige Witz-APIs.
+      const pool = await holeErweitertenWitzPool();
+      zeigeGutenWitz(pool);
     }
     ladeSuperwitz();
 
