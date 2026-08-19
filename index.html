@@ -588,30 +588,83 @@
 
     // JokeAPI (jokeapi.dev) - kostenlos, ohne API-Key. Kategorie "Pun" (Wortspiele) wird
     // bewusst NICHT abgefragt, da Wortspiel-Witze ausdrücklich nicht gewünscht sind.
-    async function holeJokeApiWitz(){
+    // Der deutsche Witz-Pool bei JokeAPI ist recht klein (führt zu schnellen Wiederholungen),
+    // daher: aus dem viel größeren englischen Pool holen und automatisch übersetzen.
+    const WITZ_VERLAUF_KEY="galvanikWitzVerlauf";
+    const WITZ_VERLAUF_MAX=25; // so viele zuletzt gezeigte Witz-IDs merken, um Wiederholung zu vermeiden
+
+    function ladeWitzVerlauf(){
+      try{ return JSON.parse(localStorage.getItem(WITZ_VERLAUF_KEY))||[]; }catch(e){ return []; }
+    }
+    function speichereWitzVerlauf(liste){
+      try{ localStorage.setItem(WITZ_VERLAUF_KEY, JSON.stringify(liste.slice(-WITZ_VERLAUF_MAX))); }catch(e){}
+    }
+
+    async function holeJokeApiWitzRoh(){
       try{
         const res=await fetch(
-          'https://v2.jokeapi.dev/joke/Misc,Dark,Spooky,Christmas,Programming?lang=de&blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode&type=single',
+          'https://v2.jokeapi.dev/joke/Misc,Dark,Spooky,Christmas,Programming?blacklistFlags=nsfw,racist,sexist,religious,political&safe-mode&type=single',
           {cache:"no-store"}
         );
         if(!res.ok) throw new Error('Netzwerkfehler');
         const data=await res.json();
         if(data.error || !data.joke) throw new Error('Keine Antwort');
-        return data.joke;
+        return {id:data.id, text:data.joke};
+      }catch(e){
+        return null;
+      }
+    }
+
+    async function holeJokeApiWitz(){
+      const verlauf=ladeWitzVerlauf();
+      let roh=null;
+      // Bis zu 5 Versuche, um eine ID zu bekommen, die zuletzt nicht schon dran war
+      for(let i=0;i<5;i++){
+        const kandidat=await holeJokeApiWitzRoh();
+        if(!kandidat) break;
+        if(!verlauf.includes(kandidat.id)){ roh=kandidat; break; }
+        roh=kandidat; // falls alle 5 Versuche Wiederholungen sind, nimm wenigstens den letzten
+      }
+      if(!roh) return null;
+
+      speichereWitzVerlauf([...verlauf, roh.id]);
+
+      const deutsch=await uebersetzeInsDeutsche(roh.text);
+      return deutsch;
+    }
+
+    // Zweite, unabhängige Quelle: Official Joke API (official-joke-api.appspot.com) - kostenlos,
+    // ohne API-Key. Nur "general" und "programming" (keine "knockknock", das sind Wortspiele).
+    async function holeOfficialJokeApiWitz(){
+      try{
+        const kategorie = Math.random()<0.5 ? 'general' : 'programming';
+        const res=await fetch(`https://official-joke-api.appspot.com/jokes/${kategorie}/random`, {cache:"no-store"});
+        if(!res.ok) throw new Error('Netzwerkfehler');
+        const data=await res.json();
+        const eintrag = Array.isArray(data) ? data[0] : data;
+        if(!eintrag || !eintrag.setup || !eintrag.punchline) throw new Error('Ungültige Antwort');
+        const engl = `${eintrag.setup} — ${eintrag.punchline}`;
+        const deutsch = await uebersetzeInsDeutsche(engl);
+        return deutsch;
       }catch(e){
         return null;
       }
     }
 
     async function ladeSuperwitz(){
-      // Erst versuchen: frischer Witz von JokeAPI (ohne Wortspiel-Kategorie).
-      // Klappt das nicht, kuratierte, handverlesene Witze als Rückfallebene.
-      const apiWitz = await holeJokeApiWitz();
-      if(apiWitz){
-        document.getElementById('jokeOfDay').textContent = apiWitz;
-      }else{
-        zeigeGutenWitz(GUTE_WITZE);
-      }
+      // Frische, übersetzte Witze aus zwei unabhängigen Internet-Quellen (JokeAPI + Official
+      // Joke API) kommen einfach mit in denselben Topf wie die 128 kuratierten Witze (Büro,
+      // Handwerker, Technik, Arzt, Reise, Ehe, Beamte, Lehrer, Sport, Restaurant, schwarzer
+      // Humor, Fußball, Dialekt) - danach wird ganz normal zufällig aus dem gesamten Topf
+      // gezogen, statt starr aufzuteilen. So kommt mit der Zeit maximale Abwechslung rein.
+      const [apiWitz1, apiWitz2] = await Promise.all([
+        holeJokeApiWitz(),
+        holeOfficialJokeApiWitz()
+      ]);
+      const topf = [...GUTE_WITZE];
+      if(apiWitz1) topf.push(apiWitz1);
+      if(apiWitz2) topf.push(apiWitz2);
+      zeigeGutenWitz(topf);
     }
     ladeSuperwitz();
 
