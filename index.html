@@ -267,6 +267,7 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -1368,6 +1369,7 @@
     <div class="switch-container">
       <div class="switch-button active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
       <div class="switch-button" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
+      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 QR lesen</div>
     </div>
 
     <div class="code-panel active" id="panel-qr">
@@ -1408,14 +1410,34 @@
       </div>
       <button id="barcodeTeilenBtn" class="teilen-btn" style="display:none;" onclick="teileBarcode()">📤 Strichcode teilen / speichern</button>
     </div>
+
+    <div class="code-panel" id="panel-lesen">
+      <div class="hinweis">
+        ℹ️ Lies einen vorhandenen QR-Code entweder live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot). Alles läuft nur auf diesem Gerät.
+      </div>
+
+      <label for="qrLesenDatei">Bild auswählen</label>
+      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseQrAusDatei(event)">
+
+      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()" style="margin-top:14px;">📷 Kamera starten</button>
+      <button type="button" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
+
+      <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
+      <canvas id="qrCanvas" style="display:none;"></canvas>
+
+      <div id="qrLesenErgebnis" class="code-ausgabe" style="display:block;min-height:auto;"></div>
+    </div>
   </div>
 
   <script>
     function wechsleCodeTyp(typ){
       document.getElementById('btn-code-qr').classList.toggle('active', typ==='qr');
       document.getElementById('btn-code-barcode').classList.toggle('active', typ==='barcode');
+      document.getElementById('btn-code-lesen').classList.toggle('active', typ==='lesen');
       document.getElementById('panel-qr').classList.toggle('active', typ==='qr');
       document.getElementById('panel-barcode').classList.toggle('active', typ==='barcode');
+      document.getElementById('panel-lesen').classList.toggle('active', typ==='lesen');
+      if(typ!=='lesen') stoppeQrKamera();
     }
 
     function wechslePasswortSichtbarkeit(){
@@ -1551,6 +1573,145 @@
         teileOderSpeichereBild(dataUrl, 'barcode.png');
       };
       bild.src = url;
+    }
+
+    /* --- QR-Code lesen: aus Bilddatei --- */
+    function zeigeQrLeseErgebnis(text, fehler){
+      const box = document.getElementById('qrLesenErgebnis');
+      if(fehler){
+        box.innerHTML = `<div style="color:red;font-size:13px;">${fehler}</div>`;
+        return;
+      }
+      const sichererText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      box.innerHTML = `
+        <div style="width:100%;text-align:left;">
+          <label style="margin-top:0;">Inhalt des QR-Codes:</label>
+          <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;
+                      font-family:monospace;font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:5px;">${sichererText}</div>
+          <button type="button" onclick="kopiereQrErgebnis()" style="margin-top:10px;">📋 Text kopieren</button>
+        </div>`;
+      box.dataset.rohtext = text;
+    }
+
+    function kopiereQrErgebnis(){
+      const box = document.getElementById('qrLesenErgebnis');
+      const text = box.dataset.rohtext || '';
+      if(navigator.clipboard && text){
+        navigator.clipboard.writeText(text).catch(()=>{});
+      }
+    }
+
+    function leseQrAusDatei(event){
+      const datei = event.target.files[0];
+      if(!datei) return;
+
+      const bild = new Image();
+      const objektUrl = URL.createObjectURL(datei);
+      bild.onload = function(){
+        const canvas = document.createElement('canvas');
+        canvas.width = bild.width;
+        canvas.height = bild.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bild, 0, 0);
+        const bilddaten = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objektUrl);
+
+        const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
+        if(ergebnis && ergebnis.data){
+          zeigeQrLeseErgebnis(ergebnis.data, null);
+        }else{
+          zeigeQrLeseErgebnis(null, 'Kein QR-Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, QR-Code nicht zu klein).');
+        }
+      };
+      bild.onerror = function(){
+        zeigeQrLeseErgebnis(null, 'Bild konnte nicht geladen werden.');
+      };
+      bild.src = objektUrl;
+    }
+
+    /* --- QR-Code lesen: live per Kamera --- */
+    let qrKameraStream = null;
+    let qrKameraLaeuft = false;
+
+    async function starteQrKamera(){
+      const video = document.getElementById('qrVideo');
+      const canvas = document.getElementById('qrCanvas');
+      const startBtn = document.getElementById('qrKameraBtn');
+      const stopBtn = document.getElementById('qrKameraStopBtn');
+
+      // Sichere Verbindung (https) ist zwingend nötig für Kamera-Zugriff im Browser
+      if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
+        zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen, oder stattdessen ein Bild auswählen.');
+        return;
+      }
+
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen, oder stattdessen ein Bild auswählen.');
+        return;
+      }
+
+      try{
+        qrKameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      }catch(e){
+        let meldung;
+        if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
+          meldung = 'Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf "Erlauben" stellen, dann die Seite neu laden.';
+        }else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
+          meldung = 'Es wurde keine Kamera gefunden.';
+        }else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
+          meldung = 'Die Kamera wird gerade von einer anderen App benutzt.';
+        }else if(e.name === 'SecurityError'){
+          meldung = 'Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.';
+        }else{
+          meldung = 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + '). Bitte stattdessen ein Bild auswählen.';
+        }
+        zeigeQrLeseErgebnis(null, meldung);
+        return;
+      }
+
+      video.srcObject = qrKameraStream;
+      video.style.display = 'block';
+      video.play();
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'block';
+      qrKameraLaeuft = true;
+
+      requestAnimationFrame(qrKameraScanSchleife);
+    }
+
+    function qrKameraScanSchleife(){
+      if(!qrKameraLaeuft) return;
+
+      const video = document.getElementById('qrVideo');
+      const canvas = document.getElementById('qrCanvas');
+
+      if(video.readyState === video.HAVE_ENOUGH_DATA){
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const bilddaten = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
+
+        if(ergebnis && ergebnis.data){
+          zeigeQrLeseErgebnis(ergebnis.data, null);
+          stoppeQrKamera();
+          return;
+        }
+      }
+      requestAnimationFrame(qrKameraScanSchleife);
+    }
+
+    function stoppeQrKamera(){
+      qrKameraLaeuft = false;
+      if(qrKameraStream){
+        qrKameraStream.getTracks().forEach(track => track.stop());
+        qrKameraStream = null;
+      }
+      const video = document.getElementById('qrVideo');
+      video.style.display = 'none';
+      document.getElementById('qrKameraBtn').style.display = 'block';
+      document.getElementById('qrKameraStopBtn').style.display = 'none';
     }
   </script>
 </section>
