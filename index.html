@@ -11,81 +11,80 @@
     font-family:Arial,sans-serif;
     background:linear-gradient(to bottom right,var(--lightgray),#ffffff);
     margin:0;
-    /* Anpassung 2: Padding für Rand: Fixe 16px oben/unten und seitlich. */
-    padding: 16px;
+    padding: 8px;
     display:flex;
     justify-content:center;
     flex-direction:column;
     align-items:center;
-    /* Zusätzliches Padding für Topbar-Platzhalter */
-    padding-top: 70px; 
+    padding-top: 64px;
   }
 
   .topbar{
-    position:fixed; /* Auf fixed geändert, damit es oben bleibt */
+    position:fixed;
     top:0;
     left:0;
     right:0;
     background:#ffffffcc;
     backdrop-filter:blur(6px);
     border-bottom:1px solid #e5e7eb;
-    padding:10px 16px; /* Etwas mehr seitlicher Rand */
+    padding:6px 8px;
     z-index:1000;
     display:flex;
     justify-content:center;
-    gap:8px;
+    flex-wrap:wrap;
+    gap:5px;
   }
   
-  .tabbtn{border:2px solid #002855;color:#002855;background:#fff;padding:8px 12px; /* Etwas kleiner für iPhone 8 */
-          border-radius:999px;cursor:pointer;font-weight:bold;font-size:14px;}
+  .tabbtn{border:1.5px solid #002855;color:#002855;background:#fff;padding:5px 8px;
+          border-radius:999px;cursor:pointer;font-weight:bold;font-size:11px;}
   .tabbtn.active{background:#F58025;color:#fff;border-color:#F58025}
   section.tab-pane{display:none}section.tab-pane.active{display:block}
 
   .container{
-    width:calc(100% - 32px); /* 100% minus seitliches Body-Padding */
+    width:calc(100% - 16px);
     max-width:500px;
     background:#fff;
-    padding:20px; /* Innen-Padding leicht reduziert */
+    padding:12px;
     border-radius:12px;
     box-shadow:0 4px 12px rgba(0,0,0,.06);
     position:relative;
-    margin-top:0; /* Kein zusätzlicher oberer Margin, da Body-Padding angepasst wurde */
-    margin-bottom: 16px; /* Rand unten */
+    margin-top:0;
+    margin-bottom: 8px;
   }
   
-  h2{text-align:center;color:var(--orange);margin-top:0}
-  label{display:block;margin-top:14px; /* Etwas weniger Abstand */
-        font-weight:bold;color:#002855;font-size:16px;}
+  h2{text-align:center;color:var(--orange);margin-top:0;font-size:1.2rem;margin-bottom:8px}
+  label{display:block;margin-top:8px;
+        font-weight:bold;color:#002855;font-size:13.5px;}
   input[type=number], select{
     width:100%;
-    padding:8px; /* Etwas weniger Padding */
-    font-size:16px; /* Etwas kleiner für bessere Sichtbarkeit */
-    margin-top:4px;
+    padding:6px;
+    font-size:16px; /* mind. 16px, sonst zoomt iOS Safari beim Antippen ungewollt rein */
+    margin-top:3px;
     border:1px solid #ccc;border-radius:6px;box-sizing:border-box
   }
   
-  .ergebnis{margin-top:20px;padding:12px;background:#f0f0f0;font-size:18px; /* Etwas kleiner */
+  .ergebnis{margin-top:10px;padding:8px;background:#f0f0f0;font-size:14.5px;
             text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc}
-  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:11px;margin-top:8px;color:#888}
+  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:6px;color:#888}
   #counter{position:fixed;bottom:4px;right:8px;font-size:10px;color:#ccc;font-family:monospace;opacity:.5;z-index:9999}
 
   /* Zeitrechner spezifische Anpassungen */
-  .zeit-container .row{display:flex;gap:8px}
-  .zeit-container select, .zeit-container button{padding:10px;font-size:16px;}
+  .zeit-container .row{display:flex;gap:6px}
+  .zeit-container select, .zeit-container button{padding:7px;font-size:16px;}
   .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
   .zeit-container button:hover{background:#004d99}
-  .zeit-result{margin-top:16px;padding:12px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf}
+  .zeit-result{margin-top:8px;padding:8px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf;font-size:13.5px}
 
-  .panel{margin-top:12px;padding:10px;border-radius:6px;border:1px solid #e5e7eb}
+  .panel{margin-top:8px;padding:7px;border-radius:6px;border:1px solid #e5e7eb}
   .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
   .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
   .football-panel{background:#eefaf0;border-color:#bfe8cb;color:#0f3d1e;font-style:normal}
-  .football-panel .liga{font-weight:bold;margin-top:8px;color:#0b4f0b}
+  .football-panel .liga{font-weight:bold;margin-top:6px;color:#0b4f0b}
   .football-panel .liga:first-child{margin-top:0}
-  .football-panel .spiel{padding:3px 0;font-size:13px}
-  .football-panel .spiel .datum{color:#777;font-size:11px}
-  .panel h3{margin:0 0 6px 0;font-size:14px;color:#333;font-style:normal}
-  .small{font-size:12px;color:#666}
+  .football-panel .spiel{padding:2px 0;font-size:12px}
+  .football-panel .spiel .datum{color:#777;font-size:10.5px}
+  .panel h3{margin:0 0 4px 0;font-size:12.5px;color:#333;font-style:normal}
+  .small{font-size:10.5px;color:#666}
 
   /* ===== Spulenrechner (1:1 aus AzeSpule.html übernommen, isoliert unter #tab-spule) ===== */
   #tab-spule{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
@@ -212,8 +211,32 @@
       background-color: #007bff;
       color: white;
       border-color: #0056b3;
+  }  /* ===== QR-Code / Barcode Generator ===== */
+  #tab-code .switch-container{
+      display:flex; justify-content:space-around; padding:5px 0;
+      background-color:#f0f0f0; border-radius:8px; margin-bottom:12px;
   }
+  #tab-code .switch-button{
+      padding:8px 10px; border:1px solid #ddd; border-radius:6px; cursor:pointer;
+      font-weight:bold; font-size:0.85rem; flex-grow:1; text-align:center; margin:0 4px;
+  }
+  #tab-code .switch-button.active{ background-color:#007bff; color:#fff; border-color:#0056b3; }
+  #tab-code .code-panel{ display:none; }
+  #tab-code .code-panel.active{ display:block; }
+  #tab-code .hinweis{
+      font-size:11.5px; color:#666; background:#fff7ea; border:1px solid #f2c58a;
+      border-radius:6px; padding:8px; margin-top:10px; line-height:1.4;
+  }
+  #tab-code .code-ausgabe{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      margin-top:14px; min-height:60px;
+  }
+  #tab-code .code-ausgabe img, #tab-code .code-ausgabe canvas{ background:#fff; padding:8px; border-radius:8px; }
+  #tab-code .code-ausgabe svg{ background:#fff; padding:8px; border-radius:8px; max-width:100%; }
+  #tab-code button#qrTeilenBtn, #tab-code button#barcodeTeilenBtn{ width:100%; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 </head>
 <body>
 
@@ -221,6 +244,7 @@
   <button id="tabBtnStrom" class="tabbtn">⚡ Stromrechner</button>
   <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeitrechner</button>
   <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
+  <button id="tabBtnCode" class="tabbtn">🔳 QR/Strichcode</button>
 </nav>
 
 <section id="tab-strom" class="tab-pane">
@@ -1307,19 +1331,200 @@
 </script>
 </section>
 
+<section id="tab-code" class="tab-pane">
+  <div class="container">
+    <h2>🔳 QR-Code / Strichcode Generator</h2>
+
+    <div class="switch-container">
+      <div class="switch-button active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
+      <div class="switch-button" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
+    </div>
+
+    <div class="code-panel active" id="panel-qr">
+      <label for="qrBenutzer">Benutzername</label>
+      <input type="text" id="qrBenutzer" placeholder="z.B. mmustermann" autocomplete="off">
+
+      <label for="qrPasswort">Passwort</label>
+      <input type="password" id="qrPasswort" placeholder="Passwort" autocomplete="off">
+
+      <button onclick="erzeugeLoginQrCode()">QR-Code erzeugen</button>
+
+      <div class="hinweis">
+        ℹ️ Der QR-Code enthält: Benutzername, dann <strong>Tab</strong>, dann Passwort, dann <strong>Enter</strong>.
+        Wird er mit einem Strichcode-Scanner gescannt, der als Tastatur arbeitet, tippt er Benutzername ein,
+        springt automatisch ins nächste Feld und meldet sich nach dem Passwort selbst an.
+        Alles läuft nur auf diesem Gerät – nichts wird ins Internet gesendet.
+      </div>
+
+      <div class="code-ausgabe" id="qrAusgabe"></div>
+      <button id="qrTeilenBtn" style="display:none;background:#28a745;margin-top:10px;" onclick="teileQrCode()">📤 QR-Code teilen / speichern</button>
+    </div>
+
+    <div class="code-panel" id="panel-barcode">
+      <label for="barcodeText">Text / Nummer</label>
+      <input type="text" id="barcodeText" placeholder="z.B. 123456789" autocomplete="off">
+
+      <button onclick="erzeugeBarcode()">Strichcode erzeugen</button>
+
+      <div class="hinweis">
+        ℹ️ Erzeugt einen 1D-Strichcode (CODE128) aus dem eingegebenen Text bzw. der Nummer.
+      </div>
+
+      <div class="code-ausgabe" id="barcodeAusgabe">
+        <svg id="barcodeSvg"></svg>
+      </div>
+      <button id="barcodeTeilenBtn" style="display:none;background:#28a745;margin-top:10px;" onclick="teileBarcode()">📤 Strichcode teilen / speichern</button>
+    </div>
+  </div>
+
+  <script>
+    function wechsleCodeTyp(typ){
+      document.getElementById('btn-code-qr').classList.toggle('active', typ==='qr');
+      document.getElementById('btn-code-barcode').classList.toggle('active', typ==='barcode');
+      document.getElementById('panel-qr').classList.toggle('active', typ==='qr');
+      document.getElementById('panel-barcode').classList.toggle('active', typ==='barcode');
+    }
+
+    let aktuellesQrObjekt = null;
+
+    // Teilt oder speichert ein Bild (per dataURL). Nutzt die native Teilen-Funktion des
+    // Geräts, wenn verfügbar (WhatsApp, Mail, AirDrop, Nachrichten...), sonst Download.
+    async function teileOderSpeichereBild(dataUrl, dateiname){
+      try{
+        const antwort = await fetch(dataUrl);
+        const blob = await antwort.blob();
+        const datei = new File([blob], dateiname, {type: blob.type});
+
+        if(navigator.canShare && navigator.canShare({files:[datei]})){
+          await navigator.share({files:[datei], title: dateiname});
+          return;
+        }
+      }catch(e){
+        // Falls Teilen abgebrochen/fehlgeschlagen: einfach zum Download-Fallback weitergehen
+      }
+      // Fallback: als Datei herunterladen
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = dateiname;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function erzeugeLoginQrCode(){
+      const benutzer = document.getElementById('qrBenutzer').value;
+      const passwort = document.getElementById('qrPasswort').value;
+      const ausgabe = document.getElementById('qrAusgabe');
+      const teilenBtn = document.getElementById('qrTeilenBtn');
+
+      teilenBtn.style.display = 'none';
+
+      if(!benutzer || !passwort){
+        ausgabe.innerHTML = '<div style="color:red;font-size:13px;">Bitte Benutzername und Passwort eingeben.</div>';
+        return;
+      }
+
+      // Benutzername + TAB + Passwort + ENTER (für Scanner im Tastatur-Emulationsmodus)
+      const inhalt = benutzer + '\t' + passwort + '\n';
+
+      ausgabe.innerHTML = ''; // vorherigen QR-Code entfernen
+      aktuellesQrObjekt = new QRCode(ausgabe, {
+        text: inhalt,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      // QRCode.js braucht einen Moment, um Canvas/Bild ins DOM zu zeichnen
+      setTimeout(()=>{ teilenBtn.style.display = 'block'; }, 150);
+    }
+
+    function teileQrCode(){
+      const ausgabe = document.getElementById('qrAusgabe');
+      const canvas = ausgabe.querySelector('canvas');
+      let dataUrl;
+      if(canvas){
+        dataUrl = canvas.toDataURL('image/png');
+      }else{
+        const img = ausgabe.querySelector('img');
+        if(!img) return;
+        dataUrl = img.src;
+      }
+      teileOderSpeichereBild(dataUrl, 'qrcode.png');
+    }
+
+    function erzeugeBarcode(){
+      const text = document.getElementById('barcodeText').value;
+      const svg = document.getElementById('barcodeSvg');
+      const teilenBtn = document.getElementById('barcodeTeilenBtn');
+
+      teilenBtn.style.display = 'none';
+
+      if(!text){
+        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">Bitte Text oder Nummer eingeben.</div><svg id="barcodeSvg"></svg>';
+        return;
+      }
+
+      try{
+        JsBarcode(svg, text, {
+          format: "CODE128",
+          lineColor: "#000",
+          width: 2,
+          height: 80,
+          displayValue: true,
+          fontSize: 14
+        });
+        teilenBtn.style.display = 'block';
+      }catch(e){
+        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">Ungültige Eingabe für Strichcode.</div><svg id="barcodeSvg"></svg>';
+      }
+    }
+
+    function teileBarcode(){
+      const svg = document.getElementById('barcodeSvg');
+      const breite = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width ? svg.viewBox.baseVal.width : (svg.width.baseVal.value || 300);
+      const hoehe = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height ? svg.viewBox.baseVal.height : (svg.height.baseVal.value || 120);
+
+      const svgText = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgText], {type:'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(svgBlob);
+
+      const bild = new Image();
+      bild.onload = function(){
+        const canvas = document.createElement('canvas');
+        // Etwas Weißraum drumherum für bessere Lesbarkeit beim Teilen
+        canvas.width = breite + 20;
+        canvas.height = hoehe + 20;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(bild, 10, 10);
+        URL.revokeObjectURL(url);
+        const dataUrl = canvas.toDataURL('image/png');
+        teileOderSpeichereBild(dataUrl, 'barcode.png');
+      };
+      bild.src = url;
+    }
+  </script>
+</section>
+
 <script>
-  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule");
-  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule");
+  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule"), bC=document.getElementById("tabBtnCode");
+  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule"), pC=document.getElementById("tab-code");
   function activate(t){
-    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active");
-    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active");
+    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active"); bC.classList.remove("active");
+    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active"); pC.classList.remove("active");
     if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
     else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
-    else{bSp.classList.add("active");pSp.classList.add("active");}
+    else if(t==="spule"){bSp.classList.add("active");pSp.classList.add("active");}
+    else{bC.classList.add("active");pC.classList.add("active");}
   }
   bS.addEventListener("click",()=>activate("strom"));
   bZ.addEventListener("click",()=>activate("zeit"));
   bSp.addEventListener("click",()=>activate("spule"));
+  bC.addEventListener("click",()=>activate("code"));
 </script>
 </body>
 </html>
