@@ -1390,15 +1390,15 @@
 
       <button onclick="erzeugeLoginQrCode()">QR-Code erzeugen</button>
 
+      <div class="code-ausgabe" id="qrAusgabe"></div>
+      <button id="qrTeilenBtn" class="teilen-btn" style="display:none;" onclick="teileQrCode()">📤 QR-Code teilen / speichern</button>
+
       <div class="hinweis">
         ℹ️ Der QR-Code enthält: Benutzername, dann <strong>Tab</strong>, dann Passwort, dann <strong>Enter</strong>.
         Wird er mit einem Strichcode-Scanner gescannt, der als Tastatur arbeitet, tippt er Benutzername ein,
         springt automatisch ins nächste Feld und meldet sich nach dem Passwort selbst an.
         Alles läuft nur auf diesem Gerät – nichts wird ins Internet gesendet.
       </div>
-
-      <div class="code-ausgabe" id="qrAusgabe"></div>
-      <button id="qrTeilenBtn" class="teilen-btn" style="display:none;" onclick="teileQrCode()">📤 QR-Code teilen / speichern</button>
     </div>
 
     <div class="code-panel" id="panel-barcode">
