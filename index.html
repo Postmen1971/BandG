@@ -1498,28 +1498,70 @@
       ausgabe.innerHTML = ''; // vorherigen QR-Code entfernen
       aktuellesQrObjekt = new QRCode(ausgabe, {
         text: inhalt,
-        width: 200,
-        height: 200,
+        width: 260,
+        height: 260,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
 
-      // QRCode.js braucht einen Moment, um Canvas/Bild ins DOM zu zeichnen
-      setTimeout(()=>{ teilenBtn.style.display = 'block'; }, 150);
+      // Statt einer festen Wartezeit: wirklich prüfen, bis das Canvas fertig mit Bildinhalt
+      // gefüllt ist (QRCode.js zeichnet leicht zeitversetzt), bevor der Teilen-Button erscheint.
+      wartAufFertigenQrCode(ausgabe, teilenBtn);
+    }
+
+    function wartAufFertigenQrCode(ausgabe, teilenBtn, versuch){
+      versuch = versuch || 0;
+      const canvas = ausgabe.querySelector('canvas');
+      const img = ausgabe.querySelector('img');
+
+      const canvasFertig = canvas && canvas.width > 0 && (function(){
+        try{
+          const ctx = canvas.getContext('2d');
+          const daten = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+          // Prüfen, ob wirklich schon etwas (nicht nur komplett transparent/leer) gezeichnet wurde
+          for(let i=3; i<daten.length; i+=4){ if(daten[i] !== 0) return true; }
+          return false;
+        }catch(e){ return true; } // falls Auslesen nicht möglich: einfach als fertig werten
+      })();
+      const imgFertig = img && img.src && img.complete;
+
+      if(canvasFertig || imgFertig){
+        teilenBtn.style.display = 'block';
+        return;
+      }
+      if(versuch > 40) { teilenBtn.style.display = 'block'; return; } // Sicherheitsnetz nach ~2s
+      setTimeout(()=> wartAufFertigenQrCode(ausgabe, teilenBtn, versuch+1), 50);
     }
 
     function teileQrCode(){
       const ausgabe = document.getElementById('qrAusgabe');
       const canvas = ausgabe.querySelector('canvas');
-      let dataUrl;
+      let quellCanvas;
+
       if(canvas){
-        dataUrl = canvas.toDataURL('image/png');
+        quellCanvas = canvas;
       }else{
         const img = ausgabe.querySelector('img');
         if(!img) return;
-        dataUrl = img.src;
+        // Falls die Bibliothek statt Canvas ein <img> nutzt: erst in ein Canvas zeichnen
+        quellCanvas = document.createElement('canvas');
+        quellCanvas.width = img.naturalWidth || 260;
+        quellCanvas.height = img.naturalHeight || 260;
+        quellCanvas.getContext('2d').drawImage(img, 0, 0);
       }
+
+      // Sauberen weißen Rand (Ruhezone) drumherum ergänzen, wie bei einem normalen QR-Code-Bild
+      const rand = 24;
+      const ausgabeCanvas = document.createElement('canvas');
+      ausgabeCanvas.width = quellCanvas.width + rand*2;
+      ausgabeCanvas.height = quellCanvas.height + rand*2;
+      const ctx = ausgabeCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, ausgabeCanvas.width, ausgabeCanvas.height);
+      ctx.drawImage(quellCanvas, rand, rand);
+
+      const dataUrl = ausgabeCanvas.toDataURL('image/png');
       teileOderSpeichereBild(dataUrl, 'qrcode.png');
     }
 
