@@ -1466,10 +1466,23 @@
 
     // Teilt oder speichert ein Bild (per dataURL). Nutzt die native Teilen-Funktion des
     // Geräts, wenn verfügbar (WhatsApp, Mail, AirDrop, Nachrichten...), sonst Download.
+    // Wandelt eine dataURL synchron (ohne fetch/await) in ein Blob um. Wichtig: navigator.share()
+    // muss möglichst direkt nach dem Klick aufgerufen werden, sonst verweigern Browser (v.a. Safari)
+    // die Berechtigung beim ersten Versuch, weil die "Klick-Erlaubnis" durch einen Umweg über
+    // fetch() bereits wieder abgelaufen ist.
+    function dataUrlZuBlobSynchron(dataUrl){
+      const teile = dataUrl.split(',');
+      const mimeMatch = teile[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+      const binaer = atob(teile[1]);
+      const bytes = new Uint8Array(binaer.length);
+      for(let i=0; i<binaer.length; i++){ bytes[i] = binaer.charCodeAt(i); }
+      return new Blob([bytes], {type: mime});
+    }
+
     async function teileOderSpeichereBild(dataUrl, dateiname){
       try{
-        const antwort = await fetch(dataUrl);
-        const blob = await antwort.blob();
+        const blob = dataUrlZuBlobSynchron(dataUrl);
         const datei = new File([blob], dateiname, {type: blob.type});
 
         if(navigator.canShare && navigator.canShare({files:[datei]})){
