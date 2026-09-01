@@ -1646,16 +1646,7 @@
     }
 
     /* --- Code lesen (QR, Strichcode, Data Matrix, PDF417, Aztec, u.v.m. via ZXing) --- */
-    // Wird erst erzeugt, wenn wirklich gebraucht (nicht schon beim Laden der Seite) - so blockiert
-    // ein eventuelles Problem beim Nachladen der ZXing-Bibliothek nicht die restliche Seite.
-    let zxingLeser = null;
-    function holeZxingLeser(){
-      if(zxingLeser) return zxingLeser;
-      if(typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader){
-        return null;
-      }
-      // Hints: "genauer suchen" (kostet etwas Zeit, findet aber deutlich mehr, gerade bei
-      // schrägen/gedrehten oder etwas unscharfen Strichcodes) + explizite Formatliste
+    function baueZxingHints(){
       const hints = new Map();
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -1672,8 +1663,16 @@
         ZXing.BarcodeFormat.PDF_417,
         ZXing.BarcodeFormat.AZTEC
       ]);
-      zxingLeser = new ZXing.BrowserMultiFormatReader(hints);
-      return zxingLeser;
+      return hints;
+    }
+
+    // Erzeugt IMMER ein frisches, unabhängiges Reader-Objekt (kein wiederverwendetes Singleton mehr) -
+    // so kann garantiert kein alter Scan-Zustand von einem vorherigen Versuch hängen bleiben.
+    function neuerZxingLeser(){
+      if(typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader){
+        return null;
+      }
+      return new ZXing.BrowserMultiFormatReader(baueZxingHints());
     }
 
     // Erkennt WLAN-QR-Codes (Format: WIFI:T:WPA;S:Netzname;P:Passwort;;) und liest die Felder aus
@@ -1797,9 +1796,13 @@
         const canvas = drehBildAufCanvas(bild, grad);
         try{
           const ergebnis = await leser.decodeFromCanvas(canvas);
-          if(ergebnis) return ergebnis;
+          if(ergebnis){
+            try{ leser.reset(); }catch(e){} // Zustand zurücksetzen, damit der nächste Scan (egal ob Bild oder Kamera) wieder frisch startet
+            return ergebnis;
+          }
         }catch(e){ /* bei dieser Drehung nichts gefunden -> nächste probieren */ }
       }
+      try{ leser.reset(); }catch(e){}
       return null;
     }
 
@@ -1807,7 +1810,11 @@
       const datei = event.target.files[0];
       if(!datei) return;
 
-      const leser = holeZxingLeser();
+      // Falls die Kamera noch läuft (z.B. vom vorherigen Versuch nicht sauber gestoppt): jetzt beenden,
+      // damit sich Kamera-Scan und Bild-Scan nicht gegenseitig in die Quere kommen.
+      if(codeKameraLaeuft) stoppeCodeKamera();
+
+      const leser = neuerZxingLeser();
       if(!leser){
         // ZXing nicht verfügbar -> Rückfallebene: wenigstens QR-Codes per jsQR lesen
         if(typeof jsQR !== 'undefined'){
@@ -1840,6 +1847,7 @@
 
     /* --- Code lesen: live per Kamera (QR, Strichcode, u.v.m.) --- */
     let codeKameraLaeuft = false;
+    let aktiverKameraLeser = null;
     let jsQrKameraStream = null;
 
     async function starteCodeKamera(){
@@ -1857,7 +1865,8 @@
         return;
       }
 
-      const leser = holeZxingLeser();
+      const leser = neuerZxingLeser();
+      aktiverKameraLeser = leser; // merken, damit stoppeCodeKamera() genau dieses Objekt stoppen kann
 
       video.style.display = 'block';
       startBtn.style.display = 'none';
@@ -1944,7 +1953,8 @@
 
     function stoppeCodeKamera(){
       codeKameraLaeuft = false;
-      try{ if(zxingLeser) zxingLeser.reset(); }catch(e){}
+      try{ if(aktiverKameraLeser) aktiverKameraLeser.reset(); }catch(e){}
+      aktiverKameraLeser = null; // Objekt danach verwerfen, nicht wiederverwenden
       if(jsQrKameraStream){
         jsQrKameraStream.getTracks().forEach(track => track.stop());
         jsQrKameraStream = null;
