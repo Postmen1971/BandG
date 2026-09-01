@@ -1746,8 +1746,12 @@
       document.getElementById('qrLesenErgebnis').innerHTML = ''; // vorheriges Ergebnis leeren
       qrKameraLaeuft = true;
 
-      // Automatisch zur Kamera hinscrollen, damit sie direkt gut/groß sichtbar ist
-      setTimeout(()=>{ video.scrollIntoView({behavior:'smooth', block:'center'}); }, 200);
+      // Erst hinscrollen, sobald das Kamerabild wirklich Maße/Inhalt hat (nicht nach fester Wartezeit),
+      // sonst ist die Position beim Scrollen noch falsch, weil das Video kurz danach noch nachwächst.
+      const scrolleZurKamera = ()=>{ video.scrollIntoView({behavior:'smooth', block:'center'}); };
+      video.addEventListener('loadedmetadata', scrolleZurKamera, {once:true});
+      // Sicherheitsnetz, falls das Event aus irgendeinem Grund nicht feuert
+      setTimeout(scrolleZurKamera, 700);
 
       requestAnimationFrame(qrKameraScanSchleife);
     }
