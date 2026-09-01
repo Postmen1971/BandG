@@ -1746,6 +1746,9 @@
       document.getElementById('qrLesenErgebnis').innerHTML = ''; // vorheriges Ergebnis leeren
       qrKameraLaeuft = true;
 
+      // Automatisch zur Kamera hinscrollen, damit sie direkt gut/groß sichtbar ist
+      setTimeout(()=>{ video.scrollIntoView({behavior:'smooth', block:'center'}); }, 200);
+
       requestAnimationFrame(qrKameraScanSchleife);
     }
 
