@@ -1419,15 +1419,11 @@
 
     <div class="code-panel" id="panel-lesen">
       <div class="hinweis">
-        ℹ️ Liest QR-Codes – live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot).
-        WLAN-QR-Codes werden automatisch erkannt und Netzwerkname/Passwort übersichtlich angezeigt.
-        Alles läuft nur auf diesem Gerät.
+        ℹ️ Liest QR-Codes live über die Kamera. WLAN-QR-Codes werden automatisch erkannt und
+        Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.
       </div>
 
-      <label for="qrLesenDatei">Bild auswählen</label>
-      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseQrAusDatei(event)">
-
-      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()" style="margin-top:14px;">📷 Kamera starten</button>
+      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()">📷 Kamera starten</button>
       <button type="button" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
 
       <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
@@ -1445,7 +1441,7 @@
       document.getElementById('panel-qr').classList.toggle('active', typ==='qr');
       document.getElementById('panel-barcode').classList.toggle('active', typ==='barcode');
       document.getElementById('panel-lesen').classList.toggle('active', typ==='lesen');
-      if(typ!=='lesen') stoppeCodeKamera();
+      if(typ!=='lesen') stoppeQrKamera();
     }
 
     const AUGE_OFFEN_SVG = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
@@ -1641,7 +1637,7 @@
       bild.src = url;
     }
 
-    /* --- QR-Code lesen (nur QR-Codes, per jsQR - einfach und zuverlässig) --- */
+    /* --- QR-Code lesen: nur live per Kamera (kein Bild-Upload) --- */
 
     // Erkennt WLAN-QR-Codes (Format: WIFI:T:WPA;S:Netzname;P:Passwort;;) und liest die Felder aus
     function parseWlanCode(text){
@@ -1704,41 +1700,6 @@
       }
     }
 
-    function leseQrAusDatei(event){
-      const datei = event.target.files[0];
-      if(!datei) return;
-
-      if(qrKameraLaeuft) stoppeQrKamera();
-
-      const bild = new Image();
-      const objektUrl = URL.createObjectURL(datei);
-      bild.onload = function(){
-        const canvas = document.createElement('canvas');
-        canvas.width = bild.width;
-        canvas.height = bild.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(bild, 0, 0);
-        const bilddaten = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(objektUrl);
-
-        if(typeof jsQR === 'undefined'){
-          zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
-          return;
-        }
-        const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
-        if(ergebnis && ergebnis.data){
-          zeigeQrLeseErgebnis(ergebnis.data, null);
-        }else{
-          zeigeQrLeseErgebnis(null, 'Kein QR-Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, QR-Code nicht zu klein).');
-        }
-      };
-      bild.onerror = function(){
-        zeigeQrLeseErgebnis(null, 'Bild konnte nicht geladen werden.');
-      };
-      bild.src = objektUrl;
-    }
-
-    /* --- QR-Code lesen: live per Kamera --- */
     let qrKameraStream = null;
     let qrKameraLaeuft = false;
 
@@ -1748,11 +1709,11 @@
       const stopBtn = document.getElementById('qrKameraStopBtn');
 
       if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
-        zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen, oder stattdessen ein Bild auswählen.');
+        zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen.');
         return;
       }
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen, oder stattdessen ein Bild auswählen.');
+        zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen.');
         return;
       }
       if(typeof jsQR === 'undefined'){
@@ -1815,7 +1776,7 @@
       }else if(e.name === 'SecurityError'){
         return 'Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.';
       }
-      return 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + '). Bitte stattdessen ein Bild auswählen.';
+      return 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + ').';
     }
 
     function stoppeQrKamera(){
