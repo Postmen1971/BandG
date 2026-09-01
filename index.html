@@ -1789,20 +1789,36 @@
       return canvas;
     }
 
-    async function leseCodeAusDateiMitDrehung(leser, datei){
+    async function leseCodeAusDateiMitDrehung(datei){
+      // 1) Erst der einfache, ursprünglich bewährte Weg (funktioniert zuverlässig für QR-Codes
+      // und die meisten geraden Strichcodes)
+      try{
+        const leser1 = neuerZxingLeser();
+        if(leser1){
+          const objektUrl = URL.createObjectURL(datei);
+          try{
+            const ergebnis = await leser1.decodeFromImageUrl(objektUrl);
+            URL.revokeObjectURL(objektUrl);
+            if(ergebnis) return ergebnis;
+          }catch(e){
+            URL.revokeObjectURL(objektUrl);
+          }
+        }
+      }catch(e){}
+
+      // 2) Nichts gefunden -> zusätzlich alle 4 Drehungen probieren (hilft bei schräg
+      // fotografierten Strichcodes, die Streifen brauchen eine ungefähr waagerechte Ausrichtung)
       const bild = await ladeBildAlsCanvas(datei);
       const drehungen = [0, 90, 180, 270];
       for(const grad of drehungen){
         const canvas = drehBildAufCanvas(bild, grad);
+        const leser2 = neuerZxingLeser();
+        if(!leser2) break;
         try{
-          const ergebnis = await leser.decodeFromCanvas(canvas);
-          if(ergebnis){
-            try{ leser.reset(); }catch(e){} // Zustand zurücksetzen, damit der nächste Scan (egal ob Bild oder Kamera) wieder frisch startet
-            return ergebnis;
-          }
+          const ergebnis = await leser2.decodeFromCanvas(canvas);
+          if(ergebnis) return ergebnis;
         }catch(e){ /* bei dieser Drehung nichts gefunden -> nächste probieren */ }
       }
-      try{ leser.reset(); }catch(e){}
       return null;
     }
 
@@ -1825,14 +1841,14 @@
         return;
       }
 
-      document.getElementById('qrLesenErgebnis').innerHTML = '<div style="color:#0066cc;">🔍 Suche nach Code (probiert automatisch alle Drehungen)…</div>';
+      document.getElementById('qrLesenErgebnis').innerHTML = '<div style="color:#0066cc;">🔍 Suche nach Code…</div>';
 
-      leseCodeAusDateiMitDrehung(leser, datei)
+      leseCodeAusDateiMitDrehung(datei)
         .then(ergebnis=>{
           if(ergebnis){
             zeigeQrLeseErgebnis(ergebnis.getText(), null, ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null);
           }else{
-            // Kein Erfolg in irgendeiner Drehung -> zur Sicherheit noch mit jsQR probieren
+            // Kein Erfolg -> zur Sicherheit noch mit jsQR probieren
             if(typeof jsQR !== 'undefined'){
               leseQrAusDateiMitJsQR(datei);
             }else{
