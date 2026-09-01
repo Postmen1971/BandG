@@ -1651,7 +1651,25 @@
       if(typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader){
         return null;
       }
-      zxingLeser = new ZXing.BrowserMultiFormatReader();
+      // Hints: "genauer suchen" (kostet etwas Zeit, findet aber deutlich mehr, gerade bei
+      // schrägen/gedrehten oder etwas unscharfen Strichcodes) + explizite Formatliste
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.CODABAR,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.DATA_MATRIX,
+        ZXing.BarcodeFormat.PDF_417,
+        ZXing.BarcodeFormat.AZTEC
+      ]);
+      zxingLeser = new ZXing.BrowserMultiFormatReader(hints);
       return zxingLeser;
     }
 
@@ -1811,13 +1829,17 @@
       if(leser){
         // Hauptweg: ZXing (erkennt QR-Codes, Strichcodes, Data Matrix, PDF417, Aztec u.v.m.)
         try{
-          await leser.decodeFromVideoDevice(undefined, video, (ergebnis, fehler, controls)=>{
-            if(ergebnis && codeKameraLaeuft){
-              const formatName = ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null;
-              stoppeCodeKamera();
-              zeigeQrLeseErgebnis(ergebnis.getText(), null, formatName);
+          await leser.decodeFromConstraints(
+            { video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } },
+            video,
+            (ergebnis, fehler, controls)=>{
+              if(ergebnis && codeKameraLaeuft){
+                const formatName = ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null;
+                stoppeCodeKamera();
+                zeigeQrLeseErgebnis(ergebnis.getText(), null, formatName);
+              }
             }
-          });
+          );
         }catch(e){
           stoppeCodeKamera();
           zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
