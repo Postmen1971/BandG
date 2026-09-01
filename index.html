@@ -1433,6 +1433,9 @@
 
       <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
       <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach Code…</div>
+      <div id="qrDrehTipp" style="display:none;text-align:center;font-size:12.5px;color:#a15c00;background:#fff7ea;border:1px solid #f2c58a;border-radius:6px;padding:6px;margin-top:6px;">
+        💡 Bei Strichcodes: Code am besten <strong>quer/waagerecht</strong> halten, das erkennt die Kamera deutlich zuverlässiger als senkrecht.
+      </div>
 
       <div id="qrLesenErgebnis" class="code-ausgabe" style="display:block;min-height:auto;"></div>
     </div>
@@ -1762,6 +1765,44 @@
       bild.src = objektUrl;
     }
 
+    // Lädt ein Bild und dreht es probeweise in 0°/90°/180°/270°, bis ZXing etwas erkennt.
+    // Strichcodes (im Gegensatz zu QR-Codes) sind für die Software deutlich schwerer zu lesen,
+    // wenn die Streifen nicht ungefähr waagerecht zur Scanrichtung stehen.
+    function ladeBildAlsCanvas(datei){
+      return new Promise((resolve, reject)=>{
+        const bild = new Image();
+        const objektUrl = URL.createObjectURL(datei);
+        bild.onload = ()=>{ URL.revokeObjectURL(objektUrl); resolve(bild); };
+        bild.onerror = ()=>{ URL.revokeObjectURL(objektUrl); reject(new Error('Bild konnte nicht geladen werden.')); };
+        bild.src = objektUrl;
+      });
+    }
+
+    function drehBildAufCanvas(bild, gradzahl){
+      const canvas = document.createElement('canvas');
+      const dreht90Grad = (gradzahl === 90 || gradzahl === 270);
+      canvas.width = dreht90Grad ? bild.naturalHeight : bild.naturalWidth;
+      canvas.height = dreht90Grad ? bild.naturalWidth : bild.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width/2, canvas.height/2);
+      ctx.rotate(gradzahl * Math.PI/180);
+      ctx.drawImage(bild, -bild.naturalWidth/2, -bild.naturalHeight/2);
+      return canvas;
+    }
+
+    async function leseCodeAusDateiMitDrehung(leser, datei){
+      const bild = await ladeBildAlsCanvas(datei);
+      const drehungen = [0, 90, 180, 270];
+      for(const grad of drehungen){
+        const canvas = drehBildAufCanvas(bild, grad);
+        try{
+          const ergebnis = await leser.decodeFromCanvas(canvas);
+          if(ergebnis) return ergebnis;
+        }catch(e){ /* bei dieser Drehung nichts gefunden -> nächste probieren */ }
+      }
+      return null;
+    }
+
     function leseCodeAusDatei(event){
       const datei = event.target.files[0];
       if(!datei) return;
@@ -1777,20 +1818,23 @@
         return;
       }
 
-      const objektUrl = URL.createObjectURL(datei);
-      leser.decodeFromImageUrl(objektUrl)
+      document.getElementById('qrLesenErgebnis').innerHTML = '<div style="color:#0066cc;">🔍 Suche nach Code (probiert automatisch alle Drehungen)…</div>';
+
+      leseCodeAusDateiMitDrehung(leser, datei)
         .then(ergebnis=>{
-          URL.revokeObjectURL(objektUrl);
-          zeigeQrLeseErgebnis(ergebnis.getText(), null, ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null);
+          if(ergebnis){
+            zeigeQrLeseErgebnis(ergebnis.getText(), null, ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null);
+          }else{
+            // Kein Erfolg in irgendeiner Drehung -> zur Sicherheit noch mit jsQR probieren
+            if(typeof jsQR !== 'undefined'){
+              leseQrAusDateiMitJsQR(datei);
+            }else{
+              zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
+            }
+          }
         })
         .catch(()=>{
-          URL.revokeObjectURL(objektUrl);
-          // ZXing hat nichts gefunden -> zur Sicherheit noch mit jsQR probieren, bevor aufgegeben wird
-          if(typeof jsQR !== 'undefined'){
-            leseQrAusDateiMitJsQR(datei);
-          }else{
-            zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
-          }
+          zeigeQrLeseErgebnis(null, 'Bild konnte nicht verarbeitet werden. Bitte ein anderes Bild versuchen.');
         });
     }
 
@@ -1819,6 +1863,7 @@
       startBtn.style.display = 'none';
       stopBtn.style.display = 'block';
       document.getElementById('qrScanStatus').style.display = 'block';
+      document.getElementById('qrDrehTipp').style.display = 'block';
       document.getElementById('qrLesenErgebnis').innerHTML = ''; // vorheriges Ergebnis leeren
       codeKameraLaeuft = true;
 
@@ -1907,6 +1952,7 @@
       const video = document.getElementById('qrVideo');
       video.style.display = 'none';
       document.getElementById('qrScanStatus').style.display = 'none';
+      document.getElementById('qrDrehTipp').style.display = 'none';
       document.getElementById('qrKameraBtn').style.display = 'block';
       document.getElementById('qrKameraStopBtn').style.display = 'none';
     }
