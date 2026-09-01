@@ -268,7 +268,6 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
-<script src="https://unpkg.com/@zxing/library@0.21.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
@@ -1371,7 +1370,7 @@
     <div class="switch-container">
       <div class="switch-button active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
       <div class="switch-button" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
-      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 Code lesen</div>
+      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 QR lesen</div>
     </div>
 
     <div class="code-panel active" id="panel-qr">
@@ -1420,22 +1419,19 @@
 
     <div class="code-panel" id="panel-lesen">
       <div class="hinweis">
-        ℹ️ Liest QR-Codes, Strichcodes (Code128, EAN, UPC u.v.m.), Data Matrix, PDF417, Aztec und mehr –
-        live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot). WLAN-QR-Codes werden
-        automatisch erkannt und Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.
+        ℹ️ Liest QR-Codes – live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot).
+        WLAN-QR-Codes werden automatisch erkannt und Netzwerkname/Passwort übersichtlich angezeigt.
+        Alles läuft nur auf diesem Gerät.
       </div>
 
       <label for="qrLesenDatei">Bild auswählen</label>
-      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseCodeAusDatei(event)">
+      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseQrAusDatei(event)">
 
-      <button type="button" id="qrKameraBtn" onclick="starteCodeKamera()" style="margin-top:14px;">📷 Kamera starten</button>
-      <button type="button" id="qrKameraStopBtn" onclick="stoppeCodeKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
+      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()" style="margin-top:14px;">📷 Kamera starten</button>
+      <button type="button" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
 
       <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
-      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach Code…</div>
-      <div id="qrDrehTipp" style="display:none;text-align:center;font-size:12.5px;color:#a15c00;background:#fff7ea;border:1px solid #f2c58a;border-radius:6px;padding:6px;margin-top:6px;">
-        💡 Bei Strichcodes: Code am besten <strong>quer/waagerecht</strong> halten, das erkennt die Kamera deutlich zuverlässiger als senkrecht.
-      </div>
+      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach QR-Code…</div>
 
       <div id="qrLesenErgebnis" class="code-ausgabe" style="display:block;min-height:auto;"></div>
     </div>
@@ -1645,35 +1641,7 @@
       bild.src = url;
     }
 
-    /* --- Code lesen (QR, Strichcode, Data Matrix, PDF417, Aztec, u.v.m. via ZXing) --- */
-    function baueZxingHints(){
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.QR_CODE,
-        ZXing.BarcodeFormat.EAN_13,
-        ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.UPC_A,
-        ZXing.BarcodeFormat.UPC_E,
-        ZXing.BarcodeFormat.CODE_128,
-        ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.CODABAR,
-        ZXing.BarcodeFormat.ITF,
-        ZXing.BarcodeFormat.DATA_MATRIX,
-        ZXing.BarcodeFormat.PDF_417,
-        ZXing.BarcodeFormat.AZTEC
-      ]);
-      return hints;
-    }
-
-    // Erzeugt IMMER ein frisches, unabhängiges Reader-Objekt (kein wiederverwendetes Singleton mehr) -
-    // so kann garantiert kein alter Scan-Zustand von einem vorherigen Versuch hängen bleiben.
-    function neuerZxingLeser(){
-      if(typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader){
-        return null;
-      }
-      return new ZXing.BrowserMultiFormatReader(baueZxingHints());
-    }
+    /* --- QR-Code lesen (nur QR-Codes, per jsQR - einfach und zuverlässig) --- */
 
     // Erkennt WLAN-QR-Codes (Format: WIFI:T:WPA;S:Netzname;P:Passwort;;) und liest die Felder aus
     function parseWlanCode(text){
@@ -1681,7 +1649,6 @@
       if(!treffer) return null;
       const felder = {};
       let rest = treffer[1];
-      // an unescapten Semikolons trennen (";", nicht "\;")
       const teile = rest.split(/(?<!\\);/);
       teile.forEach(teil=>{
         const idx = teil.indexOf(':');
@@ -1692,10 +1659,10 @@
         }
       });
       if(!felder.S) return null;
-      return felder; // {T: Verschlüsselung, S: Netzname, P: Passwort, H: versteckt}
+      return felder;
     }
 
-    function zeigeQrLeseErgebnis(text, fehler, formatName){
+    function zeigeQrLeseErgebnis(text, fehler){
       const box = document.getElementById('qrLesenErgebnis');
       if(fehler){
         box.innerHTML = `<div style="color:red;font-size:13px;">${fehler}</div>`;
@@ -1704,22 +1671,20 @@
       }
       const sichererText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const wlan = parseWlanCode(text);
-      const formatLabel = formatName ? ` (${formatName})` : '';
 
       let inhaltHtml = '';
       if(wlan){
-        const verschluesselung = wlan.T || 'unbekannt';
         inhaltHtml = `
           <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ WLAN-Code erkannt!</div>
           <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;">
             <div><strong>📶 Netzwerk:</strong> ${wlan.S.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
             <div style="margin-top:4px;"><strong>🔑 Passwort:</strong> ${wlan.P ? wlan.P.replace(/&/g,'&amp;').replace(/</g,'&lt;') : '(kein Passwort)'}</div>
-            <div style="margin-top:4px;"><strong>Verschlüsselung:</strong> ${verschluesselung}</div>
+            <div style="margin-top:4px;"><strong>Verschlüsselung:</strong> ${wlan.T || 'unbekannt'}</div>
           </div>
           <button type="button" onclick="kopiereQrErgebnis('${(wlan.P||'').replace(/'/g,"\\'")}')" style="margin-top:10px;">📋 Passwort kopieren</button>`;
       }else{
         inhaltHtml = `
-          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ Code erkannt${formatLabel}!</div>
+          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ QR-Code erkannt!</div>
           <label style="margin-top:0;">Inhalt:</label>
           <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;
                       font-family:monospace;font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:5px;">${sichererText}</div>
@@ -1739,8 +1704,12 @@
       }
     }
 
-    // Rückfallebene mit jsQR (nur QR-Codes), falls ZXing nicht verfügbar ist
-    function leseQrAusDateiMitJsQR(datei){
+    function leseQrAusDatei(event){
+      const datei = event.target.files[0];
+      if(!datei) return;
+
+      if(qrKameraLaeuft) stoppeQrKamera();
+
       const bild = new Image();
       const objektUrl = URL.createObjectURL(datei);
       bild.onload = function(){
@@ -1751,11 +1720,16 @@
         ctx.drawImage(bild, 0, 0);
         const bilddaten = ctx.getImageData(0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(objektUrl);
-        const ergebnis = (typeof jsQR !== 'undefined') ? jsQR(bilddaten.data, bilddaten.width, bilddaten.height) : null;
+
+        if(typeof jsQR === 'undefined'){
+          zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
+          return;
+        }
+        const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
         if(ergebnis && ergebnis.data){
-          zeigeQrLeseErgebnis(ergebnis.data, null, 'QR_CODE');
+          zeigeQrLeseErgebnis(ergebnis.data, null);
         }else{
-          zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
+          zeigeQrLeseErgebnis(null, 'Kein QR-Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, QR-Code nicht zu klein).');
         }
       };
       bild.onerror = function(){
@@ -1764,114 +1738,15 @@
       bild.src = objektUrl;
     }
 
-    // Lädt ein Bild und dreht es probeweise in 0°/90°/180°/270°, bis ZXing etwas erkennt.
-    // Strichcodes (im Gegensatz zu QR-Codes) sind für die Software deutlich schwerer zu lesen,
-    // wenn die Streifen nicht ungefähr waagerecht zur Scanrichtung stehen.
-    function ladeBildAlsCanvas(datei){
-      return new Promise((resolve, reject)=>{
-        const bild = new Image();
-        const objektUrl = URL.createObjectURL(datei);
-        bild.onload = ()=>{ URL.revokeObjectURL(objektUrl); resolve(bild); };
-        bild.onerror = ()=>{ URL.revokeObjectURL(objektUrl); reject(new Error('Bild konnte nicht geladen werden.')); };
-        bild.src = objektUrl;
-      });
-    }
+    /* --- QR-Code lesen: live per Kamera --- */
+    let qrKameraStream = null;
+    let qrKameraLaeuft = false;
 
-    function drehBildAufCanvas(bild, gradzahl){
-      const canvas = document.createElement('canvas');
-      const dreht90Grad = (gradzahl === 90 || gradzahl === 270);
-      canvas.width = dreht90Grad ? bild.naturalHeight : bild.naturalWidth;
-      canvas.height = dreht90Grad ? bild.naturalWidth : bild.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.translate(canvas.width/2, canvas.height/2);
-      ctx.rotate(gradzahl * Math.PI/180);
-      ctx.drawImage(bild, -bild.naturalWidth/2, -bild.naturalHeight/2);
-      return canvas;
-    }
-
-    async function leseCodeAusDateiMitDrehung(datei){
-      // 1) Erst der einfache, ursprünglich bewährte Weg (funktioniert zuverlässig für QR-Codes
-      // und die meisten geraden Strichcodes)
-      try{
-        const leser1 = neuerZxingLeser();
-        if(leser1){
-          const objektUrl = URL.createObjectURL(datei);
-          try{
-            const ergebnis = await leser1.decodeFromImageUrl(objektUrl);
-            URL.revokeObjectURL(objektUrl);
-            if(ergebnis) return ergebnis;
-          }catch(e){
-            URL.revokeObjectURL(objektUrl);
-          }
-        }
-      }catch(e){}
-
-      // 2) Nichts gefunden -> zusätzlich alle 4 Drehungen probieren (hilft bei schräg
-      // fotografierten Strichcodes, die Streifen brauchen eine ungefähr waagerechte Ausrichtung)
-      const bild = await ladeBildAlsCanvas(datei);
-      const drehungen = [0, 90, 180, 270];
-      for(const grad of drehungen){
-        const canvas = drehBildAufCanvas(bild, grad);
-        const leser2 = neuerZxingLeser();
-        if(!leser2) break;
-        try{
-          const ergebnis = await leser2.decodeFromCanvas(canvas);
-          if(ergebnis) return ergebnis;
-        }catch(e){ /* bei dieser Drehung nichts gefunden -> nächste probieren */ }
-      }
-      return null;
-    }
-
-    function leseCodeAusDatei(event){
-      const datei = event.target.files[0];
-      if(!datei) return;
-
-      // Falls die Kamera noch läuft (z.B. vom vorherigen Versuch nicht sauber gestoppt): jetzt beenden,
-      // damit sich Kamera-Scan und Bild-Scan nicht gegenseitig in die Quere kommen.
-      if(codeKameraLaeuft) stoppeCodeKamera();
-
-      const leser = neuerZxingLeser();
-      if(!leser){
-        // ZXing nicht verfügbar -> Rückfallebene: wenigstens QR-Codes per jsQR lesen
-        if(typeof jsQR !== 'undefined'){
-          leseQrAusDateiMitJsQR(datei);
-        }else{
-          zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliotheken konnten nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
-        }
-        return;
-      }
-
-      document.getElementById('qrLesenErgebnis').innerHTML = '<div style="color:#0066cc;">🔍 Suche nach Code…</div>';
-
-      leseCodeAusDateiMitDrehung(datei)
-        .then(ergebnis=>{
-          if(ergebnis){
-            zeigeQrLeseErgebnis(ergebnis.getText(), null, ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null);
-          }else{
-            // Kein Erfolg -> zur Sicherheit noch mit jsQR probieren
-            if(typeof jsQR !== 'undefined'){
-              leseQrAusDateiMitJsQR(datei);
-            }else{
-              zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
-            }
-          }
-        })
-        .catch(()=>{
-          zeigeQrLeseErgebnis(null, 'Bild konnte nicht verarbeitet werden. Bitte ein anderes Bild versuchen.');
-        });
-    }
-
-    /* --- Code lesen: live per Kamera (QR, Strichcode, u.v.m.) --- */
-    let codeKameraLaeuft = false;
-    let aktiverKameraLeser = null;
-    let jsQrKameraStream = null;
-
-    async function starteCodeKamera(){
+    async function starteQrKamera(){
       const video = document.getElementById('qrVideo');
       const startBtn = document.getElementById('qrKameraBtn');
       const stopBtn = document.getElementById('qrKameraStopBtn');
 
-      // Sichere Verbindung (https) ist zwingend nötig für Kamera-Zugriff im Browser
       if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
         zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen, oder stattdessen ein Bild auswählen.');
         return;
@@ -1880,60 +1755,36 @@
         zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen, oder stattdessen ein Bild auswählen.');
         return;
       }
+      if(typeof jsQR === 'undefined'){
+        zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
+        return;
+      }
 
-      const leser = neuerZxingLeser();
-      aktiverKameraLeser = leser; // merken, damit stoppeCodeKamera() genau dieses Objekt stoppen kann
+      try{
+        qrKameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      }catch(e){
+        zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
+        return;
+      }
 
+      video.srcObject = qrKameraStream;
       video.style.display = 'block';
+      video.play();
       startBtn.style.display = 'none';
       stopBtn.style.display = 'block';
       document.getElementById('qrScanStatus').style.display = 'block';
-      document.getElementById('qrDrehTipp').style.display = 'block';
-      document.getElementById('qrLesenErgebnis').innerHTML = ''; // vorheriges Ergebnis leeren
-      codeKameraLaeuft = true;
+      document.getElementById('qrLesenErgebnis').innerHTML = '';
+      qrKameraLaeuft = true;
 
       const scrolleZurKamera = ()=>{ video.scrollIntoView({behavior:'smooth', block:'center'}); };
       video.addEventListener('loadedmetadata', scrolleZurKamera, {once:true});
       setTimeout(scrolleZurKamera, 700);
 
-      if(leser){
-        // Hauptweg: ZXing (erkennt QR-Codes, Strichcodes, Data Matrix, PDF417, Aztec u.v.m.)
-        try{
-          await leser.decodeFromConstraints(
-            { video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } },
-            video,
-            (ergebnis, fehler, controls)=>{
-              if(ergebnis && codeKameraLaeuft){
-                const formatName = ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null;
-                stoppeCodeKamera();
-                zeigeQrLeseErgebnis(ergebnis.getText(), null, formatName);
-              }
-            }
-          );
-        }catch(e){
-          stoppeCodeKamera();
-          zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
-        }
-      }else if(typeof jsQR !== 'undefined'){
-        // Rückfallebene: ZXing nicht verfügbar -> wenigstens QR-Codes per jsQR live lesen
-        try{
-          jsQrKameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        }catch(e){
-          stoppeCodeKamera();
-          zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
-          return;
-        }
-        video.srcObject = jsQrKameraStream;
-        video.play();
-        requestAnimationFrame(jsQrKameraScanSchleife);
-      }else{
-        stoppeCodeKamera();
-        zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliotheken konnten nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
-      }
+      requestAnimationFrame(qrKameraScanSchleife);
     }
 
-    function jsQrKameraScanSchleife(){
-      if(!codeKameraLaeuft) return;
+    function qrKameraScanSchleife(){
+      if(!qrKameraLaeuft) return;
       const video = document.getElementById('qrVideo');
 
       if(video.readyState === video.HAVE_ENOUGH_DATA){
@@ -1946,12 +1797,12 @@
         const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
 
         if(ergebnis && ergebnis.data){
-          stoppeCodeKamera();
-          zeigeQrLeseErgebnis(ergebnis.data, null, 'QR_CODE');
+          stoppeQrKamera();
+          zeigeQrLeseErgebnis(ergebnis.data, null);
           return;
         }
       }
-      requestAnimationFrame(jsQrKameraScanSchleife);
+      requestAnimationFrame(qrKameraScanSchleife);
     }
 
     function formatiereKameraFehler(e){
@@ -1967,18 +1818,15 @@
       return 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + '). Bitte stattdessen ein Bild auswählen.';
     }
 
-    function stoppeCodeKamera(){
-      codeKameraLaeuft = false;
-      try{ if(aktiverKameraLeser) aktiverKameraLeser.reset(); }catch(e){}
-      aktiverKameraLeser = null; // Objekt danach verwerfen, nicht wiederverwenden
-      if(jsQrKameraStream){
-        jsQrKameraStream.getTracks().forEach(track => track.stop());
-        jsQrKameraStream = null;
+    function stoppeQrKamera(){
+      qrKameraLaeuft = false;
+      if(qrKameraStream){
+        qrKameraStream.getTracks().forEach(track => track.stop());
+        qrKameraStream = null;
       }
       const video = document.getElementById('qrVideo');
       video.style.display = 'none';
       document.getElementById('qrScanStatus').style.display = 'none';
-      document.getElementById('qrDrehTipp').style.display = 'none';
       document.getElementById('qrKameraBtn').style.display = 'block';
       document.getElementById('qrKameraStopBtn').style.display = 'none';
     }
