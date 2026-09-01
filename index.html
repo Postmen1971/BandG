@@ -266,9 +266,10 @@
       display:flex; align-items:center; justify-content:center; color:#333;
   }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@zxing/library@0.21.3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -1370,7 +1371,7 @@
     <div class="switch-container">
       <div class="switch-button active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
       <div class="switch-button" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
-      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 QR lesen</div>
+      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 Code lesen</div>
     </div>
 
     <div class="code-panel active" id="panel-qr">
@@ -1419,18 +1420,19 @@
 
     <div class="code-panel" id="panel-lesen">
       <div class="hinweis">
-        ℹ️ Lies einen vorhandenen QR-Code entweder live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot). Alles läuft nur auf diesem Gerät.
+        ℹ️ Liest QR-Codes, Strichcodes (Code128, EAN, UPC u.v.m.), Data Matrix, PDF417, Aztec und mehr –
+        live über die Kamera oder aus einem gespeicherten Bild (Foto/Screenshot). WLAN-QR-Codes werden
+        automatisch erkannt und Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.
       </div>
 
       <label for="qrLesenDatei">Bild auswählen</label>
-      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseQrAusDatei(event)">
+      <input type="file" id="qrLesenDatei" accept="image/*" onchange="leseCodeAusDatei(event)">
 
-      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()" style="margin-top:14px;">📷 Kamera starten</button>
-      <button type="button" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
+      <button type="button" id="qrKameraBtn" onclick="starteCodeKamera()" style="margin-top:14px;">📷 Kamera starten</button>
+      <button type="button" id="qrKameraStopBtn" onclick="stoppeCodeKamera()" style="display:none;background:#c0392b;margin-top:8px;">Kamera stoppen</button>
 
       <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
-      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach QR-Code…</div>
-      <canvas id="qrCanvas" style="display:none;"></canvas>
+      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach Code…</div>
 
       <div id="qrLesenErgebnis" class="code-ausgabe" style="display:block;min-height:auto;"></div>
     </div>
@@ -1444,7 +1446,7 @@
       document.getElementById('panel-qr').classList.toggle('active', typ==='qr');
       document.getElementById('panel-barcode').classList.toggle('active', typ==='barcode');
       document.getElementById('panel-lesen').classList.toggle('active', typ==='lesen');
-      if(typ!=='lesen') stoppeQrKamera();
+      if(typ!=='lesen') stoppeCodeKamera();
     }
 
     const AUGE_OFFEN_SVG = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
@@ -1640,8 +1642,40 @@
       bild.src = url;
     }
 
-    /* --- QR-Code lesen: aus Bilddatei --- */
-    function zeigeQrLeseErgebnis(text, fehler){
+    /* --- Code lesen (QR, Strichcode, Data Matrix, PDF417, Aztec, u.v.m. via ZXing) --- */
+    // Wird erst erzeugt, wenn wirklich gebraucht (nicht schon beim Laden der Seite) - so blockiert
+    // ein eventuelles Problem beim Nachladen der ZXing-Bibliothek nicht die restliche Seite.
+    let zxingLeser = null;
+    function holeZxingLeser(){
+      if(zxingLeser) return zxingLeser;
+      if(typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader){
+        return null;
+      }
+      zxingLeser = new ZXing.BrowserMultiFormatReader();
+      return zxingLeser;
+    }
+
+    // Erkennt WLAN-QR-Codes (Format: WIFI:T:WPA;S:Netzname;P:Passwort;;) und liest die Felder aus
+    function parseWlanCode(text){
+      const treffer = /^WIFI:(.*);;?\s*$/i.exec((text||'').trim());
+      if(!treffer) return null;
+      const felder = {};
+      let rest = treffer[1];
+      // an unescapten Semikolons trennen (";", nicht "\;")
+      const teile = rest.split(/(?<!\\);/);
+      teile.forEach(teil=>{
+        const idx = teil.indexOf(':');
+        if(idx > -1){
+          const schluessel = teil.slice(0, idx);
+          const wert = teil.slice(idx+1).replace(/\\(.)/g, '$1');
+          felder[schluessel] = wert;
+        }
+      });
+      if(!felder.S) return null;
+      return felder; // {T: Verschlüsselung, S: Netzname, P: Passwort, H: versteckt}
+    }
+
+    function zeigeQrLeseErgebnis(text, fehler, formatName){
       const box = document.getElementById('qrLesenErgebnis');
       if(fehler){
         box.innerHTML = `<div style="color:red;font-size:13px;">${fehler}</div>`;
@@ -1649,30 +1683,44 @@
         return;
       }
       const sichererText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      box.innerHTML = `
-        <div style="width:100%;text-align:left;">
-          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ QR-Code erkannt!</div>
-          <label style="margin-top:0;">Inhalt des QR-Codes:</label>
+      const wlan = parseWlanCode(text);
+      const formatLabel = formatName ? ` (${formatName})` : '';
+
+      let inhaltHtml = '';
+      if(wlan){
+        const verschluesselung = wlan.T || 'unbekannt';
+        inhaltHtml = `
+          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ WLAN-Code erkannt!</div>
+          <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;">
+            <div><strong>📶 Netzwerk:</strong> ${wlan.S.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+            <div style="margin-top:4px;"><strong>🔑 Passwort:</strong> ${wlan.P ? wlan.P.replace(/&/g,'&amp;').replace(/</g,'&lt;') : '(kein Passwort)'}</div>
+            <div style="margin-top:4px;"><strong>Verschlüsselung:</strong> ${verschluesselung}</div>
+          </div>
+          <button type="button" onclick="kopiereQrErgebnis('${(wlan.P||'').replace(/'/g,"\\'")}')" style="margin-top:10px;">📋 Passwort kopieren</button>`;
+      }else{
+        inhaltHtml = `
+          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ Code erkannt${formatLabel}!</div>
+          <label style="margin-top:0;">Inhalt:</label>
           <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;
                       font-family:monospace;font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:5px;">${sichererText}</div>
-          <button type="button" onclick="kopiereQrErgebnis()" style="margin-top:10px;">📋 Text kopieren</button>
-        </div>`;
+          <button type="button" onclick="kopiereQrErgebnis()" style="margin-top:10px;">📋 Text kopieren</button>`;
+      }
+
+      box.innerHTML = `<div style="width:100%;text-align:left;">${inhaltHtml}</div>`;
       box.dataset.rohtext = text;
       box.scrollIntoView({behavior:'smooth', block:'nearest'});
     }
 
-    function kopiereQrErgebnis(){
+    function kopiereQrErgebnis(direkterText){
       const box = document.getElementById('qrLesenErgebnis');
-      const text = box.dataset.rohtext || '';
+      const text = (direkterText !== undefined && direkterText !== null) ? direkterText : (box.dataset.rohtext || '');
       if(navigator.clipboard && text){
         navigator.clipboard.writeText(text).catch(()=>{});
       }
     }
 
-    function leseQrAusDatei(event){
-      const datei = event.target.files[0];
-      if(!datei) return;
-
+    // Rückfallebene mit jsQR (nur QR-Codes), falls ZXing nicht verfügbar ist
+    function leseQrAusDateiMitJsQR(datei){
       const bild = new Image();
       const objektUrl = URL.createObjectURL(datei);
       bild.onload = function(){
@@ -1683,12 +1731,11 @@
         ctx.drawImage(bild, 0, 0);
         const bilddaten = ctx.getImageData(0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(objektUrl);
-
-        const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
+        const ergebnis = (typeof jsQR !== 'undefined') ? jsQR(bilddaten.data, bilddaten.width, bilddaten.height) : null;
         if(ergebnis && ergebnis.data){
-          zeigeQrLeseErgebnis(ergebnis.data, null);
+          zeigeQrLeseErgebnis(ergebnis.data, null, 'QR_CODE');
         }else{
-          zeigeQrLeseErgebnis(null, 'Kein QR-Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, QR-Code nicht zu klein).');
+          zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
         }
       };
       bild.onerror = function(){
@@ -1697,13 +1744,44 @@
       bild.src = objektUrl;
     }
 
-    /* --- QR-Code lesen: live per Kamera --- */
-    let qrKameraStream = null;
-    let qrKameraLaeuft = false;
+    function leseCodeAusDatei(event){
+      const datei = event.target.files[0];
+      if(!datei) return;
 
-    async function starteQrKamera(){
+      const leser = holeZxingLeser();
+      if(!leser){
+        // ZXing nicht verfügbar -> Rückfallebene: wenigstens QR-Codes per jsQR lesen
+        if(typeof jsQR !== 'undefined'){
+          leseQrAusDateiMitJsQR(datei);
+        }else{
+          zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliotheken konnten nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
+        }
+        return;
+      }
+
+      const objektUrl = URL.createObjectURL(datei);
+      leser.decodeFromImageUrl(objektUrl)
+        .then(ergebnis=>{
+          URL.revokeObjectURL(objektUrl);
+          zeigeQrLeseErgebnis(ergebnis.getText(), null, ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null);
+        })
+        .catch(()=>{
+          URL.revokeObjectURL(objektUrl);
+          // ZXing hat nichts gefunden -> zur Sicherheit noch mit jsQR probieren, bevor aufgegeben wird
+          if(typeof jsQR !== 'undefined'){
+            leseQrAusDateiMitJsQR(datei);
+          }else{
+            zeigeQrLeseErgebnis(null, 'Kein Code im Bild gefunden. Bitte ein anderes Bild versuchen (scharf, gut beleuchtet, Code nicht zu klein).');
+          }
+        });
+    }
+
+    /* --- Code lesen: live per Kamera (QR, Strichcode, u.v.m.) --- */
+    let codeKameraLaeuft = false;
+    let jsQrKameraStream = null;
+
+    async function starteCodeKamera(){
       const video = document.getElementById('qrVideo');
-      const canvas = document.getElementById('qrCanvas');
       const startBtn = document.getElementById('qrKameraBtn');
       const stopBtn = document.getElementById('qrKameraStopBtn');
 
@@ -1712,57 +1790,62 @@
         zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen, oder stattdessen ein Bild auswählen.');
         return;
       }
-
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
         zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen, oder stattdessen ein Bild auswählen.');
         return;
       }
 
-      try{
-        qrKameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      }catch(e){
-        let meldung;
-        if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-          meldung = 'Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf "Erlauben" stellen, dann die Seite neu laden.';
-        }else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
-          meldung = 'Es wurde keine Kamera gefunden.';
-        }else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
-          meldung = 'Die Kamera wird gerade von einer anderen App benutzt.';
-        }else if(e.name === 'SecurityError'){
-          meldung = 'Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.';
-        }else{
-          meldung = 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + '). Bitte stattdessen ein Bild auswählen.';
-        }
-        zeigeQrLeseErgebnis(null, meldung);
-        return;
-      }
+      const leser = holeZxingLeser();
 
-      video.srcObject = qrKameraStream;
       video.style.display = 'block';
-      video.play();
       startBtn.style.display = 'none';
       stopBtn.style.display = 'block';
       document.getElementById('qrScanStatus').style.display = 'block';
       document.getElementById('qrLesenErgebnis').innerHTML = ''; // vorheriges Ergebnis leeren
-      qrKameraLaeuft = true;
+      codeKameraLaeuft = true;
 
-      // Erst hinscrollen, sobald das Kamerabild wirklich Maße/Inhalt hat (nicht nach fester Wartezeit),
-      // sonst ist die Position beim Scrollen noch falsch, weil das Video kurz danach noch nachwächst.
       const scrolleZurKamera = ()=>{ video.scrollIntoView({behavior:'smooth', block:'center'}); };
       video.addEventListener('loadedmetadata', scrolleZurKamera, {once:true});
-      // Sicherheitsnetz, falls das Event aus irgendeinem Grund nicht feuert
       setTimeout(scrolleZurKamera, 700);
 
-      requestAnimationFrame(qrKameraScanSchleife);
+      if(leser){
+        // Hauptweg: ZXing (erkennt QR-Codes, Strichcodes, Data Matrix, PDF417, Aztec u.v.m.)
+        try{
+          await leser.decodeFromVideoDevice(undefined, video, (ergebnis, fehler, controls)=>{
+            if(ergebnis && codeKameraLaeuft){
+              const formatName = ergebnis.getBarcodeFormat ? String(ergebnis.getBarcodeFormat()) : null;
+              stoppeCodeKamera();
+              zeigeQrLeseErgebnis(ergebnis.getText(), null, formatName);
+            }
+          });
+        }catch(e){
+          stoppeCodeKamera();
+          zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
+        }
+      }else if(typeof jsQR !== 'undefined'){
+        // Rückfallebene: ZXing nicht verfügbar -> wenigstens QR-Codes per jsQR live lesen
+        try{
+          jsQrKameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        }catch(e){
+          stoppeCodeKamera();
+          zeigeQrLeseErgebnis(null, formatiereKameraFehler(e));
+          return;
+        }
+        video.srcObject = jsQrKameraStream;
+        video.play();
+        requestAnimationFrame(jsQrKameraScanSchleife);
+      }else{
+        stoppeCodeKamera();
+        zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliotheken konnten nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
+      }
     }
 
-    function qrKameraScanSchleife(){
-      if(!qrKameraLaeuft) return;
-
+    function jsQrKameraScanSchleife(){
+      if(!codeKameraLaeuft) return;
       const video = document.getElementById('qrVideo');
-      const canvas = document.getElementById('qrCanvas');
 
       if(video.readyState === video.HAVE_ENOUGH_DATA){
+        const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
@@ -1771,19 +1854,33 @@
         const ergebnis = jsQR(bilddaten.data, bilddaten.width, bilddaten.height);
 
         if(ergebnis && ergebnis.data){
-          stoppeQrKamera(); // Kamera sofort stoppen, sobald ein Code erkannt wurde
-          zeigeQrLeseErgebnis(ergebnis.data, null);
+          stoppeCodeKamera();
+          zeigeQrLeseErgebnis(ergebnis.data, null, 'QR_CODE');
           return;
         }
       }
-      requestAnimationFrame(qrKameraScanSchleife);
+      requestAnimationFrame(jsQrKameraScanSchleife);
     }
 
-    function stoppeQrKamera(){
-      qrKameraLaeuft = false;
-      if(qrKameraStream){
-        qrKameraStream.getTracks().forEach(track => track.stop());
-        qrKameraStream = null;
+    function formatiereKameraFehler(e){
+      if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
+        return 'Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf "Erlauben" stellen, dann die Seite neu laden.';
+      }else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
+        return 'Es wurde keine Kamera gefunden.';
+      }else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
+        return 'Die Kamera wird gerade von einer anderen App benutzt.';
+      }else if(e.name === 'SecurityError'){
+        return 'Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.';
+      }
+      return 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + '). Bitte stattdessen ein Bild auswählen.';
+    }
+
+    function stoppeCodeKamera(){
+      codeKameraLaeuft = false;
+      try{ if(zxingLeser) zxingLeser.reset(); }catch(e){}
+      if(jsQrKameraStream){
+        jsQrKameraStream.getTracks().forEach(track => track.stop());
+        jsQrKameraStream = null;
       }
       const video = document.getElementById('qrVideo');
       video.style.display = 'none';
