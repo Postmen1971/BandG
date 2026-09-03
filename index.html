@@ -346,8 +346,29 @@
     
     document.addEventListener("DOMContentLoaded", berechne);
 
-    const key="galvanikCounter"; let count=localStorage.getItem(key); count=count?parseInt(count)+1:1;
-    localStorage.setItem(key,count); document.getElementById("counter").innerText=`#${count}`;
+    // Echter, geräteübergreifender Besucherzähler (kostenlose, anmeldefreie API) - zählt bei
+    // JEDEM Gerät/Browser gemeinsam hoch, nicht nur lokal auf diesem Gerät. Fällt bei fehlendem
+    // Internet automatisch auf den alten, rein lokalen Zähler zurück.
+    const ZAEHLER_SCHLUESSEL = "postmen1971-galvanik-tools-besucher";
+    const LOKALER_ZAEHLER_KEY = "galvanikCounter";
+
+    function zeigeLokalenZaehler(){
+      let count = localStorage.getItem(LOKALER_ZAEHLER_KEY);
+      count = count ? parseInt(count) + 1 : 1;
+      localStorage.setItem(LOKALER_ZAEHLER_KEY, count);
+      document.getElementById("counter").innerText = `#${count}`;
+    }
+
+    fetch(`https://countapi.mileshilliard.com/api/v1/hit/${ZAEHLER_SCHLUESSEL}`, {cache:"no-store"})
+      .then(res => { if(!res.ok) throw new Error('Netzwerkfehler'); return res.json(); })
+      .then(data => {
+        if(data && typeof data.value !== "undefined"){
+          document.getElementById("counter").innerText = `#${data.value}`;
+        }else{
+          throw new Error('Ungültige Antwort');
+        }
+      })
+      .catch(() => { zeigeLokalenZaehler(); });
   </script>
 </section>
 
