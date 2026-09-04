@@ -852,6 +852,22 @@
     function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
     function warteMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
+    // Führt asynchrone Abfragen in kleinen parallelen Stapeln aus (statt streng nacheinander).
+    // Das ist der Haupthebel für kürzere Ladezeit: 16 Vereine + 11 Ligen nacheinander mit
+    // je 90ms Pause dauerten in Summe mehrere Sekunden, weil jede Abfrage auf die vorherige
+    // wartete. Mit Stapeln von je 4 parallelen Abfragen sinkt die Wartezeit auf einen Bruchteil,
+    // ohne die kostenlose API mit zu vielen gleichzeitigen Anfragen auf einmal zu überlasten.
+    async function inStapelnAusfuehren(elemente, stapelGroesse, asyncFn){
+      const ergebnisse=[];
+      for(let i=0; i<elemente.length; i+=stapelGroesse){
+        const stapel=elemente.slice(i, i+stapelGroesse);
+        const stapelErgebnisse=await Promise.all(stapel.map(asyncFn));
+        ergebnisse.push(...stapelErgebnisse);
+        if(i+stapelGroesse < elemente.length) await warteMs(120); // kurze Pause zwischen Stapeln, schont die kostenlose API
+      }
+      return ergebnisse;
+    }
+
     function istLieblingsverein(ev){
       const heim=(ev.strHomeTeam||"").toLowerCase();
       const gast=(ev.strAwayTeam||"").toLowerCase();
@@ -1051,34 +1067,39 @@
       let erfolgreicheAbfragen=0;
       let gesamtAbfragen=0;
 
-      // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele)
-      for(const teamName of LIEBLINGSVEREINE){
+      // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele).
+      // Läuft in parallelen 4er-Stapeln statt streng nacheinander - das spart bei 16 Vereinen
+      // den Großteil der Ladezeit, ohne die kostenlose API mit voller Parallelität zu fluten.
+      async function holeSpieleFuerEinenVerein(teamName){
         const id=await holeTeamId(teamName, teamIdCache);
-        await warteMs(90);
-        if(!id) continue;
+        if(!id) return {events:[], abfragen:0, erfolge:0};
 
         const [nachfolgende, letzte]=await Promise.all([
           holeNaechsteSpieleFuerTeam(id),
           holeLetzteSpieleFuerTeam(id)
         ]);
-        await warteMs(90);
 
-        gesamtAbfragen+=2;
-        if(nachfolgende.ok) erfolgreicheAbfragen++;
-        if(letzte.ok) erfolgreicheAbfragen++;
-
-        alleSpiele.push(...nachfolgende.events.slice(0,3).map(verarbeiteEvent));
-        alleSpiele.push(...letzte.events.slice(0,3).map(verarbeiteEvent));
+        return {
+          abfragen:2,
+          erfolge:(nachfolgende.ok?1:0)+(letzte.ok?1:0),
+          events:[...nachfolgende.events.slice(0,3).map(verarbeiteEvent), ...letzte.events.slice(0,3).map(verarbeiteEvent)]
+        };
       }
+      const teamErgebnisse=await inStapelnAusfuehren(LIEBLINGSVEREINE, 4, holeSpieleFuerEinenVerein);
+      teamErgebnisse.forEach(r=>{
+        gesamtAbfragen+=r.abfragen;
+        erfolgreicheAbfragen+=r.erfolge;
+        alleSpiele.push(...r.events);
+      });
 
-      // 2) Ligabasiert: fängt zusätzlich Auswärtsspiele ab (teambasierte Abfrage zeigt im Free-Tier nur Heimspiele)
-      for(const ligaId of WETTBEWERB_IDS){
-        const ergebnis=await holeNaechsteSpieleFuerWettbewerb(ligaId);
-        await warteMs(90);
+      // 2) Ligabasiert: fängt zusätzlich Auswärtsspiele ab (teambasierte Abfrage zeigt im Free-Tier
+      // nur Heimspiele). Ebenfalls in parallelen Stapeln statt nacheinander.
+      const ligaErgebnisse=await inStapelnAusfuehren(WETTBEWERB_IDS, 4, holeNaechsteSpieleFuerWettbewerb);
+      ligaErgebnisse.forEach(ergebnis=>{
         gesamtAbfragen++;
         if(ergebnis.ok) erfolgreicheAbfragen++;
         alleSpiele.push(...ergebnis.events.map(verarbeiteEvent));
-      }
+      });
 
       // Quelle nicht erreichbar? (so gut wie alle Abfragen fehlgeschlagen) -> automatisch nochmal versuchen,
       // danach Rückfallebenen probieren: 1) Cloudflare-Worker-Proxy zu football-data.org (England, Spanien,
