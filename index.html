@@ -2040,12 +2040,12 @@
   bC.addEventListener("click",()=>activate("code"));
 
   // Versteckter Zugang zur Gehalt-Seite: 5x auf "Zeit berechnen" tippen, alle 5 Klicks
-  // zusammen müssen innerhalb von 2 Sekunden passieren (nicht nur Abstand zwischen je zwei Klicks).
+  // zusammen müssen innerhalb von 10 Sekunden passieren (nicht nur Abstand zwischen je zwei Klicks).
   // Läuft als zusätzlicher Listener neben der normalen Berechnung - stört diese nicht.
   (function(){
     const elCalcBtn = document.getElementById("calcBtn");
     const pG = document.getElementById("tab-gehalt");
-    const ZEITFENSTER_MS = 2000;
+    const ZEITFENSTER_MS = 10000;
     let tippAnzahl = 0;
     let ersterTippZeitpunkt = 0;
     elCalcBtn.addEventListener("click", function(){
