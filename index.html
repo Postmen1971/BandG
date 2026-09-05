@@ -99,7 +99,7 @@
       padding:0;
   }
   #tab-spule .header {
-      background-color: #333;
+      background-color: var(--darkblue);
       color: white;
       padding: 8px;
       text-align: center;
@@ -118,8 +118,8 @@
   }
 
   #tab-spule .bg-blue { background-color: #eef6ff; }
-  #tab-spule .bg-green { background-color: #ebf9eb; }
-  #tab-spule .bg-result { background-color: #2c3e50; }
+  #tab-spule .bg-green { background-color: #fff3e8; }
+  #tab-spule .bg-result { background-color: var(--darkblue); }
 
   #tab-spule label {
       display: block;
@@ -144,7 +144,7 @@
   #tab-spule button {
       width: 100%;
       padding: 9px;
-      background-color: #007bff;
+      background-color: var(--darkblue);
       color: white;
       font-size: 14px;
       border: none;
@@ -166,7 +166,7 @@
   #tab-spule .result-number {
       font-size: 1.6rem;
       font-weight: bold;
-      color: #4cd137;
+      color: var(--orange);
       line-height: 1.1;
   }
   #tab-spule .result-label {
@@ -208,9 +208,9 @@
       margin: 0 4px;
   }
   #tab-spule .switch-button.active {
-      background-color: #007bff;
+      background-color: var(--orange);
       color: white;
-      border-color: #0056b3;
+      border-color: #c96a1f;
   }
   /* Dezente "Unter-Auswahl" (z.B. Spulengröße), optisch klar abgesetzt von der
      Haupt-Auswahl (Durchmesser/Gewicht) weiter oben, damit nicht der Eindruck
@@ -233,7 +233,7 @@
       background-color: #f7f7f7;
   }
   #tab-spule .switch-button.sub.active {
-      background-color: #e8802a;
+      background-color: var(--orange);
       border-color: #c96a1f;
   }  /* ===== QR-Code / Barcode Generator ===== */
   #tab-code .switch-container{
@@ -244,7 +244,7 @@
       padding:8px 10px; border:1px solid #ddd; border-radius:6px; cursor:pointer;
       font-weight:bold; font-size:0.85rem; flex-grow:1; text-align:center; margin:0 4px;
   }
-  #tab-code .switch-button.active{ background-color:#007bff; color:#fff; border-color:#0056b3; }
+  #tab-code .switch-button.active{ background-color:var(--orange); color:#fff; border-color:#c96a1f; }
   #tab-code .code-panel{ display:none; }
   #tab-code .code-panel.active{ display:block; }
   #tab-code .hinweis{
@@ -280,7 +280,7 @@
       font-size:17px; padding:10px; margin-top:5px;
   }
   #tab-code .switch-button{ padding:11px 12px; font-size:1rem; }
-  #tab-code button{ font-size:16px; padding:12px; }
+  #tab-code button{ font-size:16px; padding:12px; background-color:var(--darkblue); color:#fff; border:none; border-radius:8px; cursor:pointer; }
   #tab-code .hinweis{ font-size:13px; padding:11px; }
   #tab-code .passwort-zeile{ display:flex; gap:8px; align-items:center; }
   #tab-code .passwort-zeile input{ flex:1; }
