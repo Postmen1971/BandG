@@ -55,7 +55,7 @@
   h2{text-align:center;color:var(--orange);margin-top:0;font-size:1.2rem;margin-bottom:8px}
   label{display:block;margin-top:8px;
         font-weight:bold;color:#002855;font-size:13.5px;}
-  input[type=number], select{
+  input[type=number], input[type=text], select{
     width:100%;
     padding:6px;
     font-size:16px; /* mind. 16px, sonst zoomt iOS Safari beim Antippen ungewollt rein */
@@ -317,19 +317,19 @@
     <h2>Galvanik-Stromrechner</h2>
 
     <label for="istStrom">Aktueller Strom (A):</label>
-    <input type="text" inputmode="decimal" id="istStrom" placeholder="z. B. 4" value="4">
+    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istStrom" placeholder="z. B. 4" value="4">
 
     <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="text" inputmode="decimal" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
+    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
 
     <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="text" inputmode="decimal" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
+    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
 
     <label for="istGeschw">Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <input type="text" inputmode="decimal" id="istGeschw" placeholder="z. B. 7" value="7">
+    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istGeschw" placeholder="z. B. 7" value="7">
 
     <label for="neuGeschw">Neue Bandgeschwindigkeit (m/min):</label>
-    <input type="text" inputmode="decimal" id="neuGeschw" placeholder="z. B. 7" value="7">
+    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="neuGeschw" placeholder="z. B. 7" value="7">
 
     <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
     <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
@@ -418,7 +418,7 @@
     <div class="row">
       <div style="flex:1">
         <label for="speedInput">Geschwindigkeit (m/min)</label>
-        <input type="text" inputmode="decimal" id="speedInput" placeholder="z. B. 7" value="7" min="1">
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="speedInput" placeholder="z. B. 7" value="7" min="1">
       </div>
     </div>
     <div class="row">
@@ -1281,13 +1281,13 @@
         <div class="section-title">1. Referenz (Kalibrierung)</div>
         
         <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>REFERENZ</strong>:</label>
-        <input type="text" inputmode="decimal" id="refHalfD" placeholder="z.B. 31.5">
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refHalfD" placeholder="z.B. 31.5">
         
         <label>Stückzahl bei diesem Referenz-Zustand:</label>
-        <input type="text" inputmode="decimal" id="refCount" placeholder="z.B. 200000">
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refCount" placeholder="z.B. 200000">
 
         <label><strong>Kontakte pro Meter (Dichte):</strong></label>
-        <input type="text" inputmode="decimal" id="cpm" placeholder="z.B. 200">
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="z.B. 200">
 
         <div style="display:none;">
         <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
@@ -1304,7 +1304,7 @@
         <div class="section-title">2. Aktuelle Messung</div>
         
         <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>AKTUELL</strong>:</label>
-        <input type="text" inputmode="decimal" id="currHalfD" placeholder="z.B. 25.5">
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="currHalfD" placeholder="z.B. 25.5">
 
         <label>Berechneter aktueller Durchmesser (D_Aktuell):</label>
         <span id="outputCurrD" class="small-output">-</span>
@@ -1328,17 +1328,17 @@
             <div class="section-title">1. Referenz (volle Spule)</div>
 
             <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung:</label>
-            <input type="text" inputmode="decimal" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
 
             <label>Stückzahl bei diesem Gewicht (laut Lieferschein):</label>
-            <input type="text" inputmode="decimal" id="gewVollStueck" placeholder="z.B. 200000">
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVollStueck" placeholder="z.B. 200000">
         </div>
 
         <div class="section bg-green">
             <div class="section-title">2. Aktuelle Messung</div>
 
             <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg):</label>
-            <input type="text" inputmode="decimal" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
         </div>
 
         <div id="errorBoxGewicht" class="error-msg"></div>
