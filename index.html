@@ -211,6 +211,30 @@
       background-color: #007bff;
       color: white;
       border-color: #0056b3;
+  }
+  /* Dezente "Unter-Auswahl" (z.B. Spulengröße), optisch klar abgesetzt von der
+     Haupt-Auswahl (Durchmesser/Gewicht) weiter oben, damit nicht der Eindruck
+     entsteht, es handle sich um eine gleichrangige 4er-Auswahl. */
+  #tab-spule .sub-auswahl-label {
+      font-size: 0.75rem;
+      color: #666;
+      padding: 6px 8px 2px 8px;
+      background-color: #fff;
+  }
+  #tab-spule .switch-container.sub {
+      background-color: #fff;
+      padding: 0 0 6px 0;
+  }
+  #tab-spule .switch-button.sub {
+      padding: 5px 8px;
+      font-size: 0.75rem;
+      font-weight: normal;
+      border-radius: 5px;
+      background-color: #f7f7f7;
+  }
+  #tab-spule .switch-button.sub.active {
+      background-color: #e8802a;
+      border-color: #c96a1f;
   }  /* ===== QR-Code / Barcode Generator ===== */
   #tab-code .switch-container{
       display:flex; justify-content:space-around; padding:5px 0;
@@ -1228,35 +1252,42 @@
     </div>
 
     <div class="switch-container">
-        <div class="switch-button" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
-        <div class="switch-button active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
+        <div class="switch-button active" id="btn-modus-durchmesser" onclick="wechsleSpuleModus('durchmesser')">📏 Nach Durchmesser</div>
+        <div class="switch-button" id="btn-modus-gewicht" onclick="wechsleSpuleModus('gewicht')">⚖️ Nach Gewicht</div>
+    </div>
+
+    <div id="modus-durchmesser">
+    <div class="sub-auswahl-label">Spulengröße:</div>
+    <div class="switch-container sub">
+        <div class="switch-button sub" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
+        <div class="switch-button sub active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
     </div>
 
     <div class="section" style="padding-top: 5px; padding-bottom: 5px;">
         <div class="section-title" style="margin-bottom: 0;">
-            Kern-Durchmesser: **35 cm**. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
+            Kern-Durchmesser: <strong>35 cm</strong>. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
         </div>
     </div>
 
     <div class="section bg-blue">
         <div class="section-title">1. Referenz (Kalibrierung)</div>
         
-        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **REFERENZ**:</label>
+        <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>REFERENZ</strong>:</label>
         <input type="number" id="refHalfD" placeholder="z.B. 31.5">
         
         <label>Stückzahl bei diesem Referenz-Zustand:</label>
         <input type="number" id="refCount" placeholder="z.B. 200000">
 
-        <label>**Kontakte pro Meter (Dichte):**</label>
+        <label><strong>Kontakte pro Meter (Dichte):</strong></label>
         <input type="number" id="cpm" placeholder="z.B. 200">
 
         <div style="display:none;">
         <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
         
-        <label>Berechneter Referenz-Durchmesser $D_{\text{Ref}}$:</label>
+        <label>Berechneter Referenz-Durchmesser (D_Ref):</label>
         <span id="outputRefD" class="small-output">-</span>
         
-        <label>Kalibrierfaktor $F$ (Fläche pro Meter):</label>
+        <label>Kalibrierfaktor F (Fläche pro Meter):</label>
         <span id="outputFactorF" class="small-output">-</span>
         </div>
     </div>
@@ -1264,10 +1295,10 @@
     <div class="section bg-green">
         <div class="section-title">2. Aktuelle Messung</div>
         
-        <label>Gemessene Distanz **AUßEN nach KERN** (cm) - **AKTUELL**:</label>
+        <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>AKTUELL</strong>:</label>
         <input type="number" id="currHalfD" placeholder="z.B. 25.5">
 
-        <label>Berechneter Aktueller-Durchmesser $D_{\text{Aktuell}}$:</label>
+        <label>Berechneter aktueller Durchmesser (D_Aktuell):</label>
         <span id="outputCurrD" class="small-output">-</span>
     </div>
 
@@ -1280,6 +1311,41 @@
             <div class="result-label">Aktueller Bestand ca.:</div>
             <div id="resultValue" class="result-number">0</div>
             <div class="result-label">Stück</div>
+        </div>
+    </div>
+    </div><!-- Ende modus-durchmesser -->
+
+    <div id="modus-gewicht" style="display:none;">
+        <div class="section bg-blue">
+            <div class="section-title">1. Referenz (volle Spule)</div>
+
+            <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung:</label>
+            <input type="number" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
+
+            <label>Stückzahl bei diesem Gewicht (laut Lieferschein):</label>
+            <input type="number" id="gewVollStueck" placeholder="z.B. 200000">
+        </div>
+
+        <div class="section bg-green">
+            <div class="section-title">2. Aktuelle Messung</div>
+
+            <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg):</label>
+            <input type="number" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
+        </div>
+
+        <div id="errorBoxGewicht" class="error-msg"></div>
+
+        <button onclick="calculateWeight()">BESTAND BERECHNEN</button>
+
+        <div id="resultBoxGewicht" class="result-area bg-result">
+            <div class="result-group">
+                <div class="result-label">Aktueller Bestand ca.:</div>
+                <div id="resultValueGewicht" class="result-number">0</div>
+                <div class="result-label">Stück</div>
+            </div>
+            <div class="result-label" style="margin-top:8px; font-size:0.85em; opacity:0.8;">
+                Gewicht pro Stück: <span id="resultGewichtProStueck">-</span>
+            </div>
         </div>
     </div>
 </div>
@@ -1399,15 +1465,90 @@
         elResultBox.style.display = 'block';
     }
 
-    function showError(msg) {
-        const elError = document.getElementById('errorBox');
+    function showError(msg, targetId) {
+        const elError = document.getElementById(targetId || 'errorBox');
         elError.innerText = msg;
         elError.style.display = 'block';
+    }
+
+    /**
+     * Schaltet zwischen der Durchmesser-Methode und der Gewichts-Methode um.
+     */
+    function wechsleSpuleModus(modus) {
+        document.getElementById('btn-modus-durchmesser').classList.toggle('active', modus === 'durchmesser');
+        document.getElementById('btn-modus-gewicht').classList.toggle('active', modus === 'gewicht');
+        document.getElementById('modus-durchmesser').style.display = modus === 'durchmesser' ? 'block' : 'none';
+        document.getElementById('modus-gewicht').style.display = modus === 'gewicht' ? 'block' : 'none';
+    }
+
+    /**
+     * Berechnet die Restmenge anhand des Gewichts statt des Durchmessers.
+     * Nützlich, wenn das Material verbogen/unrund ist und eine Durchmesser-Messung ungenau wäre.
+     */
+    // Merkt sich die Kalibrierungswerte (Leergewicht, Vollgewicht, Stückzahl) automatisch,
+    // da diese bei gleichbleibenden Spulen praktisch immer gleich sind. Nur das "aktuelle
+    // Gewicht" (ändert sich bei jeder Messung) wird bewusst nicht gespeichert.
+    const GEWICHT_KALIBRIERUNG_KEY = "galvanikSpuleGewichtKalibrierung";
+    const gewichtKalibrierFelder = ["gewVoll", "gewVollStueck"];
+
+    function ladeGewichtKalibrierung() {
+        try {
+            const gespeichert = JSON.parse(localStorage.getItem(GEWICHT_KALIBRIERUNG_KEY));
+            if (gespeichert) {
+                gewichtKalibrierFelder.forEach(id => {
+                    if (gespeichert[id] !== undefined && gespeichert[id] !== "") document.getElementById(id).value = gespeichert[id];
+                });
+            }
+        } catch (e) {}
+    }
+
+    function speichereGewichtKalibrierung() {
+        try {
+            const werte = {};
+            gewichtKalibrierFelder.forEach(id => { werte[id] = document.getElementById(id).value; });
+            localStorage.setItem(GEWICHT_KALIBRIERUNG_KEY, JSON.stringify(werte));
+        } catch (e) {}
+    }
+
+    function calculateWeight() {
+        const vollGewicht = parseFloat(document.getElementById('gewVoll').value);
+        const vollStueck = parseFloat(document.getElementById('gewVollStueck').value);
+        const aktGewicht = parseFloat(document.getElementById('gewAktuell').value);
+
+        const elResultBoxGewicht = document.getElementById('resultBoxGewicht');
+        const elResultValGewicht = document.getElementById('resultValueGewicht');
+        const elResultGewichtProStueck = document.getElementById('resultGewichtProStueck');
+
+        document.getElementById('errorBoxGewicht').style.display = 'none';
+        elResultBoxGewicht.style.display = 'none';
+        elResultGewichtProStueck.innerText = '-';
+
+        if (isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
+            showError('Bitte alle drei Felder mit gültigen Zahlen ausfüllen (Gewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
+            return;
+        }
+
+        // Einfaches Verhältnis der beiden Gesamtgewichte (Spule + Material jeweils mit drin) -
+        // kein separates Leergewicht nötig, da es sich beim Vergleich zweier Gewichte derselben
+        // Spulenart automatisch herauskürzt.
+        const gewichtProStueckKg = vollGewicht / vollStueck;
+        const resultCount = Math.floor(aktGewicht / vollGewicht * vollStueck);
+
+        let hinweis = '';
+        if (aktGewicht > vollGewicht) {
+            hinweis = ' ⚠️ über Vollgewicht - Werte prüfen';
+        }
+
+        elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4) + ' g/Stück';
+        elResultValGewicht.innerText = resultCount.toLocaleString('de-DE') + hinweis;
+        elResultBoxGewicht.style.display = 'block';
+        speichereGewichtKalibrierung();
     }
 
     // Initialisierung beim Laden
     window.onload = function() {
         setSpoolSize(D_MAX_76);
+        ladeGewichtKalibrierung();
     };
 </script>
 </section>
