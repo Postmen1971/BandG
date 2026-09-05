@@ -1992,6 +1992,37 @@
   </script>
 </section>
 
+<section id="tab-gehalt" class="tab-pane">
+  <div class="container">
+    <h2>Gehalt / Lohnabrechnung</h2>
+    <div style="background:#fff3e8;border:1px solid #f2c58a;border-radius:8px;padding:14px;font-size:0.95rem;line-height:1.5;color:#333;">
+      <p style="margin-top:0;">
+        <strong>Hinweis:</strong> Der folgende Button leitet dich lediglich zur offiziellen
+        Login-Seite unseres Lohnabrechnungs-Dienstleisters <strong>ADP</strong> weiter.
+      </p>
+      <p>
+        Diese App (RechnerGAL) läuft komplett getrennt davon – es werden <strong>keine
+        Zugangsdaten, Passwörter oder Gehaltsdaten</strong> über diese Seite oder ihren
+        Server übertragen oder gespeichert. Der Klick öffnet einfach direkt die
+        ADP-Webseite in deinem Browser, genau wie ein Lesezeichen.
+      </p>
+      <p style="margin-bottom:0;">
+        Login und Verschlüsselung laufen danach ausschließlich über die Server von ADP,
+        nicht über RechnerGAL.
+      </p>
+    </div>
+    <a href="https://online.emea.adp.com/signin/v1?APPID=ADPworld&amp;productId=d3012000-a7b7-6167-e053-f282530b58ef&amp;returnURL=https://adpworld.adp.com/&amp;callingAppId=ADPworld&amp;TARGET=-SM-https://adpworld.adp.com/"
+       style="display:block;text-align:center;text-decoration:none;background:var(--darkblue);color:#fff;
+              font-weight:bold;padding:12px;border-radius:8px;margin-top:14px;">
+      Weiter zum ADP-Login →
+    </a>
+    <a href="#" onclick="event.preventDefault();document.getElementById('tab-gehalt').classList.remove('active');activate('zeit');"
+       style="display:block;text-align:center;margin-top:14px;color:#666;font-size:0.85rem;">
+      ← Zurück zu den Rechnern
+    </a>
+  </div>
+</section>
+
 <script>
   const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule"), bC=document.getElementById("tabBtnCode");
   const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule"), pC=document.getElementById("tab-code");
@@ -2007,6 +2038,27 @@
   bZ.addEventListener("click",()=>activate("zeit"));
   bSp.addEventListener("click",()=>activate("spule"));
   bC.addEventListener("click",()=>activate("code"));
+
+  // Versteckter Zugang zur Gehalt-Seite: 5x auf "Zeit berechnen" tippen (innerhalb von 3 Sekunden).
+  // Läuft als zusätzlicher Listener neben der normalen Berechnung - stört diese nicht.
+  (function(){
+    const elCalcBtn = document.getElementById("calcBtn");
+    const pG = document.getElementById("tab-gehalt");
+    let tippAnzahl = 0;
+    let letzterTippZeitpunkt = 0;
+    elCalcBtn.addEventListener("click", function(){
+      const jetzt = Date.now();
+      if (jetzt - letzterTippZeitpunkt > 3000) tippAnzahl = 0;
+      letzterTippZeitpunkt = jetzt;
+      tippAnzahl++;
+      if (tippAnzahl >= 5) {
+        tippAnzahl = 0;
+        document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+        pG.classList.add("active");
+      }
+    });
+  })();
 </script>
 </body>
 </html>
