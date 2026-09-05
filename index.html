@@ -130,7 +130,7 @@
       font-size: 0.74rem;
   }
 
-  #tab-spule input[type="number"] {
+  #tab-spule input[type="number"], #tab-spule input[type="text"] {
       width: 100%;
       padding: 6px;
       font-size: 16px;
@@ -317,25 +317,33 @@
     <h2>Galvanik-Stromrechner</h2>
 
     <label for="istStrom">Aktueller Strom (A):</label>
-    <input type="number" id="istStrom" placeholder="z. B. 4" value="4">
+    <input type="text" inputmode="decimal" id="istStrom" placeholder="z. B. 4" value="4">
 
     <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="number" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
+    <input type="text" inputmode="decimal" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
 
     <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="number" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
+    <input type="text" inputmode="decimal" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
 
     <label for="istGeschw">Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <input type="number" id="istGeschw" placeholder="z. B. 7" value="7">
+    <input type="text" inputmode="decimal" id="istGeschw" placeholder="z. B. 7" value="7">
 
     <label for="neuGeschw">Neue Bandgeschwindigkeit (m/min):</label>
-    <input type="number" id="neuGeschw" placeholder="z. B. 7" value="7">
+    <input type="text" inputmode="decimal" id="neuGeschw" placeholder="z. B. 7" value="7">
 
     <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
     <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
   </div>
 
   <script>
+    // Wandelt Eingaben mit Komma ODER Punkt als Dezimaltrennzeichen zuverlässig in eine Zahl um.
+    // Nötig, weil je nach Gerät/Spracheinstellung (v.a. Android) die Zifferntastatur ein Komma
+    // statt eines Punkts anbietet, das ein normales type="number"-Feld sonst nicht akzeptiert.
+    function parseDeNumber(str) {
+      if (str === null || str === undefined) return NaN;
+      return parseFloat(String(str).trim().replace(',', '.'));
+    }
+
     const STROM_KEY="galvanikStromLetzteWerte";
     const stromFelder=["istStrom","istSchicht","zielSchicht","istGeschw","neuGeschw"];
 
@@ -359,11 +367,11 @@
     }
 
     function berechne(){
-      const I_alt=parseFloat(document.getElementById("istStrom").value);
-      const S_alt=parseFloat(document.getElementById("istSchicht").value);
-      const S_neu=parseFloat(document.getElementById("zielSchicht").value);
-      const V_alt=parseFloat(document.getElementById("istGeschw").value);
-      const V_neu=parseFloat(document.getElementById("neuGeschw").value);
+      const I_alt=parseDeNumber(document.getElementById("istStrom").value);
+      const S_alt=parseDeNumber(document.getElementById("istSchicht").value);
+      const S_neu=parseDeNumber(document.getElementById("zielSchicht").value);
+      const V_alt=parseDeNumber(document.getElementById("istGeschw").value);
+      const V_neu=parseDeNumber(document.getElementById("neuGeschw").value);
 
       if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
       
@@ -410,7 +418,7 @@
     <div class="row">
       <div style="flex:1">
         <label for="speedInput">Geschwindigkeit (m/min)</label>
-        <input type="number" id="speedInput" placeholder="z. B. 7" value="7" min="1">
+        <input type="text" inputmode="decimal" id="speedInput" placeholder="z. B. 7" value="7" min="1">
       </div>
     </div>
     <div class="row">
@@ -513,7 +521,7 @@
 
     /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
     function berechnenZeit(){
-      const v=parseFloat(document.getElementById("speedInput").value);
+      const v=parseDeNumber(document.getElementById("speedInput").value);
       const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
       
       if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen/eingeben.";return;}
@@ -1273,13 +1281,13 @@
         <div class="section-title">1. Referenz (Kalibrierung)</div>
         
         <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>REFERENZ</strong>:</label>
-        <input type="number" id="refHalfD" placeholder="z.B. 31.5">
+        <input type="text" inputmode="decimal" id="refHalfD" placeholder="z.B. 31.5">
         
         <label>Stückzahl bei diesem Referenz-Zustand:</label>
-        <input type="number" id="refCount" placeholder="z.B. 200000">
+        <input type="text" inputmode="decimal" id="refCount" placeholder="z.B. 200000">
 
         <label><strong>Kontakte pro Meter (Dichte):</strong></label>
-        <input type="number" id="cpm" placeholder="z.B. 200">
+        <input type="text" inputmode="decimal" id="cpm" placeholder="z.B. 200">
 
         <div style="display:none;">
         <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
@@ -1296,7 +1304,7 @@
         <div class="section-title">2. Aktuelle Messung</div>
         
         <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>AKTUELL</strong>:</label>
-        <input type="number" id="currHalfD" placeholder="z.B. 25.5">
+        <input type="text" inputmode="decimal" id="currHalfD" placeholder="z.B. 25.5">
 
         <label>Berechneter aktueller Durchmesser (D_Aktuell):</label>
         <span id="outputCurrD" class="small-output">-</span>
@@ -1320,17 +1328,17 @@
             <div class="section-title">1. Referenz (volle Spule)</div>
 
             <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung:</label>
-            <input type="number" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
+            <input type="text" inputmode="decimal" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
 
             <label>Stückzahl bei diesem Gewicht (laut Lieferschein):</label>
-            <input type="number" id="gewVollStueck" placeholder="z.B. 200000">
+            <input type="text" inputmode="decimal" id="gewVollStueck" placeholder="z.B. 200000">
         </div>
 
         <div class="section bg-green">
             <div class="section-title">2. Aktuelle Messung</div>
 
             <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg):</label>
-            <input type="number" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
+            <input type="text" inputmode="decimal" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
         </div>
 
         <div id="errorBoxGewicht" class="error-msg"></div>
@@ -1400,10 +1408,10 @@
         const elError = document.getElementById('errorBox');
 
         // Werte auslesen
-        const d_ref_half_measured = parseFloat(elRefHalfD.value);
-        const count_ref = parseFloat(elRefCount.value);
-        const cpm = parseFloat(elCPM.value); // NEU: Kontakte pro Meter
-        const d_curr_half_measured = parseFloat(elCurrHalfD.value);
+        const d_ref_half_measured = parseDeNumber(elRefHalfD.value);
+        const count_ref = parseDeNumber(elRefCount.value);
+        const cpm = parseDeNumber(elCPM.value); // NEU: Kontakte pro Meter
+        const d_curr_half_measured = parseDeNumber(elCurrHalfD.value);
 
         // Reset Outputs
         elOutputRefD.innerText = '-';
@@ -1511,9 +1519,9 @@
     }
 
     function calculateWeight() {
-        const vollGewicht = parseFloat(document.getElementById('gewVoll').value);
-        const vollStueck = parseFloat(document.getElementById('gewVollStueck').value);
-        const aktGewicht = parseFloat(document.getElementById('gewAktuell').value);
+        const vollGewicht = parseDeNumber(document.getElementById('gewVoll').value);
+        const vollStueck = parseDeNumber(document.getElementById('gewVollStueck').value);
+        const aktGewicht = parseDeNumber(document.getElementById('gewAktuell').value);
 
         const elResultBoxGewicht = document.getElementById('resultBoxGewicht');
         const elResultValGewicht = document.getElementById('resultValueGewicht');
