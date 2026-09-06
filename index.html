@@ -1553,6 +1553,10 @@
         speichereGewichtKalibrierung();
     }
 
+    // Automatische Neuberechnung bei jeder Eingabe (wie beim Stromrechner) - kein Extra-Klick
+    // auf den Button mehr nötig, z.B. wenn man einen Tippfehler korrigiert.
+    document.querySelectorAll("#modus-gewicht input").forEach(i => i.addEventListener("input", calculateWeight));
+
     // Initialisierung beim Laden
     window.onload = function() {
         setSpoolSize(D_MAX_76);
