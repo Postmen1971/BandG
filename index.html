@@ -73,7 +73,7 @@
   .zeit-container select, .zeit-container button{padding:7px;font-size:16px;}
   .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
   .zeit-container button:hover{background:#004d99}
-  .zeit-result{margin-top:8px;padding:12px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf;font-size:19px;line-height:1.4}
+  .zeit-result{margin-top:8px;padding:9px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf;font-size:14.5px;line-height:1.4;text-align:center}
 
   .panel{margin-top:8px;padding:7px;border-radius:6px;border:1px solid #e5e7eb}
   .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
@@ -90,12 +90,12 @@
   #tab-spule{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
   #tab-spule .container{
       background-color: white;
-      max-width: 480px;
-      width: 100%;
+      max-width: 500px;
+      width: calc(100% - 16px);
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,.06);
       overflow: hidden;
-      border: 1px solid #ddd;
+      margin-bottom: 8px;
       padding:0;
   }
   #tab-spule .header {
@@ -432,7 +432,6 @@
       </div>
     </div>
 
-    <button id="calcBtn">Zeit berechnen</button>
     <div class="zeit-result" id="zeitResult">Bitte wähle Start, Ende und Geschwindigkeit.</div>
 
     <div class="panel tip-panel">
@@ -534,11 +533,14 @@
       const d7=tEnd7 - tStart7;
       const total=Math.round(d7*(7/v));
       const m=Math.floor(total/60), sec=total%60;
-      out.textContent=`Von "${s}" bis "${e}" dauert es bei ${v.toFixed(1)} m/min etwa ${m} Minuten und ${sec} Sekunden.`;
+      out.innerHTML=`Von "${s}" bis "${e}"<br>dauert es bei ${v.toFixed(1)} m/min<br>${m} min ${sec} s.`;
       speichereLetzteSuche();
-      renderGeneral();
     }
-    document.getElementById("calcBtn").addEventListener("click", berechnenZeit);
+    // Automatische Neuberechnung bei jeder Änderung - kein Button mehr nötig.
+    speedInput.addEventListener("input", berechnenZeit);
+    startSel.addEventListener("change", berechnenZeit);
+    endSel.addEventListener("change", berechnenZeit);
+    berechnenZeit(); // gleich beim Laden einmal berechnen
 
     /* --- Superwitz: bei jedem Start ein guter, handverlesener Witz --- */
     const GUTE_WITZE=[
@@ -2043,16 +2045,16 @@
   bSp.addEventListener("click",()=>activate("spule"));
   bC.addEventListener("click",()=>activate("code"));
 
-  // Versteckter Zugang zur Gehalt-Seite: 5x auf "Zeit berechnen" tippen, alle 5 Klicks
+  // Versteckter Zugang zur Gehalt-Seite: 5x auf das Zeit-Ergebnisfeld tippen, alle 5 Klicks
   // zusammen müssen innerhalb von 10 Sekunden passieren (nicht nur Abstand zwischen je zwei Klicks).
   // Läuft als zusätzlicher Listener neben der normalen Berechnung - stört diese nicht.
   (function(){
-    const elCalcBtn = document.getElementById("calcBtn");
+    const elZeitResult = document.getElementById("zeitResult");
     const pG = document.getElementById("tab-gehalt");
     const ZEITFENSTER_MS = 10000;
     let tippAnzahl = 0;
     let ersterTippZeitpunkt = 0;
-    elCalcBtn.addEventListener("click", function(){
+    elZeitResult.addEventListener("click", function(){
       const jetzt = Date.now();
       if (tippAnzahl === 0 || (jetzt - ersterTippZeitpunkt) > ZEITFENSTER_MS) {
         tippAnzahl = 1;
