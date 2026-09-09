@@ -308,6 +308,7 @@
   <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeitrechner</button>
   <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
   <button id="tabBtnCode" class="tabbtn">🔳 QR/Strichcode</button>
+  <button id="tabBtnMde" class="tabbtn">📱 MDE-Anleitung</button>
 </nav>
 
 <div id="counter"></div>
@@ -1998,6 +1999,15 @@
   </script>
 </section>
 
+<section id="tab-mde" class="tab-pane">
+  <div class="container" style="padding:0; overflow:hidden; height:80vh; max-height:800px;">
+    <iframe src="https://postmen1971.github.io/BandG/MDE_SAP_Anleitung.html"
+            title="MDE-Gerät Anleitung"
+            style="width:100%; height:100%; border:none; display:block;">
+    </iframe>
+  </div>
+</section>
+
 <section id="tab-gehalt" class="tab-pane">
   <div class="container">
     <h2>Gehalt / Lohnabrechnung</h2>
@@ -2030,20 +2040,22 @@
 </section>
 
 <script>
-  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule"), bC=document.getElementById("tabBtnCode");
-  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule"), pC=document.getElementById("tab-code");
+  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule"), bC=document.getElementById("tabBtnCode"), bM=document.getElementById("tabBtnMde");
+  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule"), pC=document.getElementById("tab-code"), pM=document.getElementById("tab-mde");
   function activate(t){
-    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active"); bC.classList.remove("active");
-    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active"); pC.classList.remove("active");
+    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active"); bC.classList.remove("active"); bM.classList.remove("active");
+    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active"); pC.classList.remove("active"); pM.classList.remove("active");
     if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
     else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
     else if(t==="spule"){bSp.classList.add("active");pSp.classList.add("active");}
+    else if(t==="mde"){bM.classList.add("active");pM.classList.add("active");}
     else{bC.classList.add("active");pC.classList.add("active");}
   }
   bS.addEventListener("click",()=>activate("strom"));
   bZ.addEventListener("click",()=>activate("zeit"));
   bSp.addEventListener("click",()=>activate("spule"));
   bC.addEventListener("click",()=>activate("code"));
+  bM.addEventListener("click",()=>activate("mde"));
 
   // Versteckter Zugang zur Gehalt-Seite: 5x auf das Zeit-Ergebnisfeld tippen, alle 5 Klicks
   // zusammen müssen innerhalb von 10 Sekunden passieren (nicht nur Abstand zwischen je zwei Klicks).
