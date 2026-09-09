@@ -1268,6 +1268,7 @@
     </div>
 
     <div id="modus-durchmesser">
+    <button type="button" onclick="zeigeSpuleHilfe()" style="width:calc(100% - 16px);display:block;margin:10px auto;background:var(--orange);border:none;color:#fff;padding:11px 14px;border-radius:8px;font-size:1rem;font-weight:bold;cursor:pointer;box-shadow:0 2px 6px rgba(245,128,37,0.4);">❓ Wie funktioniert das?</button>
     <div class="sub-auswahl-label">Spulengröße:</div>
     <div class="switch-container sub">
         <div class="switch-button sub" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
@@ -1359,6 +1360,118 @@
             </div>
         </div>
     </div>
+</div>
+
+<div id="spuleHilfeOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; overflow-y:auto; padding:12px; box-sizing:border-box;">
+  <div style="max-width:480px; margin:0 auto; background:#fff; border-radius:12px; overflow:hidden;">
+    <div style="background:var(--darkblue); color:#fff; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+      <strong style="font-size:1.05rem;">Spulen-Bestandsrechner – Kurz erklärt</strong>
+      <button type="button" onclick="versteckeSpuleHilfe()" style="width:auto;background:none;border:none;color:#fff;font-size:1.4rem;line-height:1;cursor:pointer;padding:0 4px;">✕</button>
+    </div>
+    <div style="padding:14px;">
+
+      <div style="background:#fff3e8;border:1px solid #f2c58a;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:var(--orange);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">1</span>
+          <strong>Spulengröße auswählen</strong>
+        </div>
+        <div style="font-size:0.92rem;color:#333;">Hier wählst du die passende Spule aus. Möglich sind <strong>98 cm</strong> oder <strong>76 cm</strong> (maximaler Außendurchmesser).</div>
+        <div style="margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;display:inline-block;font-size:0.9rem;"><strong>Beispiel:</strong> 98 cm</div>
+      </div>
+
+      <div style="background:#eef6ff;border:1px solid #b8d8f5;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#0066cc;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">2</span>
+          <strong>Referenzmaß – volle Spule</strong>
+        </div>
+        <div style="font-size:0.92rem;color:#333;">Von der <strong>Außenkante</strong> der Spule nach innen zur <strong>Kernmitte</strong> messen. Dieses Maß entspricht der Wickelstärke einer vollen Spule.</div>
+        <div style="margin-top:8px;text-align:center;">
+          <svg viewBox="0 0 200 140" style="width:100%;max-width:220px;">
+            <ellipse cx="100" cy="65" rx="60" ry="55" fill="#888"/>
+            <ellipse cx="100" cy="65" rx="60" ry="55" fill="none" stroke="#555" stroke-width="1"/>
+            <g stroke="#666" stroke-width="1">
+              <line x1="45" y1="20" x2="45" y2="110"/><line x1="55" y1="14" x2="55" y2="116"/>
+              <line x1="65" y1="11" x2="65" y2="119"/><line x1="75" y1="10" x2="75" y2="120"/>
+              <line x1="85" y1="10" x2="85" y2="120"/><line x1="95" y1="10" x2="95" y2="120"/>
+              <line x1="105" y1="10" x2="105" y2="120"/><line x1="115" y1="10" x2="115" y2="120"/>
+              <line x1="125" y1="10" x2="125" y2="120"/><line x1="135" y1="11" x2="135" y2="119"/>
+              <line x1="145" y1="14" x2="145" y2="116"/><line x1="155" y1="20" x2="155" y2="110"/>
+            </g>
+            <!-- Kern maßstabsgetreu: 35cm von 76cm Außendurchmesser -->
+            <ellipse cx="100" cy="65" rx="27.6" ry="25.3" fill="#ccc" stroke="#555" stroke-width="1"/>
+            <!-- Gestrichelte Linie: voller möglicher Messweg bis zum Kern (20,5cm) -->
+            <line x1="100" y1="10" x2="100" y2="39.7" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+            <!-- Roter Pfeil: tatsächliches Beispiel 3,5cm (nur ein kleines Stück vom Rand) -->
+            <line x1="100" y1="10" x2="100" y2="15.5" stroke="#cc0000" stroke-width="2.5" marker-end="url(#arrow2)"/>
+            <defs><marker id="arrow2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#cc0000"/></marker></defs>
+            <text x="100" y="135" text-anchor="middle" font-size="9" fill="#555">Seitenansicht der Spule</text>
+          </svg>
+          <div style="font-size:0.78rem;color:#cc0000;font-weight:bold;">Messmaß: nur der kleine rote Abschnitt (3,5 cm)</div>
+          <div style="font-size:0.7rem;color:#888;">Graue gestrichelte Linie = voller möglicher Weg bis zum Kern (hier max. 20,5 cm)</div>
+        </div>
+        <div style="margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;display:inline-block;font-size:0.9rem;"><strong>Beispiel:</strong> 3,5 cm</div>
+      </div>
+
+      <div style="background:#eafaf0;border:1px solid #a9e0c0;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#1a9850;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">3</span>
+          <strong>Menge der vollen Spule</strong>
+        </div>
+        <div style="font-size:0.92rem;color:#333;">Hier gibst du ein, wie viele Kontakte eine volle Spule enthält (z. B. 200.000 oder 150.000).</div>
+        <div style="margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;display:inline-block;font-size:0.9rem;"><strong>Beispiel:</strong> 200.000</div>
+      </div>
+
+      <div style="background:#f3ecfa;border:1px solid #d3b8f0;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#8e44ad;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">4</span>
+          <strong>Kontakte pro Meter</strong>
+        </div>
+        <div style="font-size:0.92rem;color:#333;">Hier gibst du ein, wie viele Kontakte pro 1 Meter laut Arbeitskarte vorhanden sind.</div>
+        <div style="margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;display:inline-block;font-size:0.9rem;"><strong>Beispiel:</strong> 200</div>
+      </div>
+
+      <div style="background:#fdecec;border:1px solid #f5b3b3;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#cc0000;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">5</span>
+          <strong>Aktuelle Spule messen</strong>
+        </div>
+        <div style="font-size:0.92rem;color:#333;">Wieder von der <strong>Außenkante</strong> der Spule nach innen zur <strong>Kernmitte</strong> messen. Dieses Maß zeigt, wie viel Wicklung noch auf der Spule ist.</div>
+        <div style="margin-top:8px;text-align:center;">
+          <svg viewBox="0 0 200 140" style="width:100%;max-width:220px;">
+            <ellipse cx="100" cy="65" rx="60" ry="55" fill="#888"/>
+            <ellipse cx="100" cy="65" rx="60" ry="55" fill="none" stroke="#555" stroke-width="1"/>
+            <g stroke="#666" stroke-width="1">
+              <line x1="45" y1="20" x2="45" y2="110"/><line x1="55" y1="14" x2="55" y2="116"/>
+              <line x1="65" y1="11" x2="65" y2="119"/><line x1="75" y1="10" x2="75" y2="120"/>
+              <line x1="85" y1="10" x2="85" y2="120"/><line x1="95" y1="10" x2="95" y2="120"/>
+              <line x1="105" y1="10" x2="105" y2="120"/><line x1="115" y1="10" x2="115" y2="120"/>
+              <line x1="125" y1="10" x2="125" y2="120"/><line x1="135" y1="11" x2="135" y2="119"/>
+              <line x1="145" y1="14" x2="145" y2="116"/><line x1="155" y1="20" x2="155" y2="110"/>
+            </g>
+            <!-- Kern maßstabsgetreu: 35cm von 76cm Außendurchmesser -->
+            <ellipse cx="100" cy="65" rx="27.6" ry="25.3" fill="#ccc" stroke="#555" stroke-width="1"/>
+            <!-- Gestrichelte Linie: voller möglicher Messweg bis zum Kern (20,5cm) -->
+            <line x1="100" y1="10" x2="100" y2="39.7" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+            <!-- Roter Pfeil: tatsächliches Beispiel 7,0cm -->
+            <line x1="100" y1="10" x2="100" y2="21" stroke="#cc0000" stroke-width="2.5" marker-end="url(#arrow5)"/>
+            <defs><marker id="arrow5" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#cc0000"/></marker></defs>
+            <text x="100" y="135" text-anchor="middle" font-size="9" fill="#555">Seitenansicht der Spule</text>
+          </svg>
+          <div style="font-size:0.78rem;color:#cc0000;font-weight:bold;">Messmaß: nur der kleine rote Abschnitt (7,0 cm)</div>
+          <div style="font-size:0.7rem;color:#888;">Graue gestrichelte Linie = voller möglicher Weg bis zum Kern (hier max. 20,5 cm)</div>
+        </div>
+        <div style="margin-top:6px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;display:inline-block;font-size:0.9rem;"><strong>Beispiel:</strong> 7,0 cm</div>
+      </div>
+
+      <div style="background:var(--darkblue);color:#fff;border-radius:8px;padding:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:1.2rem;">🧮</span><strong>Ergebnis</strong>
+        </div>
+        <div style="font-size:0.92rem;">Nach dem Klick auf <strong>„BESTAND BERECHNEN"</strong> wird dir automatisch der aktuelle Bestand an Kontakten angezeigt.</div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1485,6 +1598,16 @@
     /**
      * Schaltet zwischen der Durchmesser-Methode und der Gewichts-Methode um.
      */
+    /**
+     * Zeigt/versteckt die "Kurz erklärt"-Hilfe als Overlay über der App.
+     */
+    function zeigeSpuleHilfe() {
+        document.getElementById('spuleHilfeOverlay').style.display = 'block';
+    }
+    function versteckeSpuleHilfe() {
+        document.getElementById('spuleHilfeOverlay').style.display = 'none';
+    }
+
     function wechsleSpuleModus(modus) {
         document.getElementById('btn-modus-durchmesser').classList.toggle('active', modus === 'durchmesser');
         document.getElementById('btn-modus-gewicht').classList.toggle('active', modus === 'gewicht');
