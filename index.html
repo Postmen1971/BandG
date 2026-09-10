@@ -337,6 +337,53 @@
     <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
   </div>
 
+  <div id="stromProtokollOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; overflow-y:auto; padding:12px; box-sizing:border-box;">
+    <div style="max-width:500px; margin:0 auto; background:#fff; border-radius:12px; overflow:hidden;">
+      <div style="background:var(--darkblue); color:#fff; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:1.05rem;">Mess-Protokoll (Strom → Schichtdicke)</strong>
+        <button type="button" onclick="versteckeProtokoll()" style="width:auto;background:none;border:none;color:#fff;font-size:1.4rem;line-height:1;cursor:pointer;padding:0 4px;">✕</button>
+      </div>
+      <div style="padding:14px;">
+        <div style="font-size:0.85rem;color:#666;margin-bottom:10px;">Trage hier echte Messwerte ein, wenn du den Strom manuell angepasst hast. Damit sammeln wir über die Zeit reale Datenpunkte für eine genauere Berechnung.</div>
+
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;">
+            <label for="pStromAlt">Strom vorher (A)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="pStromAlt" placeholder="z.B. 4,0">
+          </div>
+          <div style="flex:1;">
+            <label for="pStromNeu">Strom nachher (A)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="pStromNeu" placeholder="z.B. 3,6">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;">
+            <label for="pSchichtAlt">Schichtdicke vorher (µm)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="pSchichtAlt" placeholder="z.B. 1,2">
+          </div>
+          <div style="flex:1;">
+            <label for="pSchichtNeu">Schichtdicke nachher (µm)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="pSchichtNeu" placeholder="z.B. 0,8">
+          </div>
+        </div>
+        <label for="pGeschw">Bandgeschwindigkeit (m/min) - optional</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="pGeschw" placeholder="z.B. 7">
+
+        <label for="pNotiz">Notiz - optional</label>
+        <input type="text" id="pNotiz" placeholder="z.B. Auftrag XY, Bad frisch angesetzt...">
+
+        <div id="pFehler" style="color:red;font-size:0.85rem;margin-top:6px;display:none;"></div>
+        <button type="button" onclick="speichereProtokollEintrag()" style="margin-top:10px;background:var(--darkblue);color:#fff;border:none;padding:11px;border-radius:8px;font-weight:bold;width:100%;cursor:pointer;">Eintrag speichern</button>
+
+        <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;">
+          <strong style="font-size:0.95rem;">Bisherige Einträge</strong>
+          <button type="button" onclick="exportiereProtokoll()" style="width:auto;background:none;border:1px solid var(--darkblue);color:var(--darkblue);padding:5px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;">📋 Alle kopieren</button>
+        </div>
+        <div id="pListe" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Wandelt Eingaben mit Komma ODER Punkt als Dezimaltrennzeichen zuverlässig in eine Zahl um.
     // Nötig, weil je nach Gerät/Spracheinstellung (v.a. Android) die Zifferntastatur ein Komma
@@ -386,6 +433,124 @@
     document.querySelectorAll("#tab-strom input").forEach(i=>i.addEventListener("input",berechne));
     
     document.addEventListener("DOMContentLoaded", berechne);
+
+    // ===== Verstecktes Mess-Protokoll =====
+    const PROTOKOLL_KEY = "galvanikStromProtokoll";
+
+    function ladeProtokoll(){
+      try{ return JSON.parse(localStorage.getItem(PROTOKOLL_KEY)) || []; }catch(e){ return []; }
+    }
+    function speichereProtokollListe(liste){
+      try{ localStorage.setItem(PROTOKOLL_KEY, JSON.stringify(liste)); }catch(e){}
+    }
+
+    function zeigeProtokoll(){
+      document.getElementById('stromProtokollOverlay').style.display = 'block';
+      renderProtokollListe();
+    }
+    function versteckeProtokoll(){
+      document.getElementById('stromProtokollOverlay').style.display = 'none';
+    }
+
+    function speichereProtokollEintrag(){
+      const stromAlt = parseDeNumber(document.getElementById('pStromAlt').value);
+      const stromNeu = parseDeNumber(document.getElementById('pStromNeu').value);
+      const schichtAlt = parseDeNumber(document.getElementById('pSchichtAlt').value);
+      const schichtNeu = parseDeNumber(document.getElementById('pSchichtNeu').value);
+      const geschw = document.getElementById('pGeschw').value.trim();
+      const notiz = document.getElementById('pNotiz').value.trim();
+      const elFehler = document.getElementById('pFehler');
+
+      if(isNaN(stromAlt) || isNaN(stromNeu) || isNaN(schichtAlt) || isNaN(schichtNeu)){
+        elFehler.innerText = 'Bitte mindestens Strom vorher/nachher und Schichtdicke vorher/nachher ausfüllen.';
+        elFehler.style.display = 'block';
+        return;
+      }
+      elFehler.style.display = 'none';
+
+      const liste = ladeProtokoll();
+      liste.unshift({
+        datum: new Date().toLocaleString('de-DE'),
+        stromAlt, stromNeu, schichtAlt, schichtNeu,
+        geschw: geschw || null,
+        notiz: notiz || null
+      });
+      speichereProtokollListe(liste);
+
+      document.getElementById('pStromAlt').value = '';
+      document.getElementById('pStromNeu').value = '';
+      document.getElementById('pSchichtAlt').value = '';
+      document.getElementById('pSchichtNeu').value = '';
+      document.getElementById('pGeschw').value = '';
+      document.getElementById('pNotiz').value = '';
+
+      renderProtokollListe();
+    }
+
+    function loescheProtokollEintrag(index){
+      const liste = ladeProtokoll();
+      liste.splice(index, 1);
+      speichereProtokollListe(liste);
+      renderProtokollListe();
+    }
+
+    function renderProtokollListe(){
+      const liste = ladeProtokoll();
+      const el = document.getElementById('pListe');
+      if(liste.length === 0){
+        el.innerHTML = '<div style="color:#888;font-size:0.85rem;">Noch keine Einträge.</div>';
+        return;
+      }
+      el.innerHTML = liste.map((e, i) => `
+        <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:0.85rem;position:relative;">
+          <div style="color:#888;font-size:0.75rem;">${e.datum}</div>
+          <div><strong>${e.stromAlt} A → ${e.stromNeu} A</strong> &nbsp;|&nbsp; <strong>${e.schichtAlt} µm → ${e.schichtNeu} µm</strong></div>
+          ${e.geschw ? `<div>Geschwindigkeit: ${e.geschw} m/min</div>` : ''}
+          ${e.notiz ? `<div style="color:#555;">${e.notiz}</div>` : ''}
+          <button type="button" onclick="loescheProtokollEintrag(${i})" style="position:absolute;top:6px;right:6px;width:auto;background:none;border:none;color:#cc0000;font-size:0.9rem;cursor:pointer;padding:2px 6px;">🗑</button>
+        </div>
+      `).join('');
+    }
+
+    function exportiereProtokoll(){
+      const liste = ladeProtokoll();
+      if(liste.length === 0){ return; }
+      const text = liste.map(e =>
+        `${e.datum}: ${e.stromAlt}A -> ${e.stromNeu}A | ${e.schichtAlt}µm -> ${e.schichtNeu}µm` +
+        (e.geschw ? ` | ${e.geschw} m/min` : '') + (e.notiz ? ` | ${e.notiz}` : '')
+      ).join('\n');
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(text).then(()=>{
+          alert('Protokoll wurde in die Zwischenablage kopiert.');
+        }).catch(()=>{
+          alert(text);
+        });
+      } else {
+        alert(text);
+      }
+    }
+
+    // Versteckter Zugang: 5x auf das Ergebnisfeld tippen, alle 5 Klicks zusammen
+    // müssen innerhalb von 10 Sekunden passieren.
+    (function(){
+      const elErgebnis = document.getElementById("ergebnis");
+      const ZEITFENSTER_MS = 10000;
+      let tippAnzahl = 0;
+      let ersterTippZeitpunkt = 0;
+      elErgebnis.addEventListener("click", function(){
+        const jetzt = Date.now();
+        if (tippAnzahl === 0 || (jetzt - ersterTippZeitpunkt) > ZEITFENSTER_MS) {
+          tippAnzahl = 1;
+          ersterTippZeitpunkt = jetzt;
+        } else {
+          tippAnzahl++;
+        }
+        if (tippAnzahl >= 5) {
+          tippAnzahl = 0;
+          zeigeProtokoll();
+        }
+      });
+    })();
 
     // Echter, geräteübergreifender Besucherzähler (kostenlose, anmeldefreie API) - zählt bei
     // JEDEM Gerät/Browser gemeinsam hoch, nicht nur lokal auf diesem Gerät. Fällt bei fehlendem
