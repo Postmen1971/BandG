@@ -6,76 +6,97 @@
 <title>Galvanik Tools – Strom & Zeit</title>
 <style>
   /* Allgemeine Anpassungen für bessere Darstellung auf kleinen Bildschirmen */
-  :root{--orange:#F58025;--darkblue:#002855;--lightgray:#f7f7f7}
+  :root{--orange:#F58025;--orange-dark:#d96a15;--darkblue:#002855;--blue-mid:#0f3d73;--lightgray:#f7f7f7;--bg:#f4f5f7;--border:#e5e7eb;--muted:#6b7280}
+  *{box-sizing:border-box;}
   body{
-    font-family:Arial,sans-serif;
-    background:linear-gradient(to bottom right,var(--lightgray),#ffffff);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);
     margin:0;
-    padding: 8px;
+    padding: 0 8px 24px;
     display:flex;
     justify-content:center;
     flex-direction:column;
     align-items:center;
-    padding-top: 64px;
   }
 
+  .app-header{
+    width:calc(100% + 16px);
+    background:var(--darkblue);
+    color:#fff;
+    text-align:center;
+    padding:8px 14px;
+    margin:0 -8px;
+  }
+  .app-header h1{margin:0;font-size:.95rem;font-weight:500;letter-spacing:.2px;}
+  .app-header p{margin:2px 0 0;font-size:.72rem;color:#c9d4e6;}
+
   .topbar{
-    position:fixed;
+    position:sticky;
     top:0;
     left:0;
     right:0;
-    background:#ffffffcc;
+    width:calc(100% + 16px);
+    margin:0 -8px;
+    background:#ffffffee;
     backdrop-filter:blur(6px);
-    border-bottom:1px solid #e5e7eb;
-    padding:6px 8px;
+    border-bottom:1px solid var(--border);
+    padding:8px 8px;
     z-index:1000;
     display:flex;
     justify-content:center;
     flex-wrap:wrap;
-    gap:5px;
+    gap:6px;
   }
   
-  .tabbtn{border:1.5px solid #002855;color:#002855;background:#fff;padding:5px 8px;
-          border-radius:999px;cursor:pointer;font-weight:bold;font-size:11px;}
-  .tabbtn.active{background:#F58025;color:#fff;border-color:#F58025}
+  .tabbtn{border:1.5px solid var(--darkblue);color:var(--darkblue);background:#fff;padding:6px 10px;
+          border-radius:999px;cursor:pointer;font-weight:700;font-size:11px;
+          transition:background .15s,color .15s,transform .08s;}
+  .tabbtn:active{transform:scale(.96);}
+  .tabbtn.active{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 2px 6px rgba(245,128,37,.35);}
   section.tab-pane{display:none}section.tab-pane.active{display:block}
 
   .container{
     width:calc(100% - 16px);
     max-width:500px;
     background:#fff;
-    padding:12px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.06);
+    padding:14px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    box-shadow:0 4px 14px rgba(0,40,85,.07);
     position:relative;
-    margin-top:0;
+    margin-top:14px;
     margin-bottom: 8px;
   }
   
-  h2{text-align:center;color:var(--orange);margin-top:0;font-size:1.2rem;margin-bottom:8px}
-  label{display:block;margin-top:8px;
-        font-weight:bold;color:#002855;font-size:13.5px;}
+  h2{text-align:center;color:var(--darkblue);margin-top:0;font-size:1.15rem;margin-bottom:12px;font-weight:700;}
+  label{display:block;margin-top:10px;
+        font-weight:600;color:var(--muted);font-size:12.5px;}
   input[type=number], input[type=text], select{
     width:100%;
-    padding:6px;
+    padding:10px;
     font-size:16px; /* mind. 16px, sonst zoomt iOS Safari beim Antippen ungewollt rein */
-    margin-top:3px;
-    border:1px solid #ccc;border-radius:6px;box-sizing:border-box
+    margin-top:4px;
+    border:1px solid var(--border);border-radius:8px;box-sizing:border-box;
+    background:#fafafa;
+    transition:border-color .15s,background .15s;
+  }
+  input[type=number]:focus, input[type=text]:focus, select:focus{
+    outline:none;border-color:var(--orange);background:#fff;
   }
   
-  .ergebnis{margin-top:10px;padding:12px;background:#f0f0f0;font-size:19px;line-height:1.4;
-            text-align:center;border-radius:8px;color:#F58025;border:1px solid #ccc;font-weight:bold}
-  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:6px;color:#888}
-  #counter{position:fixed;bottom:6px;right:6px;font-size:12px;color:#002855;font-weight:bold;font-family:monospace;background:#fff;padding:3px 9px;border-radius:10px;border:1px solid #002855;box-shadow:0 2px 6px rgba(0,0,0,.15);opacity:1;z-index:10000}
+  .ergebnis{margin-top:14px;padding:14px;background:#fff4e8;font-size:19px;line-height:1.4;
+            text-align:center;border-radius:10px;color:var(--orange-dark);border:1px solid #ffd9a8;font-weight:800}
+  .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:8px;color:#999}
+  #counter{position:fixed;bottom:6px;right:6px;font-size:12px;color:var(--darkblue);font-weight:bold;font-family:monospace;background:#fff;padding:3px 9px;border-radius:10px;border:1px solid var(--darkblue);box-shadow:0 2px 6px rgba(0,0,0,.15);opacity:1;z-index:10000}
 
   /* Zeitrechner spezifische Anpassungen */
   .zeit-container .row{display:flex;gap:6px}
-  .zeit-container select, .zeit-container button{padding:7px;font-size:16px;}
-  .zeit-container button{background:#0066cc;color:#fff;border:none;font-weight:bold;cursor:pointer}
-  .zeit-container button:hover{background:#004d99}
-  .zeit-result{margin-top:8px;padding:9px;background:#e9f5e9;border-radius:6px;font-weight:bold;color:#0b4f0b;border:1px solid #bfe0bf;font-size:14.5px;line-height:1.4;text-align:center}
+  .zeit-container select, .zeit-container button{padding:9px;font-size:16px;border-radius:8px;}
+  .zeit-container button{background:var(--blue-mid);color:#fff;border:none;font-weight:700;cursor:pointer;transition:background .15s;}
+  .zeit-container button:hover{background:var(--darkblue)}
+  .zeit-result{margin-top:10px;padding:12px;background:#eaf7ec;border-radius:10px;font-weight:700;color:#0b4f0b;border:1px solid #bfe0bf;font-size:14.5px;line-height:1.4;text-align:center}
 
-  .panel{margin-top:8px;padding:7px;border-radius:6px;border:1px solid #e5e7eb}
+  .panel{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border)}
   .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
   .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
   .football-panel{background:#eefaf0;border-color:#bfe8cb;color:#0f3d1e;font-style:normal}
@@ -92,9 +113,11 @@
       background-color: white;
       max-width: 500px;
       width: calc(100% - 16px);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.06);
+      border-radius: 14px;
+      border:1px solid var(--border);
+      box-shadow: 0 4px 14px rgba(0,40,85,.07);
       overflow: hidden;
+      margin-top: 14px;
       margin-bottom: 8px;
       padding:0;
   }
@@ -104,7 +127,7 @@
       padding: 8px;
       text-align: center;
   }
-  #tab-spule .header h2 { margin: 0; font-size: 1rem; }
+  #tab-spule .header h2 { margin: 0; font-size: 1rem; color: #fff; }
 
   #tab-spule .section {
       padding: 8px;
@@ -132,22 +155,27 @@
 
   #tab-spule input[type="number"], #tab-spule input[type="text"] {
       width: 100%;
-      padding: 6px;
+      padding: 9px;
       font-size: 16px;
-      border: 2px solid #ccc;
+      border: 1px solid var(--border);
       border-radius: 8px;
+      background:#fafafa;
       box-sizing: border-box;
       margin-bottom: 4px;
       margin-top:0;
   }
+  #tab-spule input[type="number"]:focus, #tab-spule input[type="text"]:focus{
+      outline:none;border-color:var(--orange);background:#fff;
+  }
 
   #tab-spule button {
       width: 100%;
-      padding: 9px;
+      padding: 11px;
       background-color: var(--darkblue);
       color: white;
       font-size: 14px;
       border: none;
+      border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
@@ -250,7 +278,7 @@
   #tab-code .code-panel.active{ display:block; }
   #tab-code .hinweis{
       font-size:11.5px; color:#666; background:#fff7ea; border:1px solid #f2c58a;
-      border-radius:6px; padding:8px; margin-top:10px; line-height:1.4;
+      border-radius:10px; padding:8px; margin-top:10px; line-height:1.4;
   }
   #tab-code .code-ausgabe{
       display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -280,13 +308,13 @@
   #tab-code input[type="text"], #tab-code input[type="password"]{
       font-size:17px; padding:10px; margin-top:5px;
   }
-  #tab-code .switch-button{ padding:11px 12px; font-size:1rem; }
+  #tab-code .switch-button{ padding:11px 12px; font-size:1rem; border-radius:8px; }
   #tab-code button{ font-size:16px; padding:12px; background-color:var(--darkblue); color:#fff; border:none; border-radius:8px; cursor:pointer; }
   #tab-code .hinweis{ font-size:13px; padding:11px; }
   #tab-code .passwort-zeile{ display:flex; gap:8px; align-items:center; }
   #tab-code .passwort-zeile input{ flex:1; }
   #tab-code .augen-btn{
-      width:44px; height:44px; flex-shrink:0; border:1px solid #ccc; border-radius:6px;
+      width:44px; height:44px; flex-shrink:0; border:1px solid var(--border); border-radius:8px;
       background:#f5f5f5; cursor:pointer; margin-top:5px;
       display:flex; align-items:center; justify-content:center; color:#333;
   }
@@ -303,6 +331,10 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
+
+<div class="app-header">
+  <h1>Galvanik Tools</h1>
+</div>
 
 <nav class="topbar">
   <button id="tabBtnStrom" class="tabbtn">⚡ Stromrechner</button>
