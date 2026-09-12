@@ -640,7 +640,7 @@
     </div>
 
     <div class="panel quote-panel">
-      <h3>Zitat des Tages (Allgemein)</h3>
+      <h3>Zitat des Tages</h3>
       <div id="quoteGeneral">–</div>
     </div>
 
@@ -1028,6 +1028,93 @@
       document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
     }
 
+    /* --- Filmzitate: kurze, bekannte einzeilige Zitate mit Quelle --- */
+    const FALLBACK_MOVIE_QUOTES=[
+      {text:"Wer um Regen bittet, muss auch den Matsch verkraften.", author:"Robert McCall, The Equalizer"},
+      {text:"Ich habe keine Freunde, ich habe Familie.", author:"Dominic Toretto, Fast & Furious"},
+      {text:"Mögen die Chancen immer zu deinen Gunsten stehen.", author:"Die Tribute von Panem"},
+      {text:"Ich bin der Gefahr nicht aus dem Weg gegangen, ich habe sie gesucht.", author:"Iron Man"},
+      {text:"Hoffnung ist eine gute Sache, vielleicht das Beste von allem.", author:"Andy Dufresne, Die Verurteilten"},
+      {text:"Es ist nicht wichtig, wie hart man zuschlagen kann, sondern wie viele Schläge man einstecken kann.", author:"Rocky Balboa"},
+      {text:"Schwierige Zeiten formen starke Menschen.", author:"nach Miyagi-Prinzip, Karate Kid"},
+      {text:"Ein Mann sieht das, was er sehen will.", author:"Der Pate II"},
+
+      // Action & Sci-Fi
+      {text:"Ich komme wieder.", author:"Der Terminator"},
+      {text:"Hasta la vista, Baby.", author:"Terminator 2 – Tag der Abrechnung"},
+      {text:"Möge die Macht mit dir sein.", author:"Star Wars"},
+      {text:"Nein, ich bin dein Vater.", author:"Star Wars: Das Imperium schlägt zurück"},
+      {text:"Das Leben findet einen Weg.", author:"Ian Malcolm, Jurassic Park"},
+      {text:"Ich bin Groot.", author:"Guardians of the Galaxy"},
+      {text:"Mit großer Macht kommt große Verantwortung.", author:"Spider-Man"},
+      {text:"Yippie-ya-yeah, Schweinebacke!", author:"John McClane, Stirb langsam"},
+      {text:"Ich sehe tote Menschen.", author:"The Sixth Sense"},
+      {text:"Wir brauchen ein größeres Boot.", author:"Der weiße Hai"},
+      {text:"Bond. James Bond.", author:"James-Bond-Reihe"},
+      {text:"Ich habe ein ganz besonderes Set an Fähigkeiten.", author:"Taken"},
+      {text:"Warum so ernst?", author:"Joker, The Dark Knight"},
+      {text:"Houston, wir haben ein Problem.", author:"Apollo 13"},
+      {text:"Ich liebe den Geruch von Napalm am Morgen.", author:"Apocalypse Now"},
+      {text:"Wohin wir gehen, brauchen wir keine Straßen.", author:"Zurück in die Zukunft"},
+
+      // Drama
+      {text:"Das Leben ist wie eine Schachtel Pralinen, man weiß nie, was man kriegt.", author:"Forrest Gump"},
+      {text:"Ich schau dir in die Augen, Kleines.", author:"Casablanca"},
+      {text:"Redest du mit mir?", author:"Travis Bickle, Taxi Driver"},
+      {text:"Nutzt den Tag, Jungs. Carpe diem.", author:"Der Club der toten Dichter"},
+      {text:"Ich bin der König der Welt!", author:"Titanic"},
+      {text:"Ehrlich gesagt, meine Liebe, das ist mir völlig egal.", author:"Vom Winde verweht"},
+      {text:"Elementar, mein lieber Watson.", author:"Sherlock Holmes"},
+
+      // Fantasy
+      {text:"Ein Ring, sie zu knechten, sie alle zu finden.", author:"Der Herr der Ringe"},
+      {text:"Man kommt nicht zu spät, ebenso wenig zu früh. Man kommt genau dann, wenn man es beabsichtigt.", author:"Gandalf, Der Herr der Ringe"},
+      {text:"Immer.", author:"Severus Snape, Harry Potter"},
+
+      // Komödie
+      {text:"Ich werde haben, was sie hat.", author:"Harry und Sally"},
+      {text:"Ich bin nicht dick, ich bin flauschig.", author:"Ich – Einfach unverbesserlich"},
+      {text:"Das ist nicht mein Tempo, Baby.", author:"Austin Powers"},
+      {text:"Ich bin der Dude.", author:"The Big Lebowski"},
+      {text:"Das eskalierte schnell.", author:"Anchorman"},
+      {text:"Chantal, heul leise!", author:"Fack ju Göhte"},
+
+      // Familie & Animation
+      {text:"Bis zur Unendlichkeit und noch viel weiter!", author:"Toy Story"},
+      {text:"Hakuna Matata!", author:"Der König der Löwen"},
+      {text:"Ohana bedeutet Familie. Niemand wird zurückgelassen.", author:"Lilo & Stitch"},
+      {text:"Manche Menschen sind es wert, dass man für sie schmilzt.", author:"Frozen"},
+      {text:"Nur weiterschwimmen.", author:"Findet Nemo"},
+
+      // Runde 2: Krimi, Superhelden, weitere Klassiker
+      {text:"Ich hab' da ein ganz mieses Gefühl.", author:"Star Wars-Reihe"},
+      {text:"Mein Name ist Winston Wolfe. Ich löse Probleme.", author:"Pulp Fiction"},
+      {text:"Sie können die Wahrheit doch gar nicht vertragen!", author:"Eine Frage der Ehre"},
+      {text:"Entscheidungen machen uns zu denen, die wir sind.", author:"Peter Parker, Spider-Man 3"},
+      {text:"Ich sage immer die Wahrheit. Sogar wenn ich lüge.", author:"Scarface"},
+      {text:"Dein Wahnsinn passt zu meinem Wahnsinn.", author:"Deadpool"},
+      {text:"Versprechen sind wie Pastetenkrusten, gemacht, um gebrochen zu werden.", author:"Sherlock Holmes: Spiel im Schatten"},
+      {text:"Ich habe eine Wassermelone getragen.", author:"Dirty Dancing"},
+      {text:"Ich kann dir nur die Tür zeigen. Hindurchgehen musst du alleine.", author:"Morpheus, Matrix"},
+      {text:"Alles was einen Anfang hat, hat auch ein Ende.", author:"Matrix Revolutions"},
+      {text:"Avengers, vereinigt euch!", author:"The Avengers"},
+      {text:"Manche Menschen wollen einfach die Welt brennen sehen.", author:"Alfred, The Dark Knight"},
+      {text:"Seid ihr nicht unterhalten?", author:"Maximus, Gladiator"},
+      {text:"Warum ist der Rum immer weg?", author:"Jack Sparrow, Fluch der Karibik"}
+    ];
+
+    let quoteMode = 'allgemein';
+
+    function setQuoteMode(mode){
+      quoteMode = mode;
+      if(mode==='allgemein'){
+        renderGeneral();
+      } else {
+        const q=FALLBACK_MOVIE_QUOTES[Math.floor(Math.random()*FALLBACK_MOVIE_QUOTES.length)];
+        document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
+      }
+    }
+
     async function uebersetzeInsDeutsche(text){
       try{
         const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|de`, {cache:"no-store"});
@@ -1065,7 +1152,8 @@
         }
       }
     }
-    renderGeneral();
+    // Beim Öffnen zufällig mal Allgemein, mal Film zeigen
+    setQuoteMode(Math.random() < 0.5 ? 'allgemein' : 'film');
 
     /* --- Fußball-Topspiele: ALLE nächsten Spiele der Lieblingsvereine, unabhängig vom Wettbewerb (Liga, Pokal, Supercup, Freundschaftsspiel, Champions League etc.) --- */
     const LIEBLINGSVEREINE=[
