@@ -709,26 +709,84 @@
     const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel"),speedInput=document.getElementById("speedInput");
     punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
 
-    /* --- Letzte Suche wiederherstellen (localStorage) --- */
-    const ZEIT_KEY="galvanikZeitLetzteSuche";
-    function ladeLetzteSuche(){
-      try{
-        const gespeichert=JSON.parse(localStorage.getItem(ZEIT_KEY));
-        if(gespeichert){
-          if(gespeichert.speed) speedInput.value=gespeichert.speed;
-          if(gespeichert.start && punkte.some(p=>p[0]===gespeichert.start)) startSel.value=gespeichert.start;
-          if(gespeichert.end && punkte.some(p=>p[0]===gespeichert.end)) endSel.value=gespeichert.end;
-        }
-      }catch(e){}
+    /* --- Letzte Suche: zentral online gespeichert (gleiche Werte für alle Geräte),
+       Gerätespeicher (localStorage) dient nur als Fallback ohne Internetverbindung --- */
+    const ZEIT_KEY="galvanikZeitLetzteSuche"; // Offline-Fallback
+    const ZEIT_ONLINE_ID=""; // Wird nach Ersteinrichtung fest eingetragen (siehe Konsole/Meldung)
+    const ZEIT_ONLINE_URL = ZEIT_ONLINE_ID ? ("https://jsonblob.com/api/jsonBlob/" + ZEIT_ONLINE_ID) : null;
+
+    function fetchMitTimeout(url, optionen, timeoutMs){
+      const controller = new AbortController();
+      const timer = setTimeout(()=>controller.abort(), timeoutMs);
+      return fetch(url, Object.assign({}, optionen, {signal: controller.signal}))
+        .finally(()=>clearTimeout(timer));
     }
-    ladeLetzteSuche();
+
+    function wendeLetzteSucheAn(werte){
+      if(!werte) return;
+      if(werte.speed) speedInput.value=werte.speed;
+      if(werte.start && punkte.some(p=>p[0]===werte.start)) startSel.value=werte.start;
+      if(werte.end && punkte.some(p=>p[0]===werte.end)) endSel.value=werte.end;
+    }
+
+    function ladeLetzteSucheLokal(){
+      try{ return JSON.parse(localStorage.getItem(ZEIT_KEY)); }catch(e){ return null; }
+    }
+
+    async function ladeLetzteSuche(){
+      if(ZEIT_ONLINE_URL){
+        try{
+          const antwort = await fetchMitTimeout(ZEIT_ONLINE_URL, {cache:"no-store"}, 3000);
+          if(antwort.ok){
+            wendeLetzteSucheAn(await antwort.json());
+            return;
+          }
+        }catch(e){ /* keine Verbindung: unten lokalen Fallback nutzen */ }
+      }
+      wendeLetzteSucheAn(ladeLetzteSucheLokal());
+    }
+    ladeLetzteSuche().then(function(){
+      if(!startSel.value) startSel.value="Start";
+      if(!endSel.value) endSel.value="Hot Wash";
+    });
+    // Direkt auch synchron einen Default setzen, damit die Felder nicht leer wirken,
+    // während die Online-Abfrage im Hintergrund noch läuft.
     if(!startSel.value) startSel.value="Start";
     if(!endSel.value) endSel.value="Hot Wash";
 
-    function speichereLetzteSuche(){
-      try{
-        localStorage.setItem(ZEIT_KEY, JSON.stringify({speed:speedInput.value, start:startSel.value, end:endSel.value}));
-      }catch(e){}
+    async function speichereLetzteSuche(){
+      const werte={speed:speedInput.value, start:startSel.value, end:endSel.value};
+
+      if(ZEIT_ONLINE_URL){
+        try{
+          await fetchMitTimeout(ZEIT_ONLINE_URL, {
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify(werte)
+          }, 3000);
+        }catch(e){
+          // Keine Verbindung: unten trotzdem lokal sichern, damit nichts verloren geht.
+        }
+      }else{
+        // Ersteinrichtung: einmalig zentralen Online-Speicher anlegen.
+        try{
+          const antwort = await fetchMitTimeout("https://jsonblob.com/api/jsonBlob", {
+            method:"POST",
+            headers:{"Content-Type":"application/json","Accept":"application/json"},
+            body: JSON.stringify(werte)
+          }, 4000);
+          if(antwort.ok){
+            const ort = antwort.headers.get("Location") || "";
+            const neueId = ort.split("/").pop();
+            if(neueId){
+              console.log("Neue Online-ID für den Zeitrechner:", neueId);
+              alert("Einmalige Ersteinrichtung erfolgt.\n\nBitte diese ID an den Entwickler weitergeben, damit sie fest eingetragen wird:\n\n" + neueId);
+            }
+          }
+        }catch(e){ /* offline: unten lokal sichern */ }
+      }
+
+      try{ localStorage.setItem(ZEIT_KEY, JSON.stringify(werte)); }catch(e){}
     }
 
     /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
