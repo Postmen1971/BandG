@@ -1613,7 +1613,7 @@
         <h2>Spulen-Bestandsrechner</h2>
     </div>
 
-    <div class="switch-container" id="spuleModusSwitchContainer" style="display:none;">
+    <div class="switch-container" id="spuleModusSwitchContainer">
         <div class="switch-button active" id="btn-modus-durchmesser" onclick="wechsleSpuleModus('durchmesser')">📏 Nach Durchmesser</div>
         <div class="switch-button" id="btn-modus-gewicht" onclick="wechsleSpuleModus('gewicht')">⚖️ Nach Gewicht</div>
     </div>
@@ -1679,10 +1679,19 @@
     </div><!-- Ende modus-durchmesser -->
 
     <div id="modus-gewicht" style="display:none;">
+        <div class="sub-auswahl-label">Spulengröße (für Leergewicht-Vorschlag):</div>
+        <div class="switch-container sub">
+            <div class="switch-button sub" id="btn-gew-98" onclick="setGewSpoolSize(98)">Spule 98 cm</div>
+            <div class="switch-button sub active" id="btn-gew-76" onclick="setGewSpoolSize(76)">Spule 76 cm</div>
+        </div>
+
         <div class="section bg-blue">
             <div class="section-title">1. Referenz (volle Spule)</div>
 
-            <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung:</label>
+            <label>Leergewicht der leeren Spule (fest, je nach Größe oben):</label>
+            <div class="small-output" id="gewLeerAnzeige" style="margin-top:0;">6,25 kg</div>
+
+            <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung, <strong>mit</strong> Spule:</label>
             <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
 
             <label>Stückzahl bei diesem Gewicht (laut Lieferschein):</label>
@@ -1692,7 +1701,7 @@
         <div class="section bg-green">
             <div class="section-title">2. Aktuelle Messung</div>
 
-            <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg):</label>
+            <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg), <strong>mit</strong> Spule:</label>
             <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
         </div>
 
@@ -1996,11 +2005,30 @@
      * Berechnet die Restmenge anhand des Gewichts statt des Durchmessers.
      * Nützlich, wenn das Material verbogen/unrund ist und eine Durchmesser-Messung ungenau wäre.
      */
-    // Merkt sich die Kalibrierungswerte (Leergewicht, Vollgewicht, Stückzahl) automatisch,
+    // Merkt sich die Kalibrierungswerte (Vollgewicht, Stückzahl, Spulengröße) automatisch,
     // da diese bei gleichbleibenden Spulen praktisch immer gleich sind. Nur das "aktuelle
     // Gewicht" (ändert sich bei jeder Messung) wird bewusst nicht gespeichert.
     const GEWICHT_KALIBRIERUNG_KEY = "galvanikSpuleGewichtKalibrierung";
     const gewichtKalibrierFelder = ["gewVoll", "gewVollStueck"];
+
+    // Leergewicht der leeren Spule - fest je Spulengröße, kein Eingabefeld nötig.
+    const GEW_LEER_FEST = { 76: 6.25, 98: 9.92 };
+    let currentGewSpoolSize = 76;
+
+    function aktualisiereGewLeerAnzeige() {
+        const wert = GEW_LEER_FEST[currentGewSpoolSize];
+        document.getElementById('gewLeerAnzeige').innerText = String(wert).replace('.', ',') + ' kg';
+    }
+
+    function setGewSpoolSize(groesse) {
+        currentGewSpoolSize = groesse;
+        document.getElementById('btn-gew-98').classList.remove('active');
+        document.getElementById('btn-gew-76').classList.remove('active');
+        document.getElementById('btn-gew-' + groesse).classList.add('active');
+        aktualisiereGewLeerAnzeige();
+        speichereGewichtKalibrierung();
+        calculateWeight();
+    }
 
     function ladeGewichtKalibrierung() {
         try {
@@ -2009,19 +2037,24 @@
                 gewichtKalibrierFelder.forEach(id => {
                     if (gespeichert[id] !== undefined && gespeichert[id] !== "") document.getElementById(id).value = gespeichert[id];
                 });
+                if (gespeichert.groesse === 98 || gespeichert.groesse === 76) { currentGewSpoolSize = gespeichert.groesse; }
             }
         } catch (e) {}
+        document.getElementById('btn-gew-98').classList.toggle('active', currentGewSpoolSize === 98);
+        document.getElementById('btn-gew-76').classList.toggle('active', currentGewSpoolSize === 76);
+        aktualisiereGewLeerAnzeige();
     }
 
     function speichereGewichtKalibrierung() {
         try {
-            const werte = {};
+            const werte = { groesse: currentGewSpoolSize };
             gewichtKalibrierFelder.forEach(id => { werte[id] = document.getElementById(id).value; });
             localStorage.setItem(GEWICHT_KALIBRIERUNG_KEY, JSON.stringify(werte));
         } catch (e) {}
     }
 
     function calculateWeight() {
+        const leerGewicht = GEW_LEER_FEST[currentGewSpoolSize];
         const vollGewicht = parseDeNumber(document.getElementById('gewVoll').value);
         const vollStueck = parseDeNumber(document.getElementById('gewVollStueck').value);
         const aktGewicht = parseDeNumber(document.getElementById('gewAktuell').value);
@@ -2034,20 +2067,29 @@
         elResultBoxGewicht.style.display = 'none';
         elResultGewichtProStueck.innerText = '-';
 
-        if (isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
-            showError('Bitte alle drei Felder mit gültigen Zahlen ausfüllen (Gewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
+        if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewicht < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
+            showError('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
+            return;
+        }
+        if (vollGewicht <= leerGewicht) {
+            showError('Das Vollgewicht muss größer als das Leergewicht der Spule sein.', 'errorBoxGewicht');
             return;
         }
 
-        // Einfaches Verhältnis der beiden Gesamtgewichte (Spule + Material jeweils mit drin) -
-        // kein separates Leergewicht nötig, da es sich beim Vergleich zweier Gewichte derselben
-        // Spulenart automatisch herauskürzt.
-        const gewichtProStueckKg = vollGewicht / vollStueck;
-        const resultCount = Math.floor(aktGewicht / vollGewicht * vollStueck);
+        // Tara-Abzug: Nur das reine Bandgewicht (ohne die leere Spule) ist proportional zur
+        // Stückzahl. Das Gesamtgewicht allein wäre das nicht, weil das konstante Leergewicht
+        // der Spule sonst mit in die Verhältnisrechnung eingeht und das Ergebnis verfälscht -
+        // besonders bei größeren Spulen, wo das Leergewicht einen erheblichen Anteil ausmacht.
+        const bandgewichtVollKg = vollGewicht - leerGewicht;
+        const bandgewichtAktuellKg = aktGewicht - leerGewicht;
+        const gewichtProStueckKg = bandgewichtVollKg / vollStueck;
+        const resultCount = Math.floor(bandgewichtAktuellKg / bandgewichtVollKg * vollStueck);
 
         let hinweis = '';
         if (aktGewicht > vollGewicht) {
             hinweis = ' ⚠️ über Vollgewicht - Werte prüfen';
+        } else if (bandgewichtAktuellKg < 0) {
+            hinweis = ' ⚠️ unter Leergewicht - Werte prüfen';
         }
 
         elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4) + ' g/Stück';
