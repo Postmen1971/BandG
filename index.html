@@ -1679,17 +1679,11 @@
     </div><!-- Ende modus-durchmesser -->
 
     <div id="modus-gewicht" style="display:none;">
-        <div class="sub-auswahl-label">Spulengröße (für Leergewicht-Vorschlag):</div>
-        <div class="switch-container sub">
-            <div class="switch-button sub" id="btn-gew-98" onclick="setGewSpoolSize(98)">Spule 98 cm</div>
-            <div class="switch-button sub active" id="btn-gew-76" onclick="setGewSpoolSize(76)">Spule 76 cm</div>
-        </div>
-
         <div class="section bg-blue">
             <div class="section-title">1. Referenz (volle Spule)</div>
 
-            <label>Leergewicht der leeren Spule (fest, je nach Größe oben):</label>
-            <div class="small-output" id="gewLeerAnzeige" style="margin-top:0;">6,25 kg</div>
+            <label>Leergewicht der <strong>leeren Spule</strong> (kg) - einfach die konkrete Spule wiegen:</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewLeer" placeholder="z.B. 6,25" step="0.001">
 
             <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung, <strong>mit</strong> Spule:</label>
             <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
@@ -2009,26 +2003,7 @@
     // da diese bei gleichbleibenden Spulen praktisch immer gleich sind. Nur das "aktuelle
     // Gewicht" (ändert sich bei jeder Messung) wird bewusst nicht gespeichert.
     const GEWICHT_KALIBRIERUNG_KEY = "galvanikSpuleGewichtKalibrierung";
-    const gewichtKalibrierFelder = ["gewVoll", "gewVollStueck"];
-
-    // Leergewicht der leeren Spule - fest je Spulengröße, kein Eingabefeld nötig.
-    const GEW_LEER_FEST = { 76: 6.25, 98: 9.92 };
-    let currentGewSpoolSize = 76;
-
-    function aktualisiereGewLeerAnzeige() {
-        const wert = GEW_LEER_FEST[currentGewSpoolSize];
-        document.getElementById('gewLeerAnzeige').innerText = String(wert).replace('.', ',') + ' kg';
-    }
-
-    function setGewSpoolSize(groesse) {
-        currentGewSpoolSize = groesse;
-        document.getElementById('btn-gew-98').classList.remove('active');
-        document.getElementById('btn-gew-76').classList.remove('active');
-        document.getElementById('btn-gew-' + groesse).classList.add('active');
-        aktualisiereGewLeerAnzeige();
-        speichereGewichtKalibrierung();
-        calculateWeight();
-    }
+    const gewichtKalibrierFelder = ["gewLeer", "gewVoll", "gewVollStueck"];
 
     function ladeGewichtKalibrierung() {
         try {
@@ -2037,24 +2012,20 @@
                 gewichtKalibrierFelder.forEach(id => {
                     if (gespeichert[id] !== undefined && gespeichert[id] !== "") document.getElementById(id).value = gespeichert[id];
                 });
-                if (gespeichert.groesse === 98 || gespeichert.groesse === 76) { currentGewSpoolSize = gespeichert.groesse; }
             }
         } catch (e) {}
-        document.getElementById('btn-gew-98').classList.toggle('active', currentGewSpoolSize === 98);
-        document.getElementById('btn-gew-76').classList.toggle('active', currentGewSpoolSize === 76);
-        aktualisiereGewLeerAnzeige();
     }
 
     function speichereGewichtKalibrierung() {
         try {
-            const werte = { groesse: currentGewSpoolSize };
+            const werte = {};
             gewichtKalibrierFelder.forEach(id => { werte[id] = document.getElementById(id).value; });
             localStorage.setItem(GEWICHT_KALIBRIERUNG_KEY, JSON.stringify(werte));
         } catch (e) {}
     }
 
     function calculateWeight() {
-        const leerGewicht = GEW_LEER_FEST[currentGewSpoolSize];
+        const leerGewicht = parseDeNumber(document.getElementById('gewLeer').value);
         const vollGewicht = parseDeNumber(document.getElementById('gewVoll').value);
         const vollStueck = parseDeNumber(document.getElementById('gewVollStueck').value);
         const aktGewicht = parseDeNumber(document.getElementById('gewAktuell').value);
