@@ -668,7 +668,7 @@
         <a href="https://liveonsat.com/" target="_blank" rel="noopener" title="Zeigt, welcher TV-Sender/Stream das Spiel überträgt" style="display:inline-flex;align-items:center;gap:4px;text-decoration:underline;color:#0066cc;font-weight:normal;font-size:0.8em;">📺 Sender-Übersicht</a>
       </h3>
       <div id="footballBox">Spiele werden geladen…</div>
-      <div class="small">Nächste Spiele deiner Lieblingsvereine.</div>
+      <div class="small">Nächste Spiele deiner Lieblingsvereine sowie aller europäischen Nationalmannschaften (UEFA Nations League).</div>
     </div>
   </div>
 
@@ -1232,9 +1232,16 @@
     // Nationale Ligen + europäische Wettbewerbe + Freundschaftsspiele + UEFA Super Cup: deckt AUCH Auswärtsspiele ab
     // (die teambasierte Abfrage zeigt mit dem kostenlosen Zugang laut TheSportsDB nur Heimspiele!)
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
+    // Nationalmannschaften Europa: die UEFA Nations League deckt ALLE europäischen Nationalmannschaften ab
+    // (jedes UEFA-Mitglied spielt dort), deshalb reicht diese eine Liga-ID für "alle europäischen Mannschaften" -
+    // eine einzelne Abfrage statt 55 einzelner Länder-Abfragen. WM-Qualifikation Europa und EM-Qualifikation
+    // sind aktuell zwischen zwei Zyklen (WM 2026 bereits abgeschlossen, nächste WM-/EM-Qualifikation startet
+    // erst wieder ~2027/2028) und liefern deshalb momentan ohnehin keine Spiele - können hier ergänzt werden,
+    // sobald der jeweilige Zyklus wieder läuft und die Liga-ID bestätigt ist.
+    const NATIONAL_WETTBEWERB_IDS=["4490"];
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v13";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v14";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -1314,6 +1321,22 @@
         const data=await res.json();
         const events=(data && data.events) ? data.events.filter(istLieblingsverein) : [];
         return {ok:true, events};
+      }catch(e){ return {ok:false, events:[]}; }
+    }
+
+    // Für Nationalmannschafts-Wettbewerbe (z.B. UEFA Nations League): ungefiltert, da dort ohnehin
+    // ausschließlich europäische Nationalmannschaften gegeneinander spielen - jedes Spiel ist relevant.
+    async function holeSpieleFuerNationalWettbewerb(ligaId){
+      try{
+        const [naechste, letzte]=await Promise.all([
+          fetch(`${SPORTSDB_BASE}/eventsnextleague.php?id=${ligaId}`, {cache:"no-store"}),
+          fetch(`${SPORTSDB_BASE}/eventspastleague.php?id=${ligaId}`, {cache:"no-store"})
+        ]);
+        const events=[];
+        let mindestensEinErfolg=false;
+        if(naechste.ok){ const d=await naechste.json(); if(d && d.events){ events.push(...d.events); mindestensEinErfolg=true; } }
+        if(letzte.ok){ const d=await letzte.json(); if(d && d.events){ events.push(...d.events); mindestensEinErfolg=true; } }
+        return {ok:mindestensEinErfolg, events};
       }catch(e){ return {ok:false, events:[]}; }
     }
 
@@ -1489,6 +1512,14 @@
       // nur Heimspiele). Ebenfalls in parallelen Stapeln statt nacheinander.
       const ligaErgebnisse=await inStapelnAusfuehren(WETTBEWERB_IDS, 4, holeNaechsteSpieleFuerWettbewerb);
       ligaErgebnisse.forEach(ergebnis=>{
+        gesamtAbfragen++;
+        if(ergebnis.ok) erfolgreicheAbfragen++;
+        alleSpiele.push(...ergebnis.events.map(verarbeiteEvent));
+      });
+
+      // 3) Nationalmannschaften Europa (UEFA Nations League, deckt alle europäischen Länder ab).
+      const nationalErgebnisse=await inStapelnAusfuehren(NATIONAL_WETTBEWERB_IDS, 4, holeSpieleFuerNationalWettbewerb);
+      nationalErgebnisse.forEach(ergebnis=>{
         gesamtAbfragen++;
         if(ergebnis.ok) erfolgreicheAbfragen++;
         alleSpiele.push(...ergebnis.events.map(verarbeiteEvent));
