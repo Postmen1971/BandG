@@ -1253,14 +1253,16 @@
       {slug:"fifa.friendly",    name:"Freundschaftsspiel"},
       {slug:"uefa.nations",     name:"UEFA Nations League"},
       {slug:"fifa.worldq.uefa", name:"WM-Qualifikation"},
-      {slug:"uefa.euroq",       name:"EM-Qualifikation"},
-      {slug:"uefa.euro",        name:"Europameisterschaft"},
-      {slug:"fifa.world",       name:"Weltmeisterschaft"}
+      {slug:"uefa.euroq",       name:"EM-Qualifikation"}
+      // EM (uefa.euro) und WM (fifa.world) bei Bedarf wieder ergänzen, wenn das nächste Turnier ansteht.
     ];
-    const LAENDERSPIEL_TAGE_VORAUS=14; // so viele Tage im Voraus werden Länderspiele angezeigt
+    // ESPN lehnt Datumsbereiche (z.B. 20260924-20261009) mit Fehler 400 ab - das war der Grund,
+    // warum v16 keine Länderspiele zeigte. Deshalb wird jetzt TAGEWEISE abgefragt:
+    // gestern, heute und die nächsten LAENDERSPIEL_TAGE_VORAUS Tage.
+    const LAENDERSPIEL_TAGE_VORAUS=7;
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v16";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -1480,11 +1482,9 @@
       return d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,"0")+String(d.getUTCDate()).padStart(2,"0");
     }
 
-    async function holeLaenderspieleEinesWettbewerbs(wb){
+    async function holeLaenderspieleEinesWettbewerbs(wb, tag){
       try{
-        const von=new Date(Date.now()-24*3600000);
-        const bis=new Date(Date.now()+LAENDERSPIEL_TAGE_VORAUS*24*3600000);
-        const url=`${ESPN_BASE}/${wb.slug}/scoreboard?dates=${espnDatum(von)}-${espnDatum(bis)}&limit=300`;
+        const url=`${ESPN_BASE}/${wb.slug}/scoreboard?dates=${tag}`;
         const res=await fetch(url, {cache:"no-store"});
         if(!res.ok) return [];
         const data=await res.json();
@@ -1530,7 +1530,14 @@
     }
 
     async function holeLaenderspiele(){
-      const listen=await Promise.all(LAENDERSPIEL_WETTBEWERBE.map(holeLaenderspieleEinesWettbewerbs));
+      // Alle Kombinationen Wettbewerb x Tag (4 Wettbewerbe x 9 Tage = 36 kleine Abfragen),
+      // in 12er-Stapeln, damit das Handy nicht zu viele Verbindungen gleichzeitig öffnet.
+      const auftraege=[];
+      for(let d=-1; d<=LAENDERSPIEL_TAGE_VORAUS; d++){
+        const tag=espnDatum(new Date(Date.now()+d*24*3600000));
+        LAENDERSPIEL_WETTBEWERBE.forEach(wb=>auftraege.push({wb, tag}));
+      }
+      const listen=await inStapelnAusfuehren(auftraege, 12, a=>holeLaenderspieleEinesWettbewerbs(a.wb, a.tag));
       return listen.flat();
     }
 
