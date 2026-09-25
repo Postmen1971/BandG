@@ -1232,22 +1232,35 @@
     // Nationale Ligen + europäische Wettbewerbe + Freundschaftsspiele + UEFA Super Cup: deckt AUCH Auswärtsspiele ab
     // (die teambasierte Abfrage zeigt mit dem kostenlosen Zugang laut TheSportsDB nur Heimspiele!)
     const WETTBEWERB_IDS=["4339","4331","4335","4332","4328","4334","4480","4481","5071","4569","4512"];
-    // Nationalmannschaften Europa (alle 55 UEFA-Mitgliedsverbände minus Russland, das seit 2022 von
-    // UEFA-Wettbewerben ausgeschlossen ist und daher ohnehin keine Spiele hätte). Werden wie die
-    // Lieblingsvereine oben teambasiert abgefragt (zuverlässiger als die ligabasierte Abfrage, die auf
-    // dem kostenlosen API-Zugang stark limitiert ist und für die aktuelle Saison teils noch leer war).
+    // Nationalmannschaften Europa (alle UEFA-Mitgliedsverbände außer Russland).
+    // WICHTIG: Diese werden NICHT mehr über TheSportsDB abgefragt. Der kostenlose Schlüssel "123" erlaubt
+    // nur 30 Abfragen pro Minute, liefert bei der Team-Suche nur 1 Treffer (oft die falsche Sportart,
+    // z.B. Basketball statt Fußball) und bei den Spielen nur 1 Heimspiel. 54 Nationalteams x 3 Abfragen
+    // = über 160 Abfragen -> praktisch alle scheiterten am Limit, deshalb erschien nie ein Länderspiel.
+    // Stattdessen: ESPN-Spielpläne pro Wettbewerb (kostenlos, ohne Schlüssel) - nur 6 Abfragen für
+    // ALLE Länderspiele: Freundschaftsspiele, Nations League, WM-/EM-Qualifikation, WM, EM.
     const NATIONALMANNSCHAFTEN_EUROPA=[
       "England","Germany","France","Spain","Italy","Portugal","Netherlands","Belgium","Croatia",
       "Switzerland","Denmark","Austria","Poland","Ukraine","Sweden","Serbia","Wales","Scotland",
-      "Turkey","Hungary","Czech Republic","Romania","Slovakia","Slovenia","Greece","Norway",
-      "Republic of Ireland","Northern Ireland","Finland","Iceland","Bosnia and Herzegovina",
+      "Turkey","Turkiye","Hungary","Czech Republic","Czechia","Romania","Slovakia","Slovenia","Greece","Norway",
+      "Republic of Ireland","Ireland","Northern Ireland","Finland","Iceland","Bosnia","Herzegovina",
       "Albania","North Macedonia","Montenegro","Bulgaria","Israel","Georgia","Armenia",
       "Azerbaijan","Kazakhstan","Cyprus","Luxembourg","Malta","Moldova","Estonia","Latvia",
       "Lithuania","Belarus","Kosovo","Faroe Islands","Gibraltar","Andorra","San Marino","Liechtenstein"
     ];
+    const ESPN_BASE="https://site.api.espn.com/apis/site/v2/sports/soccer";
+    const LAENDERSPIEL_WETTBEWERBE=[
+      {slug:"fifa.friendly",    name:"Freundschaftsspiel"},
+      {slug:"uefa.nations",     name:"UEFA Nations League"},
+      {slug:"fifa.worldq.uefa", name:"WM-Qualifikation"},
+      {slug:"uefa.euroq",       name:"EM-Qualifikation"},
+      {slug:"uefa.euro",        name:"Europameisterschaft"},
+      {slug:"fifa.world",       name:"Weltmeisterschaft"}
+    ];
+    const LAENDERSPIEL_TAGE_VORAUS=14; // so viele Tage im Voraus werden Länderspiele angezeigt
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v15";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v16";
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -1454,6 +1467,73 @@
       return {ok:mindestensEinErfolg, spiele:alle};
     }
 
+    // --- Länderspiele europäischer Nationalmannschaften über ESPN (alle Wettbewerbe + Freundschaftsspiele) ---
+    function ohneAkzente(s){
+      return (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+    }
+    const EUROPA_NAMEN_NORMALISIERT = NATIONALMANNSCHAFTEN_EUROPA.map(ohneAkzente);
+    function istEuropaeischesTeam(name){
+      const n=ohneAkzente(name);
+      return EUROPA_NAMEN_NORMALISIERT.some(e => n.includes(e));
+    }
+    function espnDatum(d){
+      return d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,"0")+String(d.getUTCDate()).padStart(2,"0");
+    }
+
+    async function holeLaenderspieleEinesWettbewerbs(wb){
+      try{
+        const von=new Date(Date.now()-24*3600000);
+        const bis=new Date(Date.now()+LAENDERSPIEL_TAGE_VORAUS*24*3600000);
+        const url=`${ESPN_BASE}/${wb.slug}/scoreboard?dates=${espnDatum(von)}-${espnDatum(bis)}&limit=300`;
+        const res=await fetch(url, {cache:"no-store"});
+        if(!res.ok) return [];
+        const data=await res.json();
+        const events=(data && Array.isArray(data.events)) ? data.events : [];
+        // Bei reinen UEFA-Wettbewerben sind ohnehin nur europäische Teams dabei; bei Freundschaftsspielen
+        // und der WM wird gefiltert, damit nur Spiele mit mindestens einem europäischen Team erscheinen.
+        const nurEuropaFiltern = wb.slug==="fifa.friendly" || wb.slug==="fifa.world";
+
+        return events.map(ev=>{
+          const comp=ev.competitions && ev.competitions[0];
+          if(!comp || !Array.isArray(comp.competitors)) return null;
+          const heimC=comp.competitors.find(c=>c.homeAway==="home") || comp.competitors[0];
+          const gastC=comp.competitors.find(c=>c.homeAway==="away") || comp.competitors[1];
+          if(!heimC || !gastC) return null;
+          const heim=(heimC.team && (heimC.team.displayName||heimC.team.name)) || "?";
+          const gast=(gastC.team && (gastC.team.displayName||gastC.team.name)) || "?";
+          if(nurEuropaFiltern && !istEuropaeischesTeam(heim) && !istEuropaeischesTeam(gast)) return null;
+
+          const kickoff=new Date(ev.date);
+          if(isNaN(kickoff.getTime())) return null;
+          const stundenSeitAnstoss=(Date.now()-kickoff.getTime())/3600000;
+          const typ=(ev.status && ev.status.type) || {};
+          const zustand=typ.state; // "pre" | "in" | "post"
+
+          let status="geplant", heimTor=null, gastTor=null;
+          if(zustand==="in" || zustand==="post"){
+            heimTor=heimC.score!==undefined ? parseInt(heimC.score,10) : null;
+            gastTor=gastC.score!==undefined ? parseInt(gastC.score,10) : null;
+            status = zustand==="post" ? "beendet" : "live";
+          }
+          // Abgesagte/verlegte Spiele nicht anzeigen
+          if(/postponed|canceled|cancelled/i.test(typ.name||"")) return null;
+
+          return {
+            heim, auswaerts: gast,
+            datum: berlinDatum(kickoff), zeit: berlinUhrzeit(kickoff),
+            wettbewerb: wb.name,
+            heimTor, gastTor, status, kickoff, stundenSeitAnstoss,
+            rohStatus: typ.shortDetail || (ev.status && ev.status.displayClock) || ""
+          };
+        }).filter(Boolean);
+      }catch(e){ return []; }
+    }
+
+    async function holeLaenderspiele(){
+      const listen=await Promise.all(LAENDERSPIEL_WETTBEWERBE.map(holeLaenderspieleEinesWettbewerbs));
+      return listen.flat();
+    }
+
     async function ladeFussballTopspiele(versuch){
       versuch = versuch || 1;
 
@@ -1472,6 +1552,10 @@
       let alleSpiele=[];
       let erfolgreicheAbfragen=0;
       let gesamtAbfragen=0;
+
+      // Länderspiele laufen über eine eigene Quelle (ESPN) - gleich parallel starten, damit sie die
+      // Ladezeit der Vereinsabfragen nicht verlängern und das TheSportsDB-Limit nicht belasten.
+      const laenderspielePromise=holeLaenderspiele();
 
       // 1) Teambasiert: liefert Ergebnisse (letzte Spiele) + Heimspiele (nächste Spiele).
       // Läuft in parallelen 4er-Stapeln statt streng nacheinander - das spart bei 16 Vereinen
@@ -1507,14 +1591,10 @@
         alleSpiele.push(...ergebnis.events.map(verarbeiteEvent));
       });
 
-      // 3) Nationalmannschaften Europa - dieselbe zuverlässige teambasierte Methode wie bei den
-      // Lieblingsvereinen oben (statt der stärker limitierten ligabasierten Abfrage).
-      const nationalErgebnisse=await inStapelnAusfuehren(NATIONALMANNSCHAFTEN_EUROPA, 4, holeSpieleFuerEinenVerein);
-      nationalErgebnisse.forEach(r=>{
-        gesamtAbfragen+=r.abfragen;
-        erfolgreicheAbfragen+=r.erfolge;
-        alleSpiele.push(...r.events);
-      });
+      // 3) Nationalmannschaften Europa (ESPN, siehe oben). Zählt bewusst NICHT in die Erfolgsquote
+      // von TheSportsDB, da es eine völlig andere Quelle ist.
+      const laenderspiele=await laenderspielePromise;
+      alleSpiele.push(...laenderspiele);
 
       // Quelle nicht erreichbar? (so gut wie alle Abfragen fehlgeschlagen) -> automatisch nochmal versuchen,
       // danach Rückfallebenen probieren: 1) Cloudflare-Worker-Proxy zu football-data.org (England, Spanien,
@@ -1531,7 +1611,7 @@
           holeOpenLigaDbSpiele()
         ]);
 
-        let fallbackSpiele=[...proxyErgebnis.spiele, ...openligaErgebnis.spiele];
+        let fallbackSpiele=[...proxyErgebnis.spiele, ...openligaErgebnis.spiele, ...laenderspiele];
 
         if(fallbackSpiele.length>0){
           fallbackSpiele=fallbackSpiele.filter(s => !(s.status==="geplant" && s.stundenSeitAnstoss > ERGEBNIS_SICHTBAR_STUNDEN));
