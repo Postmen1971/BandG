@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Galvanik Tools – Strom & Zeit</title>
+<!-- Homescreen: Beim "Zum Home-Bildschirm" auf dem iPhone mit eigenem Symbol und Namen,
+     öffnet sich dann wie eine App (ohne Safari-Leiste). Symbol ist direkt eingebettet (Single-File). -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Galvanik" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="application-name" content="Galvanik" />
+<meta name="theme-color" content="#002855" />
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0AQMAAAAHA5RxAAAABlBMVEX1gCUAKFWAbtUqAAABzklEQVR42u1XMXKEMAyUHWZCF34QfhL/LPc0nsITfJ0z41ipOGShDai74qjwjlmktay1A5P13CPZzwt/JjzcTFysaZDry5HN9W2Av8L/2ngB8zPA1+jLdwF5hffiqVsGeKPRFU8FeKHJxZMBvtLs4lm6Gtgfou/tNUdbBsgvdP4d9k+kztVZt0WUj8Szk2eVgwhkuJBXoEf5yLwY/Lfh+hwtvIL5BfNMFp7B/BXzzBa+9EKIKqEvtuqEKBk8DNalAZ1/RvnN+T4tAM+y+xANMpVARKH189eeIAIZDvEMSp8N/+j1YbVmZ3k1tTZRV0n6n2eLJ/fjRzxZdehoy3Aa56L1NWVQdXLk0fJsuJbhEE/q8Qp0yFoWxRNUPBnEqeXZXg4ynKyLkmeL5yCD5pl7vAE935iZq9yRoo/JHXbx/AZ8nKLdt8Vuu8aP/HRy9n/kg8nyu1UMcucXiD8A3Osvg8cX+j5P0q4/QR+eAU/y+B1H1IcDyCu6fLl1PTnaMlzgqZ080Zahw5PL9+8T2/ed4DyHgJLJg5NnBPgEfH928ifb92/ipHjaz7U8hE7wu85j8d0rR4BPNo7OIV2VSDzZcXKw778N8AeAx9f99JnwP0qrFa1z9ybFAAAAAElFTkSuQmCC" />
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0AQMAAAAHA5RxAAAABlBMVEX1gCUAKFWAbtUqAAABzklEQVR42u1XMXKEMAyUHWZCF34QfhL/LPc0nsITfJ0z41ipOGShDai74qjwjlmktay1A5P13CPZzwt/JjzcTFysaZDry5HN9W2Av8L/2ngB8zPA1+jLdwF5hffiqVsGeKPRFU8FeKHJxZMBvtLs4lm6Gtgfou/tNUdbBsgvdP4d9k+kztVZt0WUj8Szk2eVgwhkuJBXoEf5yLwY/Lfh+hwtvIL5BfNMFp7B/BXzzBa+9EKIKqEvtuqEKBk8DNalAZ1/RvnN+T4tAM+y+xANMpVARKH189eeIAIZDvEMSp8N/+j1YbVmZ3k1tTZRV0n6n2eLJ/fjRzxZdehoy3Aa56L1NWVQdXLk0fJsuJbhEE/q8Qp0yFoWxRNUPBnEqeXZXg4ynKyLkmeL5yCD5pl7vAE935iZq9yRoo/JHXbx/AZ8nKLdt8Vuu8aP/HRy9n/kg8nyu1UMcucXiD8A3Osvg8cX+j5P0q4/QR+eAU/y+B1H1IcDyCu6fLl1PTnaMlzgqZ080Zahw5PL9+8T2/ed4DyHgJLJg5NnBPgEfH928ifb92/ipHjaz7U8hE7wu85j8d0rR4BPNo7OIV2VSDzZcXKw778N8AeAx9f99JnwP0qrFa1z9ybFAAAAAElFTkSuQmCC" />
 <style>
   /* Allgemeine Anpassungen für bessere Darstellung auf kleinen Bildschirmen */
   :root{--orange:#F58025;--orange-dark:#d96a15;--darkblue:#002855;--blue-mid:#0f3d73;--lightgray:#f7f7f7;--bg:#f4f5f7;--border:#e5e7eb;--muted:#6b7280}
@@ -46,14 +56,21 @@
     padding:8px 8px;
     z-index:1000;
     display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
+    justify-content:flex-start;
+    flex-wrap:nowrap;          /* immer eine Zeile ... */
+    overflow-x:auto;           /* ... bei sehr schmalen Displays waagerecht wischbar */
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
     gap:6px;
   }
+  .topbar::-webkit-scrollbar{display:none;}
+  /* Zentriert, solange alles passt - und trotzdem sauber wischbar, falls nicht */
+  .topbar .tabbtn:first-child{margin-left:auto;}
+  .topbar .tabbtn:last-child{margin-right:auto;}
   
   .tabbtn{border:1.5px solid var(--darkblue);color:var(--darkblue);background:#fff;padding:6px 10px;
           border-radius:999px;cursor:pointer;font-weight:700;font-size:11px;
-          transition:background .15s,color .15s,transform .08s;}
+          transition:background .15s,color .15s,transform .08s;white-space:nowrap;flex-shrink:0;}
   .tabbtn:active{transform:scale(.96);}
   .tabbtn.active{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 2px 6px rgba(245,128,37,.35);}
   section.tab-pane{display:none}section.tab-pane.active{display:block}
@@ -381,11 +398,11 @@
 </div>
 
 <nav class="topbar">
-  <button id="tabBtnStrom" class="tabbtn">⚡ Stromrechner</button>
-  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeitrechner</button>
-  <button id="tabBtnSpule" class="tabbtn">🧵 Spulenrechner</button>
-  <button id="tabBtnCode" class="tabbtn">🔳 QR/Strichcode</button>
-  <button id="tabBtnMde" class="tabbtn">📱 MDE-Anleitung</button>
+  <button id="tabBtnStrom" class="tabbtn">⚡ Strom</button>
+  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeit</button>
+  <button id="tabBtnSpule" class="tabbtn">🧵 Spule</button>
+  <button id="tabBtnCode" class="tabbtn">🔳 QR/Code</button>
+  <button id="tabBtnMde" class="tabbtn">📱 MDE</button>
 </nav>
 
 <div id="counter"></div>
@@ -702,84 +719,31 @@
 
     /* --- Helfer --- */
     function zeitInSekunden(t){const[m,s]=t.split(":").map(Number);return m*60+s;}
-    function dayOfYear(d=new Date()){
-      const start=new Date(d.getFullYear(),0,0);
-      const diff=d - start + ((start.getTimezoneOffset()-d.getTimezoneOffset())*60*1000);
-      return Math.floor(diff/(1000*60*60*24));
-    }
-    function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
     /* --- UI init --- */
     const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel"),speedInput=document.getElementById("speedInput");
     punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
 
-    /* --- Letzte Suche: zentral online gespeichert (gleiche Werte für alle Geräte),
-       Gerätespeicher (localStorage) dient nur als Fallback ohne Internetverbindung.
-       Dienst: Pantry (getpantry.cloud) – der Basket-Name wird selbst gewählt,
-       dadurch muss (anders als bei jsonblob.com) nie eine vom Server erzeugte ID
-       aus einem Response-Header gelesen werden, was am CORS-Schutz scheitern kann. --- */
-    const ZEIT_KEY="galvanikZeitLetzteSuche"; // Offline-Fallback
-    const PANTRY_ID=""; // Von Aziz einmalig auf getpantry.cloud angelegt, dann hier eintragen
-    const PANTRY_BASKET="galvanik-zeitrechner-letzte-suche";
-    const ZEIT_ONLINE_URL = PANTRY_ID ? ("https://getpantry.cloud/apiv1/pantry/" + PANTRY_ID + "/basket/" + PANTRY_BASKET) : null;
+    /* --- Letzte Suche: nur lokal auf diesem Gerät gespeichert (localStorage) --- */
+    const ZEIT_KEY="galvanikZeitLetzteSuche";
 
-    function fetchMitTimeout(url, optionen, timeoutMs){
-      const controller = new AbortController();
-      const timer = setTimeout(()=>controller.abort(), timeoutMs);
-      return fetch(url, Object.assign({}, optionen, {signal: controller.signal}))
-        .finally(()=>clearTimeout(timer));
+    function ladeLetzteSuche(){
+      try{
+        const werte=JSON.parse(localStorage.getItem(ZEIT_KEY));
+        if(!werte) return;
+        if(werte.speed) speedInput.value=werte.speed;
+        if(werte.start && punkte.some(p=>p[0]===werte.start)) startSel.value=werte.start;
+        if(werte.end && punkte.some(p=>p[0]===werte.end)) endSel.value=werte.end;
+      }catch(e){}
     }
-
-    function wendeLetzteSucheAn(werte){
-      if(!werte) return;
-      if(werte.speed) speedInput.value=werte.speed;
-      if(werte.start && punkte.some(p=>p[0]===werte.start)) startSel.value=werte.start;
-      if(werte.end && punkte.some(p=>p[0]===werte.end)) endSel.value=werte.end;
-    }
-
-    function ladeLetzteSucheLokal(){
-      try{ return JSON.parse(localStorage.getItem(ZEIT_KEY)); }catch(e){ return null; }
-    }
-
-    async function ladeLetzteSuche(){
-      if(ZEIT_ONLINE_URL){
-        try{
-          const antwort = await fetchMitTimeout(ZEIT_ONLINE_URL, {cache:"no-store"}, 3000);
-          if(antwort.ok){
-            wendeLetzteSucheAn(await antwort.json());
-            return;
-          }
-        }catch(e){ /* keine Verbindung: unten lokalen Fallback nutzen */ }
-      }
-      wendeLetzteSucheAn(ladeLetzteSucheLokal());
-    }
-    ladeLetzteSuche().then(function(){
-      if(!startSel.value) startSel.value="Start";
-      if(!endSel.value) endSel.value="Hot Wash";
-      berechnenZeit(); // neu berechnen, falls sich Start/Ende/Geschwindigkeit durch die geladenen Werte geändert haben
-    });
-    // Direkt auch synchron einen Default setzen, damit die Felder nicht leer wirken,
-    // während die Online-Abfrage im Hintergrund noch läuft.
+    ladeLetzteSuche();
     if(!startSel.value) startSel.value="Start";
     if(!endSel.value) endSel.value="Hot Wash";
 
-    async function speichereLetzteSuche(){
-      const werte={speed:speedInput.value, start:startSel.value, end:endSel.value};
-
-      if(ZEIT_ONLINE_URL){
-        try{
-          await fetchMitTimeout(ZEIT_ONLINE_URL, {
-            method:"PUT",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify(werte)
-          }, 3000);
-        }catch(e){
-          // Keine Verbindung: unten trotzdem lokal sichern, damit nichts verloren geht.
-        }
-      }
-      // Noch keine PANTRY_ID eingetragen: nur lokal sichern, bis die Ersteinrichtung erfolgt ist.
-
-      try{ localStorage.setItem(ZEIT_KEY, JSON.stringify(werte)); }catch(e){}
+    function speichereLetzteSuche(){
+      try{
+        localStorage.setItem(ZEIT_KEY, JSON.stringify({speed:speedInput.value, start:startSel.value, end:endSel.value}));
+      }catch(e){}
     }
 
     /* --- Berechnung (Skalierung von 7 m/min auf v m/min) --- */
@@ -791,7 +755,7 @@
       if(v <= 0){out.textContent="Die Geschwindigkeit muss größer als 0 sein.";return;}
 
       const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
-      if(iS>iE){out.textContent="Rückwärtslauf ist nicht erlaubt.";return;}
+      if(iS>iE){out.textContent="Der Startpunkt muss vor dem Endpunkt liegen.";return;}
 
       const tStart7=zeitInSekunden(punkte[iS][1]), tEnd7=zeitInSekunden(punkte[iE][1]);
       const d7=tEnd7 - tStart7;
@@ -1673,7 +1637,7 @@
     function zeigeFussballErgebnis(spiele, ausCache, istFallback){
       const box=document.getElementById('footballBox');
       const fallbackHinweis = istFallback
-        ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">⚠️ Hauptquelle nicht erreichbar – zeige nur Bundesliga (Rückfallebene).</div>'
+        ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">⚠️ Hauptquelle gerade nicht erreichbar – Ersatzquellen aktiv: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League und Länderspiele. Einzelne Spiele können fehlen.</div>'
         : '';
       if(!spiele || spiele.length===0){
         box.innerHTML=fallbackHinweis+'Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
@@ -1687,7 +1651,7 @@
           const minute=formatiereSpielminute(s.rohStatus);
           ergebnisTeil=`<strong style="color:#e63946">🔴 ${s.heimTor}:${s.gastTor} (${minute})</strong>`;
         }else if(s.status==="beendet"){
-          ergebnisTeil=`Endstand ${s.heimTor}:${s.gastTor}`;
+          ergebnisTeil=`<strong style="color:#1a7d1a">Endstand ${s.heimTor}:${s.gastTor}</strong>`;
         }else if(s.stundenSeitAnstoss>0){
           ergebnisTeil=`Angepfiffen ${datumStr}, ${s.zeit} Uhr – Ergebnis folgt`;
         }else{
@@ -1776,7 +1740,6 @@
 
     <div id="errorBox" class="error-msg"></div>
 
-    <button onclick="calculate()">BESTAND BERECHNEN</button>
 
     <div id="resultBox" class="result-area bg-result">
         <div class="result-group">
@@ -1810,7 +1773,6 @@
 
         <div id="errorBoxGewicht" class="error-msg"></div>
 
-        <button onclick="calculateWeight()">BESTAND BERECHNEN</button>
 
         <div id="resultBoxGewicht" class="result-area bg-result">
             <div class="result-group">
@@ -1930,7 +1892,7 @@
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
           <span style="font-size:1.2rem;">🧮</span><strong>Ergebnis</strong>
         </div>
-        <div style="font-size:0.92rem;">Nach dem Klick auf <strong>„BESTAND BERECHNEN"</strong> wird dir automatisch der aktuelle Bestand an Kontakten angezeigt.</div>
+        <div style="font-size:0.92rem;">Sobald alle Felder ausgefüllt sind, wird dir automatisch der aktuelle Bestand an Kontakten angezeigt – ganz ohne Knopfdruck.</div>
       </div>
 
     </div>
@@ -2186,11 +2148,13 @@
     document.querySelectorAll("#modus-gewicht input").forEach(i => i.addEventListener("input", calculateWeight));
 
     // Initialisierung beim Laden
-    window.onload = function() {
+    // addEventListener statt "window.onload = ...": so kann kein anderer Teil der Seite diese
+    // Initialisierung versehentlich überschreiben (window.onload gibt es nur einmal).
+    window.addEventListener('load', function() {
         ladeDurchmesserKalibrierung();
         setSpoolSize(currentDMax || D_MAX_76);
         ladeGewichtKalibrierung();
-    };
+    });
 </script>
 </section>
 
@@ -2632,7 +2596,8 @@
 
 <section id="tab-mde" class="tab-pane">
   <div class="container" style="padding:0; overflow:hidden; height:80vh; max-height:800px;">
-    <iframe src="https://postmen1971.github.io/BandG/MDE_SAP_Anleitung.html"
+    <!-- Wird erst beim ersten Antippen des MDE-Tabs geladen (Datei ist ca. 7 MB groß) -->
+    <iframe id="mdeFrame" data-src="https://postmen1971.github.io/BandG/MDE_SAP_Anleitung.html"
             title="MDE-Gerät Anleitung"
             style="width:100%; height:100%; border:none; display:block;">
     </iframe>
@@ -2682,8 +2647,15 @@
     if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
     else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
     else if(t==="spule"){bSp.classList.add("active");pSp.classList.add("active");}
-    else if(t==="mde"){bM.classList.add("active");pM.classList.add("active");}
+    else if(t==="mde"){
+      bM.classList.add("active");pM.classList.add("active");
+      // MDE-Anleitung erst jetzt laden (einmalig), statt bei jedem Öffnen der App
+      const mdeFrame=document.getElementById("mdeFrame");
+      if(mdeFrame && !mdeFrame.getAttribute("src")) mdeFrame.setAttribute("src", mdeFrame.dataset.src);
+    }
     else{bC.classList.add("active");pC.classList.add("active");}
+    const aktiv=document.querySelector(".tabbtn.active");
+    if(aktiv && aktiv.scrollIntoView) aktiv.scrollIntoView({block:"nearest", inline:"nearest"});
   }
   bS.addEventListener("click",()=>activate("strom"));
   bZ.addEventListener("click",()=>activate("zeit"));
