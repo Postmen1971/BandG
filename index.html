@@ -29,13 +29,21 @@
     align-items:center;
   }
 
-  .app-header{
+  /* Kopfzeile "Galvanik Tools" + Tab-Leiste bleiben gemeinsam oben fixiert, auch beim Scrollen */
+  .kopf-fixiert{
+    position:sticky;
+    top:0;
+    z-index:1000;
     width:calc(100% + 16px);
+    margin:0 -8px;
+  }
+  .app-header{
+    width:100%;
     background:var(--darkblue);
     color:#fff;
     text-align:center;
     padding:8px 14px;
-    margin:0 -8px;
+    margin:0;
     -webkit-user-select:none;
     user-select:none;
     -webkit-touch-callout:none;
@@ -44,12 +52,8 @@
   .app-header p{margin:2px 0 0;font-size:.72rem;color:#c9d4e6;}
 
   .topbar{
-    position:sticky;
-    top:0;
-    left:0;
-    right:0;
-    width:calc(100% + 16px);
-    margin:0 -8px;
+    width:100%;
+    margin:0;
     background:#ffffffee;
     backdrop-filter:blur(6px);
     border-bottom:1px solid var(--border);
@@ -382,8 +386,18 @@
 </head>
 <body>
 
+<div class="kopf-fixiert">
 <div class="app-header">
   <h1>Galvanik Tools</h1>
+</div>
+
+<nav class="topbar">
+  <button id="tabBtnStrom" class="tabbtn">⚡ Strom</button>
+  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeit</button>
+  <button id="tabBtnSpule" class="tabbtn">🧵 Spule</button>
+  <button id="tabBtnCode" class="tabbtn">🔳 QR/Code</button>
+  <button id="tabBtnMde" class="tabbtn">📱 MDE</button>
+</nav>
 </div>
 
 <!-- Verstecktes Popup: erscheint bei Long-Press auf den blauen Header oben -->
@@ -397,13 +411,6 @@
   </div>
 </div>
 
-<nav class="topbar">
-  <button id="tabBtnStrom" class="tabbtn">⚡ Strom</button>
-  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeit</button>
-  <button id="tabBtnSpule" class="tabbtn">🧵 Spule</button>
-  <button id="tabBtnCode" class="tabbtn">🔳 QR/Code</button>
-  <button id="tabBtnMde" class="tabbtn">📱 MDE</button>
-</nav>
 
 <div id="counter"></div>
 
