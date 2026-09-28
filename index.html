@@ -78,6 +78,10 @@
   .tabbtn:active{transform:scale(.96);}
   .tabbtn.active{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 2px 6px rgba(245,128,37,.35);}
   section.tab-pane{display:none}section.tab-pane.active{display:block}
+  /* Jeder Tab nutzt die volle Breite, damit die Karten immer gleich breit sind -
+     egal wie viel Text gerade darin steht */
+  section.tab-pane.active{width:100%;}
+  section.tab-pane > .container{margin-left:auto;margin-right:auto;}
 
   .container{
     width:calc(100% - 16px);
@@ -115,8 +119,6 @@
     border:1.5px solid var(--darkblue);background:#fff;font-size:19px;line-height:1;cursor:pointer;
     display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 6px rgba(0,40,85,.15);}
   .ki-prompt-btn:active{transform:scale(.93);}
-  .ki-prompt-toast{display:none;margin:-4px 0 8px;padding:8px 10px;border-radius:8px;background:#eaf7ec;
-    border:1px solid #bfe0bf;color:#0b4f0b;font-size:12.5px;font-weight:600;text-align:center;}
   .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:8px;color:#999}
   #counter{position:fixed;bottom:6px;right:6px;font-size:12px;color:var(--darkblue);font-weight:bold;font-family:monospace;background:#fff;padding:3px 9px;border-radius:10px;border:1px solid var(--darkblue);box-shadow:0 2px 6px rgba(0,0,0,.15);opacity:1;z-index:10000}
 
@@ -423,9 +425,8 @@
 
 <section id="tab-strom" class="tab-pane">
   <div class="container">
-    <button type="button" id="kiPromptBtn" class="ki-prompt-btn" title="KI-Prompt kopieren (für Fotos vom Anlagen-Bildschirm)" aria-label="KI-Prompt kopieren">🤖</button>
+    <button type="button" id="kiPromptBtn" class="ki-prompt-btn" title="Kopieren" aria-label="Kopieren">📋</button>
     <h2>Galvanik-Stromrechner</h2>
-    <div id="kiPromptToast" class="ki-prompt-toast">✅ KI-Prompt kopiert – jetzt in ChatGPT & Co. mit den Fotos einfügen</div>
 
     <label for="istStrom">Aktueller Strom (A):</label>
     <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istStrom" placeholder="z. B. 4" value="4">
@@ -665,10 +666,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     // Versteckter Zugang: 5x auf das Ergebnisfeld tippen (gemeinsamer Helfer aus dem <head>).
     fuenffachTipp(document.getElementById("ergebnis"), zeigeProtokoll);
 
-    // ===== KI-Prompt: kopiert eine fertige Anweisung für ChatGPT & Co. in die Zwischenablage =====
-    // Ablauf: Symbol antippen -> Fotos vom Anlagen-Bildschirm + Prompt in die KI einfügen ->
-    // KI liest alle Werte aus, fragt nach alter/neuer Geschwindigkeit und rechnet die Sollwerte um.
-    // Den Text kann man unten im <script type="text/plain" id="kiPromptText"> einfach anpassen.
+    // ===== 📋-Symbol oben rechts: kopiert den Text aus <script id="kiPromptText"> in die Zwischenablage =====
     function kopiereTextInZwischenablage(text){
       if(navigator.clipboard && window.isSecureContext){
         return navigator.clipboard.writeText(text);
@@ -681,18 +679,15 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         ok ? resolve() : reject(new Error("Kopieren nicht möglich"));
       });
     }
+    // Kopiert still in die Zwischenablage - kein Hinweistext. Nur das Symbol wird kurz zu ✅.
     document.getElementById("kiPromptBtn").addEventListener("click", function(){
+      const btn=this;
       const text=document.getElementById("kiPromptText").textContent.trim();
-      const toast=document.getElementById("kiPromptToast");
       kopiereTextInZwischenablage(text).then(function(){
-        toast.textContent="✅ KI-Prompt kopiert – jetzt in ChatGPT & Co. mit den Fotos einfügen";
-      }).catch(function(){
-        toast.textContent="⚠️ Kopieren hat nicht geklappt – bitte nochmal antippen.";
-      }).finally(function(){
-        toast.style.display="block";
-        clearTimeout(toast._timer);
-        toast._timer=setTimeout(function(){ toast.style.display="none"; }, 3500);
-      });
+        btn.textContent="✅";
+        clearTimeout(btn._timer);
+        btn._timer=setTimeout(function(){ btn.textContent="📋"; }, 1200);
+      }).catch(function(){});
     });
 
     // Echter, geräteübergreifender Besucherzähler (kostenlose, anmeldefreie API) - zählt bei
