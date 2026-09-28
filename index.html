@@ -494,38 +494,33 @@
   </div>
 
   <script type="text/plain" id="kiPromptText">
-Du bist mein Assistent für eine Bandgalvanik-Anlage. Ich schicke dir Fotos vom Anlagen-Bildschirm („Rectifier“-Seiten). Jede Zeile ist ein Gleichrichter mit: Station, Select (ON/OFF), Volts (Ist), Amps (Ist) und Setpoint (Sollwert, mit Einheit A oder V).
+Du hilfst mir an einer Bandgalvanik-Anlage. Die Fotos zeigen die Gleichrichter-Seiten (Station | Select ON/OFF | Volts | Amps | Setpoint in A oder V).
 
-AUFGABE:
-Wenn sich die Bandgeschwindigkeit ändert, müssen die Ströme so angepasst werden, dass die Schichtdicke gleich bleibt. Du berechnest mir die neuen Sollwerte.
+WICHTIG: Lies KEINE Geschwindigkeit aus den Fotos. Die „speed … MPM“-Anzeige unten kann zu einer anderen Anlage gehören und ist deshalb zu ignorieren.
 
-ABLAUF – bitte genau so:
-1. Lies ALLE Fotos vollständig aus und zeig mir zuerst eine Tabelle: Station | Select | Volts | Amps | Setpoint | Einheit (A oder V).
-   Wenn ein Wert unscharf, verdeckt oder unsicher ist, markiere ihn mit ⚠️ und rate nicht.
-   Die unten auf dem Bildschirm angezeigte Geschwindigkeit („speed … MPM“) nennst du mir auch.
-2. Frag mich dann – und rechne vorher NICHTS:
-   a) Welche Geschwindigkeit habe ich aktuell (m/min)?
-   b) Auf welche Geschwindigkeit will ich umstellen (m/min)?
-   Warte auf meine Antwort.
-3. Berechne danach für jede Station:
-   Setpoint_neu = Setpoint_alt × (Geschwindigkeit_neu ÷ Geschwindigkeit_alt)
+SCHRITT 1 – frag mich nur kurz, ohne vorher etwas zu rechnen oder aufzulisten:
+„Aktuelle Geschwindigkeit (m/min)? Neue Geschwindigkeit (m/min)?“
+Warte auf meine Antwort.
+
+SCHRITT 2 – rechne:
+Setpoint neu = Setpoint alt × (neue Geschwindigkeit ÷ aktuelle Geschwindigkeit)
 
 REGELN:
-- Nur Stationen mit Select = ON und Einheit A (Strom-geregelt) werden umgerechnet.
-- Stationen mit OFF oder Sollwert 0 bleiben unverändert.
-- Stationen, deren Setpoint in V (Volt) steht (z. B. E-Clean), NICHT umrechnen – nur mit dem Hinweis „spannungsgeregelt, bleibt gleich“ auflisten.
-- Runde auf genau so viele Nachkommastellen, wie der Bildschirm bei dieser Station anzeigt (z. B. 8.0 → 1 Stelle, 0.65 → 2 Stellen).
-- Wenn Ist-Strom (Amps) und Setpoint bei einer Station deutlich voneinander abweichen, weise mich darauf hin.
-- Wenn eine Station „Dummy“ heißt, rechne sie mit um, markiere sie aber mit „bitte prüfen, ob Dummy mitgeändert werden soll“.
+- Nur Stationen mit ON und Setpoint in A umrechnen.
+- OFF, Setpoint 0 und Setpoint in V (z. B. E-Clean) bleiben unverändert.
+- Runden wie auf dem Bildschirm (8.0 → 1 Nachkommastelle, 0.65 → 2).
+- Unsicher gelesene Werte mit ⚠️ markieren, nicht raten.
+- „Dummy“-Stationen mitrechnen, aber mit „prüfen“ markieren.
 
-AUSGABE:
-A) Eine Tabelle NUR mit den Stationen, die ich umstellen muss:
-   Station | Setpoint alt | Setpoint NEU | Änderung (+/−)
-   Den neuen Wert bitte fett.
-B) Darunter kurz: welche Stationen unverändert bleiben (OFF, 0 oder Volt-geregelt).
-C) Eine Kontrollzeile: Faktor = Geschwindigkeit_neu ÷ Geschwindigkeit_alt (auf 3 Stellen).
+AUSGABE – kompakt, nur das:
+Faktor: X,XXX (aktuell → neu m/min)
 
-Antworte auf Deutsch, kurz und übersichtlich. Das Ergebnis ist eine Rechenhilfe – ich prüfe die Werte selbst, bevor ich sie an der Anlage eingebe.
+| Station | alt | NEU |
+Nur die Stationen, die umgestellt werden müssen, in Anlagen-Reihenfolge, neuer Wert fett.
+
+Unverändert: eine Zeile mit den übrigen Stationen (z. B. „E-Clean 1–2 (V), Nickel 10, Pd/Ni 1, 2, 7, 8 … (OFF)“).
+
+Keine weiteren Erklärungen. Antworte auf Deutsch.
   </script>
 
   <script>
