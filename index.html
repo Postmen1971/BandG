@@ -88,15 +88,17 @@
     max-width:500px;
     background:#fff;
     padding:14px;
-    border-radius:14px;
+    border-radius:16px;
     border:1px solid var(--border);
-    box-shadow:0 4px 14px rgba(0,40,85,.07);
+    box-shadow:0 4px 16px rgba(0,40,85,.07);
     position:relative;
     margin-top:14px;
     margin-bottom: 8px;
   }
   
-  h2{text-align:center;color:var(--darkblue);margin-top:0;font-size:1.15rem;margin-bottom:12px;font-weight:700;}
+  h2{text-align:center;color:var(--darkblue);margin-top:2px;font-size:1.15rem;margin-bottom:12px;font-weight:800;}
+  /* Platz für den 📋-Knopf oben rechts, damit die Überschrift nicht darunter läuft */
+  #tab-strom h2{padding:0 44px;}
   label{display:block;margin-top:10px;
         font-weight:600;color:var(--muted);font-size:12.5px;}
   input[type=number], input[type=text], select{
@@ -104,7 +106,7 @@
     padding:10px;
     font-size:16px; /* mind. 16px, sonst zoomt iOS Safari beim Antippen ungewollt rein */
     margin-top:4px;
-    border:1px solid var(--border);border-radius:8px;box-sizing:border-box;
+    border:1px solid var(--border);border-radius:10px;box-sizing:border-box;
     background:#fafafa;
     transition:border-color .15s,background .15s;
   }
@@ -112,24 +114,14 @@
     outline:none;border-color:var(--orange);background:#fff;
   }
   
-  .ergebnis{margin-top:14px;padding:14px;background:#fff4e8;font-size:19px;line-height:1.4;
-            text-align:center;border-radius:10px;color:var(--orange-dark);border:1px solid #ffd9a8;font-weight:800}
-  /* KI-Prompt-Symbol oben rechts im Stromrechner */
-  .ki-prompt-btn{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;
-    border:1.5px solid var(--darkblue);background:#fff;font-size:19px;line-height:1;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 6px rgba(0,40,85,.15);}
-  .ki-prompt-btn:active{transform:scale(.93);}
   .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:8px;color:#999}
   #counter{position:fixed;bottom:6px;right:6px;font-size:12px;color:var(--darkblue);font-weight:bold;font-family:monospace;background:#fff;padding:3px 9px;border-radius:10px;border:1px solid var(--darkblue);box-shadow:0 2px 6px rgba(0,0,0,.15);opacity:1;z-index:10000}
 
   /* Zeitrechner spezifische Anpassungen */
   .zeit-container .row{display:flex;gap:6px}
-  .zeit-container select, .zeit-container button{padding:9px;font-size:16px;border-radius:8px;}
-  .zeit-container button{background:var(--blue-mid);color:#fff;border:none;font-weight:700;cursor:pointer;transition:background .15s;}
-  .zeit-container button:hover{background:var(--darkblue)}
-  .zeit-result{margin-top:10px;padding:12px;background:#eaf7ec;border-radius:10px;font-weight:700;color:#0b4f0b;border:1px solid #bfe0bf;font-size:14.5px;line-height:1.4;text-align:center}
+  .zeit-container .row > div{min-width:0;}
 
-  .panel{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border)}
+  .panel{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--border)}
   .tip-panel{background:#fff7ea;border-color:#f2c58a;color:#8a5400}
   .quote-panel{background:#eef5ff;border-color:#cbdcff;color:#143a66;font-style:italic}
   .football-panel{background:#eefaf0;border-color:#bfe8cb;color:#0f3d1e;font-style:normal}
@@ -140,217 +132,83 @@
   .panel h3{margin:0 0 4px 0;font-size:12.5px;color:#333;font-style:normal}
   .small{font-size:10.5px;color:#666}
 
-  /* ===== Spulenrechner (1:1 aus AzeSpule.html übernommen, isoliert unter #tab-spule) ===== */
-  #tab-spule{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
-  #tab-spule .container{
-      background-color: white;
-      max-width: 500px;
-      width: calc(100% - 16px);
-      border-radius: 14px;
-      border:1px solid var(--border);
-      box-shadow: 0 4px 14px rgba(0,40,85,.07);
-      overflow: hidden;
-      margin-top: 14px;
-      margin-bottom: 8px;
-      padding:0;
-  }
-  #tab-spule .header {
-      background-color: var(--darkblue);
-      color: white;
-      padding: 8px;
-      text-align: center;
-  }
-  #tab-spule .header h2 { margin: 0; font-size: 1rem; color: #fff; }
+  /* =====================================================================
+     EINHEITLICHES DESIGN (seit 29.09.2026) – gilt für alle Tabs gleich
+     ===================================================================== */
+  :root{--seg-bg:#eef1f6;--flaeche:#f7f9fc;--rot:#d32f2f;}
 
-  #tab-spule .section {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-  }
-  #tab-spule .section-title {
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 4px;
-      font-size: 0.68rem;
-  }
+  /* Kleiner runder Symbol-Knopf oben rechts in einer Karte (📋 Strom, ❓ Hilfe Spule) */
+  .karten-knopf{position:absolute;top:12px;right:12px;height:34px;min-width:34px;padding:0 10px;border-radius:999px;
+    border:1.5px solid var(--darkblue);background:#fff;color:var(--darkblue);font-size:13px;font-weight:700;
+    line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
+    box-shadow:0 2px 6px rgba(0,40,85,.12);}
+  .karten-knopf:active{transform:scale(.94);}
 
-  #tab-spule .bg-blue { background-color: #eef6ff; border-left: 4px solid #0066cc; }
-  #tab-spule .bg-green { background-color: #f5f5f5; border-left: 4px solid var(--orange); }
-  #tab-spule .bg-result { background-color: var(--darkblue); }
+  .info-zeile{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;}
+  .hilfe-knopf{flex-shrink:0;height:32px;padding:0 12px;border-radius:999px;border:1.5px solid var(--darkblue);
+    background:#fff;color:var(--darkblue);font-size:13px;font-weight:700;cursor:pointer;}
+  .hilfe-knopf:active{transform:scale(.95);}
 
-  #tab-spule label {
-      display: block;
-      margin-bottom: 2px;
-      margin-top:0;
-      font-weight: 600;
-      color: #333;
-      font-size: 0.74rem;
-  }
+  /* Umschalter (Segment-Leiste) – überall gleich */
+  .seg{display:flex;gap:4px;background:var(--seg-bg);border-radius:12px;padding:4px;margin:0 0 12px;}
+  .seg-btn{flex:1;text-align:center;padding:9px 6px;border-radius:9px;font-weight:700;font-size:14px;
+    color:var(--darkblue);cursor:pointer;white-space:nowrap;user-select:none;-webkit-user-select:none;
+    transition:background .15s,color .15s;}
+  .seg-btn.active{background:var(--orange);color:#fff;box-shadow:0 2px 6px rgba(245,128,37,.35);}
+  /* Kleinere Unter-Auswahl (z.B. Spulengröße) – optisch eine Stufe leiser */
+  .seg.klein{margin-bottom:6px;}
+  .seg.klein .seg-btn{padding:7px 6px;font-size:13px;font-weight:600;}
+  .seg.klein .seg-btn.active{background:#fff;color:var(--orange-dark);box-shadow:0 1px 4px rgba(0,40,85,.15);}
 
-  #tab-spule input[type="number"], #tab-spule input[type="text"] {
-      width: 100%;
-      padding: 9px;
-      font-size: 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background:#fafafa;
-      box-sizing: border-box;
-      margin-bottom: 4px;
-      margin-top:0;
-  }
-  #tab-spule input[type="number"]:focus, #tab-spule input[type="text"]:focus{
-      outline:none;border-color:var(--orange);background:#fff;
-  }
+  /* Zwei Eingabefelder nebeneinander */
+  .feld-reihe{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .feld-reihe > div{min-width:0;}
 
-  #tab-spule button {
-      width: 100%;
-      padding: 11px;
-      background-color: var(--darkblue);
-      color: white;
-      font-size: 14px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 6px;
-  }
+  /* Gruppe innerhalb einer Karte (z.B. "1. Referenz") */
+  .gruppe{background:var(--flaeche);border:1px solid var(--border);border-radius:12px;padding:4px 12px 12px;margin-top:10px;}
+  .gruppe-titel{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--darkblue);margin-top:8px;}
+  .kleininfo{font-size:12px;color:var(--muted);margin-top:4px;}
+  .kleininfo strong{color:var(--darkblue);}
 
-  #tab-spule .result-area {
-      text-align: center;
-      padding: 14px;
-      color: white;
-      display: none;
-  }
-  #tab-spule .result-group {
-      margin-bottom: 6px;
-  }
-  #tab-spule .result-number {
-      font-size: 2rem;
-      font-weight: bold;
-      color: var(--orange);
-      line-height: 1.2;
-  }
-  #tab-spule .result-label {
-      font-size: 1rem;
-      color: #eee;
-  }
-  #tab-spule .error-msg {
-      color: red;
-      text-align: center;
-      padding: 6px;
-      font-size: 0.78rem;
-      display: none;
-  }
-  #tab-spule .small-output {
-      color: #f7b731;
-      font-weight: bold;
-      font-size: 0.9rem;
-      margin-top: -2px;
-      margin-bottom: 6px;
-      display: block;
-  }
+  /* Knöpfe */
+  .btn-primaer{display:block;width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;
+    background:var(--darkblue);color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
+  .btn-primaer:active{transform:scale(.98);}
+  .btn-gefahr{background:var(--rot);}
 
-  #tab-spule .switch-container {
-      display: flex;
-      justify-content: space-around;
-      padding: 5px 0;
-      background-color: #f0f0f0;
-  }
-  #tab-spule .switch-button {
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.8rem;
-      transition: background-color 0.2s, color 0.2s;
-      flex-grow: 1;
-      text-align: center;
-      margin: 0 4px;
-  }
-  #tab-spule .switch-button.active {
-      background-color: var(--orange);
-      color: white;
-      border-color: #c96a1f;
-  }
-  /* Dezente "Unter-Auswahl" (z.B. Spulengröße), optisch klar abgesetzt von der
-     Haupt-Auswahl (Durchmesser/Gewicht) weiter oben, damit nicht der Eindruck
-     entsteht, es handle sich um eine gleichrangige 4er-Auswahl. */
-  #tab-spule .sub-auswahl-label {
-      font-size: 0.75rem;
-      color: #666;
-      padding: 6px 8px 2px 8px;
-      background-color: #fff;
-  }
-  #tab-spule .switch-container.sub {
-      background-color: #fff;
-      padding: 0 0 6px 0;
-  }
-  #tab-spule .switch-button.sub {
-      padding: 5px 8px;
-      font-size: 0.75rem;
-      font-weight: normal;
-      border-radius: 5px;
-      background-color: #f7f7f7;
-  }
-  #tab-spule .switch-button.sub.active {
-      background-color: #ffe0bf;
-      color: #7a3e0a;
-      border-color: #e8a366;
-  }  /* ===== QR-Code / Barcode Generator ===== */
-  #tab-code .switch-container{
-      display:flex; justify-content:space-around; padding:5px 0;
-      background-color:#f0f0f0; border-radius:8px; margin-bottom:12px;
-  }
-  #tab-code .switch-button{
-      padding:8px 10px; border:1px solid #ddd; border-radius:6px; cursor:pointer;
-      font-weight:bold; font-size:0.85rem; flex-grow:1; text-align:center; margin:0 4px;
-  }
-  #tab-code .switch-button.active{ background-color:var(--orange); color:#fff; border-color:#c96a1f; }
-  #tab-code .code-panel{ display:none; }
-  #tab-code .code-panel.active{ display:block; }
-  #tab-code .hinweis{
-      font-size:11.5px; color:#666; background:#fff7ea; border:1px solid #f2c58a;
-      border-radius:10px; padding:8px; margin-top:10px; line-height:1.4;
-  }
-  #tab-code .code-ausgabe{
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      margin-top:14px; min-height:60px;
-  }
-  #tab-code .code-ausgabe img, #tab-code .code-ausgabe canvas{ background:#fff; padding:8px; border-radius:8px; }
-  #tab-code .code-ausgabe svg{ background:#fff; padding:8px; border-radius:8px; max-width:100%; }
-  #tab-code button.teilen-btn{
-      width:100%;
-      display:block;
-      background-color:#28a745 !important;
-      color:#ffffff !important;
-      font-size:19px !important;
-      font-weight:bold;
-      padding:16px 10px !important;
-      margin-top:14px !important;
-      border:none;
-      border-radius:10px;
-      box-shadow:0 3px 8px rgba(0,0,0,.18);
-      text-decoration:none !important;
-      letter-spacing:.2px;
-  }
+  /* Ergebnis-Box – überall gleich: kleine Beschriftung, große Zahl */
+  .ergebnis-box{margin-top:14px;padding:12px 14px;background:#fff4e8;border:1px solid #ffd9a8;border-radius:12px;text-align:center;}
+  .erg-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.2px;}
+  .erg-wert{font-size:30px;line-height:1.15;font-weight:800;color:var(--orange-dark);margin-top:2px;font-variant-numeric:tabular-nums;}
+  .erg-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .erg-hinweis{font-size:14px;font-weight:600;color:var(--muted);}
+  .fehler-text{color:var(--rot);text-align:center;font-size:13px;margin-top:10px;display:none;}
 
-  /* Diese Kachel etwas größer als der Rest der (kompakten) Seite */
-  #tab-code h2{ font-size:1.5rem; margin-bottom:14px; }
-  #tab-code label{ font-size:16px; margin-top:14px; }
-  #tab-code input[type="text"], #tab-code input[type="password"]{
-      font-size:17px; padding:10px; margin-top:5px;
-  }
-  #tab-code .switch-button{ padding:11px 12px; font-size:1rem; border-radius:8px; }
-  #tab-code button{ font-size:16px; padding:12px; background-color:var(--darkblue); color:#fff; border:none; border-radius:8px; cursor:pointer; }
-  #tab-code .hinweis{ font-size:13px; padding:11px; }
-  #tab-code .passwort-zeile{ display:flex; gap:8px; align-items:center; }
-  #tab-code .passwort-zeile input{ flex:1; }
-  #tab-code .augen-btn{
-      width:44px; height:44px; flex-shrink:0; border:1px solid var(--border); border-radius:8px;
-      background:#f5f5f5; cursor:pointer; margin-top:5px;
-      display:flex; align-items:center; justify-content:center; color:#333;
-  }
+  /* Aufklappbarer Hinweis (statt langer Info-Kästen) */
+  details.info{margin-top:12px;border:1px solid var(--border);border-radius:10px;background:var(--flaeche);}
+  details.info summary{cursor:pointer;padding:10px 12px;font-size:13px;font-weight:700;color:var(--darkblue);list-style:none;}
+  details.info summary::-webkit-details-marker{display:none;}
+  details.info[open] summary{border-bottom:1px solid var(--border);}
+  details.info .info-text{padding:10px 12px;font-size:13px;line-height:1.45;color:#444;}
+
+  /* ===== Spulenrechner ===== */
+  #tab-spule .ergebnis-box{display:none;}
+
+  /* ===== QR-Code / Strichcode ===== */
+  #tab-code .code-panel{display:none;}
+  #tab-code .code-panel.active{display:block;}
+  #tab-code .code-ausgabe{display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:14px;}
+  #tab-code .code-ausgabe:empty{margin-top:0;}
+  #tab-code .code-ausgabe img, #tab-code .code-ausgabe canvas{background:#fff;padding:8px;border-radius:8px;}
+  #tab-code .code-ausgabe svg{background:#fff;padding:8px;border-radius:8px;max-width:100%;}
+  #tab-code .passwort-zeile{display:flex;gap:8px;align-items:center;}
+  #tab-code .passwort-zeile input{flex:1;}
+  #tab-code .augen-btn{width:44px;height:44px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;
+    background:#f5f5f5;cursor:pointer;margin-top:4px;display:flex;align-items:center;justify-content:center;color:#333;}
+  #tab-code #qrLesenErgebnis button{display:block;width:100%;margin-top:10px;padding:12px;border:none;border-radius:10px;
+    background:var(--darkblue);color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
+  #tab-code button.teilen-btn{display:block;width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;
+    background:#1f8a3b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
 </style>
 
 <!-- Gemeinsame Helfer, die von mehreren Tabs benutzt werden -->
@@ -400,12 +258,19 @@
   <h1>Galvanik Tools</h1>
 </div>
 
+<!--
+  IDEE FÜR SPÄTER (Aziz, 29.09.2026 – noch NICHT umgesetzt, bei Gelegenheit wieder ansprechen):
+  Tab-Leiste nach UNTEN verlegen, wie bei einer normalen Handy-App (mit dem Daumen leichter
+  erreichbar, Kopfzeile oben wird schmaler). Muss auf iPhone UND Android gut funktionieren,
+  weil die App auf beiden benutzt wird. Separat ausprobieren, nicht zusammen mit anderen Änderungen.
+-->
 <nav class="topbar">
-  <button id="tabBtnStrom" class="tabbtn">⚡ Strom</button>
-  <button id="tabBtnZeit" class="tabbtn active">⏱️ Zeit</button>
-  <button id="tabBtnSpule" class="tabbtn">🧵 Spule</button>
-  <button id="tabBtnCode" class="tabbtn">🔳 QR/Code</button>
-  <button id="tabBtnMde" class="tabbtn">📱 MDE</button>
+  <!-- data-tab = Name des Tabs; der dazugehörige Bereich heißt <section id="tab-NAME"> -->
+  <button id="tabBtnStrom" class="tabbtn" data-tab="strom">⚡ Strom</button>
+  <button id="tabBtnZeit" class="tabbtn active" data-tab="zeit">⏱️ Zeit</button>
+  <button id="tabBtnSpule" class="tabbtn" data-tab="spule">🧵 Spule</button>
+  <button id="tabBtnCode" class="tabbtn" data-tab="code">🔳 QR/Code</button>
+  <button id="tabBtnMde" class="tabbtn" data-tab="mde">📱 MDE</button>
 </nav>
 </div>
 
@@ -425,25 +290,35 @@
 
 <section id="tab-strom" class="tab-pane">
   <div class="container">
-    <button type="button" id="kiPromptBtn" class="ki-prompt-btn" title="Kopieren" aria-label="Kopieren">📋</button>
+    <button type="button" id="kiPromptBtn" class="karten-knopf" title="Kopieren" aria-label="Kopieren">📋</button>
     <h2>Galvanik-Stromrechner</h2>
 
-    <label for="istStrom">Aktueller Strom (A):</label>
+    <label for="istStrom">Strom aktuell (A)</label>
     <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istStrom" placeholder="z. B. 4" value="4">
 
-    <label for="istSchicht">Aktuelle Schichtdicke (µm):</label>
-    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istSchicht" placeholder="z. B. 1.0" value="1.0">
+    <div class="feld-reihe">
+      <div>
+        <label for="istSchicht">Schicht aktuell (µm)</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istSchicht" placeholder="z. B. 1,0" value="1.0">
+      </div>
+      <div>
+        <label for="zielSchicht">Schicht Ziel (µm)</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="zielSchicht" placeholder="z. B. 2,5" value="2.5">
+      </div>
+    </div>
 
-    <label for="zielSchicht">Ziel-Schichtdicke (µm):</label>
-    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="zielSchicht" placeholder="z. B. 2.5" value="2.5">
+    <div class="feld-reihe">
+      <div>
+        <label for="istGeschw">Geschw. aktuell (m/min)</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istGeschw" placeholder="z. B. 7" value="7">
+      </div>
+      <div>
+        <label for="neuGeschw">Geschw. neu (m/min)</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="neuGeschw" placeholder="z. B. 7" value="7">
+      </div>
+    </div>
 
-    <label for="istGeschw">Aktuelle Bandgeschwindigkeit (m/min):</label>
-    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istGeschw" placeholder="z. B. 7" value="7">
-
-    <label for="neuGeschw">Neue Bandgeschwindigkeit (m/min):</label>
-    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="neuGeschw" placeholder="z. B. 7" value="7">
-
-    <div class="ergebnis" id="ergebnis">Ergebnis wird hier angezeigt</div>
+    <div class="ergebnis-box" id="ergebnis"><div class="erg-hinweis">Ergebnis wird hier angezeigt</div></div>
     <div class="haftungshinweis">Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.</div>
   </div>
 
@@ -555,10 +430,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const V_alt=parseDeNumber(document.getElementById("istGeschw").value);
       const V_neu=parseDeNumber(document.getElementById("neuGeschw").value);
 
-      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerText="Bitte alle Werte eingeben.";return;}
+      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerHTML='<div class="erg-hinweis">Bitte alle Werte eingeben.</div>';return;}
       
       const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
-      document.getElementById("ergebnis").innerText=`Benötigter Strom: ${I_neu.toFixed(2)} A`;
+      document.getElementById("ergebnis").innerHTML=`<div class="erg-label">Benötigter Strom</div><div class="erg-wert">${I_neu.toFixed(2)} A</div>`;
       speichereLetzteStromWerte();
     }
     
@@ -737,7 +612,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       </div>
     </div>
 
-    <div class="zeit-result" id="zeitResult">Bitte wähle Start, Ende und Geschwindigkeit.</div>
+    <div class="ergebnis-box" id="zeitResult"><div class="erg-hinweis">Bitte wähle Start, Ende und Geschwindigkeit.</div></div>
 
     <div class="panel tip-panel">
       <h3>😄 Superwitz</h3>
@@ -822,17 +697,20 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const v=parseDeNumber(document.getElementById("speedInput").value);
       const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
       
-      if(!v||!s||!e){out.textContent="Bitte Start, Ende und Geschwindigkeit wählen/eingeben.";return;}
-      if(v <= 0){out.textContent="Die Geschwindigkeit muss größer als 0 sein.";return;}
+      const hinweis=t=>{out.innerHTML=`<div class="erg-hinweis">${t}</div>`;};
+      if(!v||!s||!e){hinweis("Bitte Start, Ende und Geschwindigkeit wählen/eingeben.");return;}
+      if(v <= 0){hinweis("Die Geschwindigkeit muss größer als 0 sein.");return;}
 
       const iS=punkte.findIndex(p=>p[0]===s), iE=punkte.findIndex(p=>p[0]===e);
-      if(iS>iE){out.textContent="Der Startpunkt muss vor dem Endpunkt liegen.";return;}
+      if(iS>iE){hinweis("Der Startpunkt muss vor dem Endpunkt liegen.");return;}
 
       const tStart7=zeitInSekunden(punkte[iS][1]), tEnd7=zeitInSekunden(punkte[iE][1]);
       const d7=tEnd7 - tStart7;
       const total=Math.round(d7*(7/v));
       const m=Math.floor(total/60), sec=total%60;
-      out.innerHTML=`Von "${s}" bis "${e}"<br>dauert es bei ${v.toFixed(1)} m/min<br>${m} min ${sec} s.`;
+      out.innerHTML=`<div class="erg-label">${escapeHtml(s)} → ${escapeHtml(e)}</div>
+        <div class="erg-wert">${m} min ${sec} s</div>
+        <div class="erg-sub">bei ${v.toFixed(1).replace('.',',')} m/min</div>`;
       speichereLetzteSuche();
     }
     // Automatische Neuberechnung bei jeder Änderung - kein Button mehr nötig.
@@ -1753,107 +1631,87 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
 <section id="tab-spule" class="tab-pane">
 <div class="container">
-    <div class="header">
-        <h2>Spulen-Bestandsrechner</h2>
-    </div>
+    <h2>Spulen-Bestandsrechner</h2>
 
-    <div class="switch-container" id="spuleModusSwitchContainer">
-        <div class="switch-button active" id="btn-modus-durchmesser" onclick="wechsleSpuleModus('durchmesser')">📏 Nach Durchmesser</div>
-        <div class="switch-button" id="btn-modus-gewicht" onclick="wechsleSpuleModus('gewicht')">⚖️ Nach Gewicht</div>
+    <div class="seg" id="spuleModusSwitchContainer">
+        <div class="seg-btn active" id="btn-modus-durchmesser" onclick="wechsleSpuleModus('durchmesser')">📏 Durchmesser</div>
+        <div class="seg-btn" id="btn-modus-gewicht" onclick="wechsleSpuleModus('gewicht')">⚖️ Gewicht</div>
     </div>
 
     <div id="modus-durchmesser">
-    <button type="button" onclick="zeigeSpuleHilfe()" style="width:calc(100% - 16px);display:block;margin:10px auto;background:#fff;border:2px solid var(--darkblue);color:var(--darkblue);padding:9px 14px;border-radius:8px;font-size:0.95rem;font-weight:bold;cursor:pointer;">❓ Wie funktioniert das?</button>
-    <div class="sub-auswahl-label">Spulengröße:</div>
-    <div class="switch-container sub">
-        <div class="switch-button sub" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
-        <div class="switch-button sub active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
+    <div class="seg klein">
+        <div class="seg-btn" id="btn-98" onclick="setSpoolSize(98)">Spule 98 cm</div>
+        <div class="seg-btn active" id="btn-76" onclick="setSpoolSize(76)">Spule 76 cm</div>
+    </div>
+    <div class="info-zeile">
+        <div class="kleininfo" style="margin-top:0;">Kern Ø <strong>35 cm</strong> · max. Ø <strong><span id="maxDDisplay">76 cm</span></strong></div>
+        <!-- Hilfe gehört nur zur Durchmesser-Methode, deshalb innerhalb dieses Bereichs -->
+        <button type="button" class="hilfe-knopf" onclick="zeigeSpuleHilfe()">❓ Hilfe</button>
     </div>
 
-    <div class="section" style="padding-top: 5px; padding-bottom: 5px;">
-        <div class="section-title" style="margin-bottom: 0;">
-            Kern-Durchmesser: <strong>35 cm</strong>. Max. Durchmesser: <span id="maxDDisplay">76 cm</span>.
+    <div class="gruppe">
+        <div class="gruppe-titel">1. Referenz</div>
+        <label for="refHalfD">Distanz außen → Kern (cm) – Referenz</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refHalfD" placeholder="z. B. 3,5">
+        <div class="feld-reihe">
+            <div>
+                <label for="refCount">Stückzahl Referenz</label>
+                <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refCount" placeholder="z. B. 200000">
+            </div>
+            <div>
+                <label for="cpm">Kontakte pro Meter</label>
+                <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="z. B. 200">
+            </div>
         </div>
+        <!-- interne Zwischenwerte, bewusst ausgeblendet -->
+        <div style="display:none;"><span id="outputRefD">-</span><span id="outputFactorF">-</span></div>
     </div>
 
-    <div class="section bg-blue">
-        <div class="section-title">1. Referenz (Kalibrierung)</div>
-        
-        <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>REFERENZ</strong>:</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refHalfD" placeholder="z.B. 31.5">
-        
-        <label>Stückzahl bei diesem Referenz-Zustand:</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refCount" placeholder="z.B. 200000">
-
-        <label><strong>Kontakte pro Meter (Dichte):</strong></label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="z.B. 200">
-
-        <div style="display:none;">
-        <small style="color:#666; display:block; margin-top:-5px; margin-bottom:10px;">Dieser Wert kalibriert die Genauigkeit.</small>
-        
-        <label>Berechneter Referenz-Durchmesser (D_Ref):</label>
-        <span id="outputRefD" class="small-output">-</span>
-        
-        <label>Kalibrierfaktor F (Fläche pro Meter):</label>
-        <span id="outputFactorF" class="small-output">-</span>
-        </div>
+    <div class="gruppe">
+        <div class="gruppe-titel">2. Aktuelle Messung</div>
+        <label for="currHalfD">Distanz außen → Kern (cm) – Aktuell</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="currHalfD" placeholder="z. B. 7,0">
+        <div class="kleininfo">Ø aktuell: <strong id="outputCurrD">-</strong></div>
     </div>
 
-    <div class="section bg-green">
-        <div class="section-title">2. Aktuelle Messung</div>
-        
-        <label>Gemessene Distanz <strong>AUßEN nach KERN</strong> (cm) - <strong>AKTUELL</strong>:</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="currHalfD" placeholder="z.B. 25.5">
+    <div id="errorBox" class="fehler-text"></div>
 
-        <label>Berechneter aktueller Durchmesser (D_Aktuell):</label>
-        <span id="outputCurrD" class="small-output">-</span>
-    </div>
-
-    <div id="errorBox" class="error-msg"></div>
-
-
-    <div id="resultBox" class="result-area bg-result">
-        <div class="result-group">
-            <div class="result-label">Aktueller Bestand ca.:</div>
-            <div id="resultValue" class="result-number">0</div>
-            <div class="result-label">Stück</div>
-        </div>
+    <div id="resultBox" class="ergebnis-box">
+        <div class="erg-label">Aktueller Bestand ca.</div>
+        <div class="erg-wert"><span id="resultValue">0</span> Stk.</div>
     </div>
     </div><!-- Ende modus-durchmesser -->
 
     <div id="modus-gewicht" style="display:none;">
-        <div class="section bg-blue">
-            <div class="section-title">1. Referenz (volle Spule)</div>
-
-            <label>Leergewicht der <strong>leeren Spule</strong> (kg) - einfach die konkrete Spule wiegen:</label>
-            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewLeer" placeholder="z.B. 6,25" step="0.001">
-
-            <label>Gewicht der vollen Spule (kg) - laut Lieferschein/Wiegung, <strong>mit</strong> Spule:</label>
-            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVoll" placeholder="z.B. 18.5" step="0.001">
-
-            <label>Stückzahl bei diesem Gewicht (laut Lieferschein):</label>
-            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVollStueck" placeholder="z.B. 200000">
+        <div class="gruppe">
+            <div class="gruppe-titel">1. Referenz (volle Spule)</div>
+            <div class="feld-reihe">
+                <div>
+                    <label for="gewLeer">Leergewicht (kg)</label>
+                    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewLeer" placeholder="z. B. 6,25">
+                </div>
+                <div>
+                    <label for="gewVoll">Vollgewicht (kg)</label>
+                    <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVoll" placeholder="z. B. 18,5">
+                </div>
+            </div>
+            <label for="gewVollStueck">Stückzahl volle Spule (lt. Lieferschein)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewVollStueck" placeholder="z. B. 200000">
+            <div class="kleininfo">Alle Gewichte <strong>mit</strong> Spule. Leergewicht = die leere Spule gewogen.</div>
         </div>
 
-        <div class="section bg-green">
-            <div class="section-title">2. Aktuelle Messung</div>
-
-            <label>Gewicht der aktuellen (teilweise befüllten) Spule (kg), <strong>mit</strong> Spule:</label>
-            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewAktuell" placeholder="z.B. 9.8" step="0.001">
+        <div class="gruppe">
+            <div class="gruppe-titel">2. Aktuelle Messung</div>
+            <label for="gewAktuell">Gewicht aktuell mit Spule (kg)</label>
+            <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="gewAktuell" placeholder="z. B. 9,8">
         </div>
 
-        <div id="errorBoxGewicht" class="error-msg"></div>
+        <div id="errorBoxGewicht" class="fehler-text"></div>
 
-
-        <div id="resultBoxGewicht" class="result-area bg-result">
-            <div class="result-group">
-                <div class="result-label">Aktueller Bestand ca.:</div>
-                <div id="resultValueGewicht" class="result-number">0</div>
-                <div class="result-label">Stück</div>
-            </div>
-            <div class="result-label" style="margin-top:8px; opacity:0.85;">
-                Gewicht pro Stück: <span id="resultGewichtProStueck">-</span>
-            </div>
+        <div id="resultBoxGewicht" class="ergebnis-box">
+            <div class="erg-label">Aktueller Bestand ca.</div>
+            <div class="erg-wert"><span id="resultValueGewicht">0</span> Stk.</div>
+            <div class="erg-sub">Gewicht pro Stück: <span id="resultGewichtProStueck">-</span></div>
         </div>
     </div>
 </div>
@@ -2206,7 +2064,8 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         }
 
         elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4) + ' g/Stück';
-        elResultValGewicht.innerText = resultCount.toLocaleString('de-DE') + hinweis;
+        elResultValGewicht.innerText = resultCount.toLocaleString('de-DE');
+        if (hinweis) showError(hinweis.trim(), 'errorBoxGewicht'); // Warnung klein darüber statt in der großen Zahl
         elResultBoxGewicht.style.display = 'block';
         speichereGewichtKalibrierung();
     }
@@ -2231,12 +2090,12 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
 <section id="tab-code" class="tab-pane">
   <div class="container">
-    <h2>🔳 QR-Code / Strichcode Generator</h2>
+    <h2>QR-Code &amp; Strichcode</h2>
 
-    <div class="switch-container">
-      <div class="switch-button active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
-      <div class="switch-button" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
-      <div class="switch-button" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 QR lesen</div>
+    <div class="seg">
+      <div class="seg-btn active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
+      <div class="seg-btn" id="btn-code-barcode" onclick="wechsleCodeTyp('barcode')">Strichcode</div>
+      <div class="seg-btn" id="btn-code-lesen" onclick="wechsleCodeTyp('lesen')">🔍 Lesen</div>
     </div>
 
     <div class="code-panel active" id="panel-qr">
@@ -2254,28 +2113,26 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         </button>
       </div>
 
-      <button onclick="erzeugeLoginQrCode()">QR-Code erzeugen</button>
+      <button class="btn-primaer" onclick="erzeugeLoginQrCode()">QR-Code erzeugen</button>
 
       <div class="code-ausgabe" id="qrAusgabe"></div>
       <button id="qrTeilenBtn" class="teilen-btn" style="display:none;" onclick="teileQrCode()">📤 QR-Code teilen / speichern</button>
 
-      <div class="hinweis">
-        ℹ️ Der QR-Code enthält: Benutzername, dann <strong>Tab</strong>, dann Passwort, dann <strong>Enter</strong>.
-        Wird er mit einem Strichcode-Scanner gescannt, der als Tastatur arbeitet, tippt er Benutzername ein,
-        springt automatisch ins nächste Feld und meldet sich nach dem Passwort selbst an.
-        Alles läuft nur auf diesem Gerät – nichts wird ins Internet gesendet.
-      </div>
+      <details class="info">
+        <summary>ⓘ So funktioniert's</summary>
+        <div class="info-text">
+          Der QR-Code enthält: Benutzername, dann <strong>Tab</strong>, dann Passwort, dann <strong>Enter</strong>.
+          Ein Scanner, der als Tastatur arbeitet, tippt den Benutzernamen ein, springt ins nächste Feld
+          und meldet sich nach dem Passwort selbst an. Alles läuft nur auf diesem Gerät – nichts wird ins Internet gesendet.
+        </div>
+      </details>
     </div>
 
     <div class="code-panel" id="panel-barcode">
       <label for="barcodeText">Text / Nummer</label>
       <input type="text" id="barcodeText" placeholder="z.B. 123456789" autocomplete="off">
 
-      <button onclick="erzeugeBarcode()">Strichcode erzeugen</button>
-
-      <div class="hinweis">
-        ℹ️ Erzeugt einen 1D-Strichcode (CODE128) aus dem eingegebenen Text bzw. der Nummer.
-      </div>
+      <button class="btn-primaer" onclick="erzeugeBarcode()">Strichcode erzeugen</button>
 
       <div class="code-ausgabe" id="barcodeAusgabe">
         <svg id="barcodeSvg"></svg>
@@ -2284,16 +2141,17 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     </div>
 
     <div class="code-panel" id="panel-lesen">
-      <div class="hinweis">
-        ℹ️ Liest QR-Codes live über die Kamera. WLAN-QR-Codes werden automatisch erkannt und
-        Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.
-      </div>
+      <button type="button" class="btn-primaer" id="qrKameraBtn" onclick="starteQrKamera()">📷 Kamera starten</button>
+      <button type="button" class="btn-primaer btn-gefahr" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;">✕ Kamera stoppen</button>
 
-      <button type="button" id="qrKameraBtn" onclick="starteQrKamera()">📷 Kamera starten</button>
-      <button type="button" id="qrKameraStopBtn" onclick="stoppeQrKamera()" style="display:none;background:#ffdd00;color:#d0021b;margin-top:8px;font-weight:bold;-webkit-text-stroke:0.6px #000000;text-shadow:0 0 1px #000;">Kamera stoppen</button>
+      <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:12px;margin-top:12px;"></video>
+      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:700;color:var(--darkblue);margin-top:8px;">🔍 Suche nach QR-Code…</div>
 
-      <video id="qrVideo" playsinline style="display:none;width:100%;border-radius:10px;margin-top:12px;"></video>
-      <div id="qrScanStatus" style="display:none;text-align:center;font-weight:bold;color:#0066cc;margin-top:8px;">🔍 Suche nach QR-Code…</div>
+      <details class="info">
+        <summary>ⓘ So funktioniert's</summary>
+        <div class="info-text">Liest QR-Codes live über die Kamera. WLAN-QR-Codes werden automatisch erkannt und
+          Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.</div>
+      </details>
 
       <div id="qrLesenErgebnis" class="code-ausgabe" style="display:block;min-height:auto;"></div>
     </div>
@@ -2699,7 +2557,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
               font-weight:bold;padding:12px;border-radius:8px;margin-top:14px;">
       Weiter zum ADP-Login →
     </a>
-    <a href="#" onclick="event.preventDefault();document.getElementById('tab-gehalt').classList.remove('active');activate('zeit');"
+    <a href="#" onclick="event.preventDefault();activate('zeit');"
        style="display:block;text-align:center;margin-top:14px;color:#666;font-size:0.85rem;">
       ← Zurück zu den Rechnern
     </a>
@@ -2707,41 +2565,27 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 </section>
 
 <script>
-  const bS=document.getElementById("tabBtnStrom"), bZ=document.getElementById("tabBtnZeit"), bSp=document.getElementById("tabBtnSpule"), bC=document.getElementById("tabBtnCode"), bM=document.getElementById("tabBtnMde");
-  const pS=document.getElementById("tab-strom"), pZ=document.getElementById("tab-zeit"), pSp=document.getElementById("tab-spule"), pC=document.getElementById("tab-code"), pM=document.getElementById("tab-mde");
+  // Tab-Umschaltung: ein einziger allgemeiner Ablauf für alle Tabs. Ein neuer Tab braucht nur
+  // einen Knopf mit data-tab="name" in der Leiste und einen Bereich <section id="tab-name">.
   function activate(t){
-    // Laufende Kamera stoppen, wenn der QR-Lesen-Tab verlassen wird (spart Akku, kein
-    // Kamerabild mehr im Hintergrund, während man z.B. den Stromrechner benutzt).
+    // Laufende Kamera stoppen, wenn der QR-Lesen-Tab verlassen wird (spart Akku)
     if(typeof stoppeQrKamera === 'function') stoppeQrKamera();
-    bS.classList.remove("active"); bZ.classList.remove("active"); bSp.classList.remove("active"); bC.classList.remove("active"); bM.classList.remove("active");
-    pS.classList.remove("active"); pZ.classList.remove("active"); pSp.classList.remove("active"); pC.classList.remove("active"); pM.classList.remove("active");
-    if(t==="strom"){bS.classList.add("active");pS.classList.add("active");}
-    else if(t==="zeit"){bZ.classList.add("active");pZ.classList.add("active");}
-    else if(t==="spule"){bSp.classList.add("active");pSp.classList.add("active");}
-    else if(t==="mde"){
-      bM.classList.add("active");pM.classList.add("active");
-      // MDE-Anleitung erst jetzt laden (einmalig), statt bei jedem Öffnen der App
+    document.querySelectorAll(".tabbtn").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+    document.querySelectorAll("section.tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-" + t));
+    // MDE-Anleitung (ca. 7 MB) erst beim ersten Öffnen des MDE-Tabs laden
+    if(t === "mde"){
       const mdeFrame=document.getElementById("mdeFrame");
       if(mdeFrame && !mdeFrame.getAttribute("src")) mdeFrame.setAttribute("src", mdeFrame.dataset.src);
     }
-    else{bC.classList.add("active");pC.classList.add("active");}
     const aktiv=document.querySelector(".tabbtn.active");
     if(aktiv && aktiv.scrollIntoView) aktiv.scrollIntoView({block:"nearest", inline:"nearest"});
   }
-  bS.addEventListener("click",()=>activate("strom"));
-  bZ.addEventListener("click",()=>activate("zeit"));
-  bSp.addEventListener("click",()=>activate("spule"));
-  bC.addEventListener("click",()=>activate("code"));
-  bM.addEventListener("click",()=>activate("mde"));
+  document.querySelectorAll(".tabbtn").forEach(b => b.addEventListener("click", () => activate(b.dataset.tab)));
 
   // Versteckter Zugang zur Gehalt-Seite: 5x auf das Zeit-Ergebnisfeld tippen
   // (gemeinsamer Helfer aus dem <head>). Läuft als zusätzlicher Listener neben
   // der normalen Berechnung - stört diese nicht.
-  fuenffachTipp(document.getElementById("zeitResult"), function(){
-    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-    document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
-    document.getElementById("tab-gehalt").classList.add("active");
-  });
+  fuenffachTipp(document.getElementById("zeitResult"), function(){ activate("gehalt"); });
 
   // Verstecktes Popup: langes Drücken (ca. 600ms) auf den blauen Header oben
   // öffnet ein Popup mit "SPETE" / "spe33180931" und einem Schließen-Button.
