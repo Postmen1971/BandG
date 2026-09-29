@@ -6,15 +6,22 @@
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
 <title>MDE-Gerät Anleitung - SAP</title>
 <style>
+  /* =====================================================================
+     Design passend zu Galvanik Tools (index.html), Stand 29.09.2026:
+     dunkelblau #002855 + orange #F58025, weiße Karten mit runden Ecken,
+     gleiche Schriften, Abstände und Schatten wie in der Haupt-App.
+     ===================================================================== */
   :root {
-    --bg: #f2f3f5;
+    --bg: #f4f5f7;
     --card: #ffffff;
     --text: #1a1a1a;
     --muted: #6b7280;
     --accent: #F58025;
+    --accent-dark: #d96a15;
     --accent-light: #fff4e8;
     --darkblue: #002855;
-    --line: #d8dbe0;
+    --line: #e5e7eb;
+    --flaeche: #f7f9fc;
   }
   * { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
   html, body {
@@ -23,56 +30,71 @@
   }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     font-size: 15px;
   }
+
+  /* Kopfbereich: bleibt oben stehen, wie in der Haupt-App */
   header {
     background: var(--darkblue);
-    color: white;
-    padding: 14px 12px 16px;
+    color: #fff;
+    padding: 10px 12px 12px;
     text-align: center;
     position: sticky;
     top: 0;
     z-index: 20;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    box-shadow: 0 2px 10px rgba(0,40,85,.25);
   }
   header h1 {
-    margin: 0 0 3px;
-    font-size: 1.05rem;
-    font-weight: 700;
+    margin: 0 0 2px;
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: .2px;
     line-height: 1.25;
   }
   header p {
-    margin: 0 0 10px;
-    font-size: 0.75rem;
-    color: #b8bcc4;
+    margin: 0 0 8px;
+    font-size: .72rem;
+    color: #c9d4e6;
   }
   select#pathSelect {
+    display: block;
     width: 100%;
-    max-width: 100%;
-    padding: 11px 34px 11px 12px;
-    font-size: 0.9rem;
-    border-radius: 10px;
-    border: none;
-    background: white;
-    color: #1a1a1a;
-    font-weight: 600;
+    max-width: 616px;
+    margin: 0 auto;
+    padding: 11px 38px 11px 14px;
+    font-size: 16px; /* mind. 16px, sonst zoomt iOS beim Antippen */
+    border-radius: 12px;
+    border: 2px solid var(--accent);
+    background-color: #fff;
+    color: var(--darkblue);
+    font-weight: 700;
     -webkit-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F58025'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
     background-position: right 10px center;
-    background-size: 18px;
+    background-size: 22px;
+    cursor: pointer;
   }
+  select#pathSelect:focus { outline: none; box-shadow: 0 0 0 3px rgba(245,128,37,.35); }
+
   main {
     max-width: 640px;
     margin: 0 auto;
-    padding: 16px 12px 40px;
+    padding: 14px 12px 40px;
   }
+
+  /* Jeder Ablauf ist eine weiße Karte wie in der Haupt-App */
   .path-section {
     display: none;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,40,85,.07);
+    padding: 16px 14px 6px;
   }
   .path-section.active {
     display: block;
@@ -83,83 +105,100 @@
     to { opacity: 1; }
   }
   .path-section h2 {
-    margin: 0 0 4px;
-    font-size: 1.1rem;
+    margin: 0 0 10px;
+    font-size: 1.15rem;
+    font-weight: 800;
     line-height: 1.3;
+    color: var(--darkblue);
+    text-align: center;
   }
+  /* Menü-Pfad als hellgraue Info-Leiste */
   .path-sub {
-    margin: 0 0 18px;
+    margin: 0 0 16px;
+    padding: 9px 12px;
+    background: var(--flaeche);
+    border: 1px solid var(--line);
+    border-radius: 12px;
     color: var(--muted);
-    font-size: 0.78rem;
-    line-height: 1.4;
+    font-size: .8rem;
+    line-height: 1.5;
+    text-align: center;
   }
+  .path-sub strong { color: var(--darkblue); }
+
+  /* Schritte mit Nummern-Kreis und Verbindungslinie */
   .step {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     position: relative;
-    padding-bottom: 22px;
+    padding-bottom: 20px;
   }
   .step:not(:last-child)::before {
     content: "";
     position: absolute;
-    left: 13px;
-    top: 30px;
-    bottom: 0;
+    left: 14px;
+    top: 32px;
+    bottom: 2px;
     width: 2px;
+    border-radius: 2px;
     background: var(--line);
   }
   .step-num {
-    flex: 0 0 28px;
-    width: 28px;
-    height: 28px;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: var(--accent);
-    color: white;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: .9rem;
     z-index: 1;
+    box-shadow: 0 2px 6px rgba(245,128,37,.35);
   }
   .step-body {
     flex: 1;
     min-width: 0;
-    padding-top: 2px;
+    padding-top: 4px;
   }
   .step-text {
-    font-size: 0.86rem;
-    line-height: 1.42;
+    font-size: .9rem;
+    line-height: 1.45;
     margin-bottom: 8px;
   }
   .step-img {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--line);
     max-width: 100%;
     width: 100%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,40,85,.06);
   }
   .step-img img {
     display: block;
     width: 100%;
     height: auto;
   }
-  code, strong { color: #111; }
+  strong { color: var(--darkblue); }
+  code { color: #111; }
 
-  /* Extra-tight tuning for very small / old screens like iPhone 5 (320pt wide) */
+  /* Sehr kleine / alte Bildschirme (z.B. iPhone SE 1. Gen., 320 pt breit) */
   @media (max-width: 340px) {
     body { font-size: 14px; }
-    header { padding: 12px 10px 14px; }
-    header h1 { font-size: 0.95rem; }
-    header p { font-size: 0.7rem; margin-bottom: 8px; }
-    select#pathSelect { font-size: 0.82rem; padding: 10px 30px 10px 10px; }
-    main { padding: 12px 10px 32px; }
-    .path-section h2 { font-size: 1rem; }
-    .path-sub { font-size: 0.72rem; margin-bottom: 14px; }
-    .step { gap: 8px; padding-bottom: 18px; }
-    .step-num { flex-basis: 24px; width: 24px; height: 24px; font-size: 0.75rem; }
-    .step:not(:last-child)::before { left: 11px; top: 26px; }
-    .step-text { font-size: 0.8rem; margin-bottom: 6px; }
+    header { padding: 9px 10px 11px; }
+    header h1 { font-size: .9rem; }
+    header p { font-size: .68rem; margin-bottom: 6px; }
+    main { padding: 10px 8px 32px; }
+    .path-section { padding: 14px 10px 4px; }
+    .path-section h2 { font-size: 1.02rem; }
+    .path-sub { font-size: .74rem; margin-bottom: 12px; }
+    .step { gap: 9px; padding-bottom: 16px; }
+    .step-num { flex-basis: 26px; width: 26px; height: 26px; font-size: .78rem; }
+    .step:not(:last-child)::before { left: 12px; top: 28px; }
+    .step-text { font-size: .82rem; margin-bottom: 6px; }
   }
 
   @media (max-height: 570px) {
