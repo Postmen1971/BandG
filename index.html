@@ -2024,8 +2024,13 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         } catch (e) {}
     }
 
+    // Papier zwischen den Band-Lagen: wird pauschal zum Leergewicht der Spule dazugerechnet
+    // (Absprache Aziz, 30.09.2026). Erscheint bewusst nirgends in der App.
+    const PAPIER_KG = 0.3;
+
     function calculateWeight() {
-        const leerGewicht = parseDeNumber(document.getElementById('gewLeer').value);
+        const leerGewichtEingabe = parseDeNumber(document.getElementById('gewLeer').value);
+        const leerGewicht = leerGewichtEingabe + PAPIER_KG; // Spule + Papier = alles, was kein Band ist
         const vollGewicht = parseDeNumber(document.getElementById('gewVoll').value);
         const vollStueck = parseDeNumber(document.getElementById('gewVollStueck').value);
         const aktGewicht = parseDeNumber(document.getElementById('gewAktuell').value);
@@ -2038,7 +2043,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         elResultBoxGewicht.style.display = 'none';
         elResultGewichtProStueck.innerText = '-';
 
-        if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewicht < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
+        if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewichtEingabe < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
             showError('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
             return;
         }
@@ -2054,7 +2059,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         const bandgewichtVollKg = vollGewicht - leerGewicht;
         const bandgewichtAktuellKg = aktGewicht - leerGewicht;
         const gewichtProStueckKg = bandgewichtVollKg / vollStueck;
-        const resultCount = Math.floor(bandgewichtAktuellKg / bandgewichtVollKg * vollStueck);
+        const resultCount = Math.max(0, Math.floor(bandgewichtAktuellKg / bandgewichtVollKg * vollStueck));
 
         let hinweis = '';
         if (aktGewicht > vollGewicht) {
