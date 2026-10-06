@@ -115,7 +115,17 @@
   }
   
   .haftungshinweis{letter-spacing:.2px;text-align:center;font-size:10px;margin-top:8px;color:#999}
-  #counter{position:fixed;bottom:6px;right:6px;font-size:12px;color:var(--darkblue);font-weight:bold;font-family:monospace;background:#fff;padding:3px 9px;border-radius:10px;border:1px solid var(--darkblue);box-shadow:0 2px 6px rgba(0,0,0,.15);opacity:1;z-index:10000}
+  /* Besucherzähler: klein am Seitenende statt schwebend über dem Inhalt */
+  #counter{display:block;text-align:center;margin:4px auto 18px;font-size:11px;color:#9aa3af;font-family:monospace;}
+  #counter:empty{display:none;}
+  /* Kurze Erklärzeile unter jeder Tab-Überschrift */
+  .untertitel{font-size:12.5px;color:var(--muted);text-align:center;margin:-6px 0 14px;line-height:1.4;}
+  /* Einmaliger Tipp: als App auf den Home-Bildschirm legen */
+  #homeTipp{display:none;width:calc(100% - 16px);max-width:500px;margin:10px auto 0;padding:9px 12px;border-radius:12px;
+    background:#eef5ff;border:1px solid #cbdcff;color:#143a66;font-size:12.5px;line-height:1.4;align-items:center;gap:10px;}
+  #homeTipp button{flex-shrink:0;border:none;background:none;color:#143a66;font-size:18px;line-height:1;cursor:pointer;padding:2px 4px;}
+  /* MDE: Hinweis, solange die (große) Anleitung noch lädt */
+  .mde-laden{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;font-weight:600;}
 
   /* Zeitrechner spezifische Anpassungen */
   .zeit-container .row{display:flex;gap:6px}
@@ -286,12 +296,17 @@
 </div>
 
 
-<div id="counter"></div>
+
+<div id="homeTipp">
+  <span style="flex:1;">📲 <strong>Tipp:</strong> Über <strong>Teilen</strong> (iPhone) bzw. <strong>Menü ⋮</strong> (Android) → „Zum Home-Bildschirm“ wird Galvanik Tools zur App.</span>
+  <button type="button" onclick="schliesseHomeTipp()" aria-label="Tipp schließen">✕</button>
+</div>
 
 <section id="tab-strom" class="tab-pane">
   <div class="container">
     <button type="button" id="kiPromptBtn" class="karten-knopf" title="Kopieren" aria-label="Kopieren">📋</button>
     <h2>Galvanik-Stromrechner</h2>
+    <div class="untertitel" style="padding:0 40px;">Neuen Strom-Sollwert einer Station berechnen, wenn sich Schichtdicke oder Bandgeschwindigkeit ändert.</div>
 
     <label for="istStrom">Strom aktuell (A)</label>
     <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="istStrom" placeholder="z. B. 4" value="4">
@@ -433,7 +448,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerHTML='<div class="erg-hinweis">Bitte alle Werte eingeben.</div>';return;}
       
       const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
-      document.getElementById("ergebnis").innerHTML=`<div class="erg-label">Benötigter Strom</div><div class="erg-wert">${I_neu.toFixed(2)} A</div>`;
+      document.getElementById("ergebnis").innerHTML=`<div class="erg-label">Benötigter Strom</div><div class="erg-wert">${I_neu.toFixed(2).replace('.',',')} A</div>`;
       speichereLetzteStromWerte();
     }
     
@@ -571,18 +586,25 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     const ZAEHLER_SCHLUESSEL = "postmen1971-galvanik-tools-besucher";
     const LOKALER_ZAEHLER_KEY = "galvanikCounter";
 
+    // Der Zähler steht am Seitenende - deshalb erst eintragen, wenn die Seite fertig aufgebaut ist.
+    function setzeZaehler(text){
+      const el=document.getElementById("counter");
+      if(el){ el.innerText=text; }
+      else{ document.addEventListener("DOMContentLoaded", ()=>{ document.getElementById("counter").innerText=text; }); }
+    }
+
     function zeigeLokalenZaehler(){
       let count = localStorage.getItem(LOKALER_ZAEHLER_KEY);
       count = count ? parseInt(count) + 1 : 1;
       localStorage.setItem(LOKALER_ZAEHLER_KEY, count);
-      document.getElementById("counter").innerText = `#${count}`;
+      setzeZaehler(`#${count}`);
     }
 
     fetch(`https://countapi.mileshilliard.com/api/v1/hit/${ZAEHLER_SCHLUESSEL}`, {cache:"no-store"})
       .then(res => { if(!res.ok) throw new Error('Netzwerkfehler'); return res.json(); })
       .then(data => {
         if(data && typeof data.value !== "undefined"){
-          document.getElementById("counter").innerText = `#${data.value}`;
+          setzeZaehler(`#${data.value}`);
         }else{
           throw new Error('Ungültige Antwort');
         }
@@ -594,6 +616,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 <section id="tab-zeit" class="tab-pane active">
   <div class="container zeit-container">
     <h2>Galvanik-Zeitrechner</h2>
+    <div class="untertitel">Wie lange das Band von einer Station zur anderen braucht. Zeitmarken der Bandanlage, umgerechnet auf deine Geschwindigkeit (Basis 7 m/min).</div>
 
     <div class="row">
       <div style="flex:1">
@@ -676,7 +699,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     function ladeLetzteSuche(){
       try{
         const werte=JSON.parse(localStorage.getItem(ZEIT_KEY));
-        if(!werte) return;
+        if(!werte){ endSel.value="Hot Wash"; return; } // erster Start: nicht "Start → Start = 0 min" zeigen
         if(werte.speed) speedInput.value=werte.speed;
         if(werte.start && punkte.some(p=>p[0]===werte.start)) startSel.value=werte.start;
         if(werte.end && punkte.some(p=>p[0]===werte.end)) endSel.value=werte.end;
@@ -698,6 +721,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
       
       const hinweis=t=>{out.innerHTML=`<div class="erg-hinweis">${t}</div>`;};
+      if(s && s===e){hinweis("Bitte einen anderen Endpunkt wählen.");return;}
       if(!v||!s||!e){hinweis("Bitte Start, Ende und Geschwindigkeit wählen/eingeben.");return;}
       if(v <= 0){hinweis("Die Geschwindigkeit muss größer als 0 sein.");return;}
 
@@ -1632,6 +1656,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 <section id="tab-spule" class="tab-pane">
 <div class="container">
     <h2>Spulen-Bestandsrechner</h2>
+    <div class="untertitel">Restmenge (Stück) auf einer angebrochenen Spule schätzen – per Messung oder per Wiegen.</div>
 
     <div class="seg" id="spuleModusSwitchContainer">
         <div class="seg-btn active" id="btn-modus-durchmesser" onclick="wechsleSpuleModus('durchmesser')">📏 Durchmesser</div>
@@ -1650,8 +1675,8 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     </div>
 
     <div class="gruppe">
-        <div class="gruppe-titel">1. Referenz</div>
-        <label for="refHalfD">Distanz außen → Kern (cm) – Referenz</label>
+        <div class="gruppe-titel">1. Referenz – volle Spule</div>
+        <label for="refHalfD">Abstand Spulenrand → Wicklung (cm) – Referenz</label>
         <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refHalfD" placeholder="z. B. 3,5">
         <div class="feld-reihe">
             <div>
@@ -1659,7 +1684,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
                 <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refCount" placeholder="z. B. 200000">
             </div>
             <div>
-                <label for="cpm">Kontakte pro Meter</label>
+                <label for="cpm">Kontakte/m (Arbeitskarte)</label>
                 <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="z. B. 200">
             </div>
         </div>
@@ -1669,7 +1694,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     <div class="gruppe">
         <div class="gruppe-titel">2. Aktuelle Messung</div>
-        <label for="currHalfD">Distanz außen → Kern (cm) – Aktuell</label>
+        <label for="currHalfD">Abstand Spulenrand → Wicklung (cm) – Aktuell</label>
         <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="currHalfD" placeholder="z. B. 7,0">
         <div class="kleininfo">Ø aktuell: <strong id="outputCurrD">-</strong></div>
     </div>
@@ -1738,7 +1763,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
           <span style="background:#0066cc;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">2</span>
           <strong>Referenzmaß – volle Spule</strong>
         </div>
-        <div style="font-size:0.92rem;color:#333;">Von der <strong>Außenkante</strong> der Spule nach innen zur <strong>Kernmitte</strong> messen. Dieses Maß entspricht der Wickelstärke einer vollen Spule.</div>
+        <div style="font-size:0.92rem;color:#333;">Vom äußeren <strong>Spulenrand</strong> senkrecht nach innen bis zur <strong>Oberfläche der Wicklung</strong> messen – <strong>nicht</strong> bis zum Kern. Bei einer vollen Spule ist das nur ein kleines Stück.</div>
         <div style="margin-top:8px;text-align:center;">
           <svg viewBox="0 0 200 140" style="width:100%;max-width:220px;">
             <ellipse cx="100" cy="65" rx="60" ry="55" fill="#888"/>
@@ -1789,7 +1814,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
           <span style="background:#cc0000;color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">5</span>
           <strong>Aktuelle Spule messen</strong>
         </div>
-        <div style="font-size:0.92rem;color:#333;">Wieder von der <strong>Außenkante</strong> der Spule nach innen zur <strong>Kernmitte</strong> messen. Dieses Maß zeigt, wie viel Wicklung noch auf der Spule ist.</div>
+        <div style="font-size:0.92rem;color:#333;">Wieder vom äußeren <strong>Spulenrand</strong> bis zur <strong>Oberfläche der Wicklung</strong> messen. Je leerer die Spule, desto größer wird dieser Abstand.</div>
         <div style="margin-top:8px;text-align:center;">
           <svg viewBox="0 0 200 140" style="width:100%;max-width:220px;">
             <ellipse cx="100" cy="65" rx="60" ry="55" fill="#888"/>
@@ -1936,7 +1961,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
         // --- 6. AUSGABE ---
         elOutputRefD.innerText = d_ref_calculated.toFixed(1) + ' cm';
-        elOutputCurrD.innerText = d_current_calculated.toFixed(1) + ' cm';
+        elOutputCurrD.innerText = d_current_calculated.toFixed(1).replace('.',',') + ' cm';
         elOutputFactorF.innerText = factor_F.toFixed(4) + ' cm²/m';
         
         elResultVal.innerText = resultCount.toLocaleString('de-DE');
@@ -2024,13 +2049,14 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         } catch (e) {}
     }
 
-    // Papier zwischen den Band-Lagen: wird pauschal zum Leergewicht der Spule dazugerechnet
-    // (Absprache Aziz, 30.09.2026). Erscheint bewusst nirgends in der App.
-    const PAPIER_KG = 0.3;
+    // Papier zwischen den Band-Lagen (Absprache Aziz, 30.09.2026): Eine VOLLE Spule enthält ca. 300 g
+    // Papier. Das Papier geht anteilig mit dem Band runter – pro kg Inhalt (Gewicht über Leergewicht)
+    // steckt also immer der gleiche Anteil Papier drin (z.B. 300 g / 12 kg = 25 g pro kg).
+    // Erscheint bewusst nirgends in der App.
+    const PAPIER_VOLLE_SPULE_KG = 0.3;
 
     function calculateWeight() {
-        const leerGewichtEingabe = parseDeNumber(document.getElementById('gewLeer').value);
-        const leerGewicht = leerGewichtEingabe + PAPIER_KG; // Spule + Papier = alles, was kein Band ist
+        const leerGewicht = parseDeNumber(document.getElementById('gewLeer').value);
         const vollGewicht = parseDeNumber(document.getElementById('gewVoll').value);
         const vollStueck = parseDeNumber(document.getElementById('gewVollStueck').value);
         const aktGewicht = parseDeNumber(document.getElementById('gewAktuell').value);
@@ -2043,11 +2069,11 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         elResultBoxGewicht.style.display = 'none';
         elResultGewichtProStueck.innerText = '-';
 
-        if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewichtEingabe < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
+        if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewicht < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
             showError('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
             return;
         }
-        if (vollGewicht <= leerGewicht) {
+        if (vollGewicht - leerGewicht <= PAPIER_VOLLE_SPULE_KG) {
             showError('Das Vollgewicht muss größer als das Leergewicht der Spule sein.', 'errorBoxGewicht');
             return;
         }
@@ -2056,8 +2082,12 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         // Stückzahl. Das Gesamtgewicht allein wäre das nicht, weil das konstante Leergewicht
         // der Spule sonst mit in die Verhältnisrechnung eingeht und das Ergebnis verfälscht -
         // besonders bei größeren Spulen, wo das Leergewicht einen erheblichen Anteil ausmacht.
-        const bandgewichtVollKg = vollGewicht - leerGewicht;
-        const bandgewichtAktuellKg = aktGewicht - leerGewicht;
+        // Inhalt = Band + Papier. Papieranteil je kg Inhalt ist fest (z.B. 0,3 / 12 = 1/40).
+        const inhaltVollKg = vollGewicht - leerGewicht;
+        const inhaltAktuellKg = aktGewicht - leerGewicht;
+        const papierAnteil = PAPIER_VOLLE_SPULE_KG / inhaltVollKg;
+        const bandgewichtVollKg = inhaltVollKg * (1 - papierAnteil);        // z.B. 12 kg - 0,3 kg = 11,7 kg reines Band
+        const bandgewichtAktuellKg = inhaltAktuellKg * (1 - papierAnteil);  // z.B. 6 kg Inhalt - 0,15 kg Papier
         const gewichtProStueckKg = bandgewichtVollKg / vollStueck;
         const resultCount = Math.max(0, Math.floor(bandgewichtAktuellKg / bandgewichtVollKg * vollStueck));
 
@@ -2068,7 +2098,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
             hinweis = ' ⚠️ unter Leergewicht - Werte prüfen';
         }
 
-        elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4) + ' g/Stück';
+        elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4).replace('.',',') + ' g/Stück';
         elResultValGewicht.innerText = resultCount.toLocaleString('de-DE');
         if (hinweis) showError(hinweis.trim(), 'errorBoxGewicht'); // Warnung klein darüber statt in der großen Zahl
         elResultBoxGewicht.style.display = 'block';
@@ -2096,6 +2126,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 <section id="tab-code" class="tab-pane">
   <div class="container">
     <h2>QR-Code &amp; Strichcode</h2>
+    <div class="untertitel">Login-QR für den Scanner erstellen, Strichcodes erzeugen oder QR-Codes mit der Kamera lesen.</div>
 
     <div class="seg">
       <div class="seg-btn active" id="btn-code-qr" onclick="wechsleCodeTyp('qr')">QR-Code</div>
@@ -2530,10 +2561,12 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
 <section id="tab-mde" class="tab-pane">
   <div class="container" style="padding:0; overflow:hidden; height:80vh; max-height:800px;">
+    <!-- Liegt hinter dem iFrame und ist nur sichtbar, bis die Anleitung geladen ist -->
+    <div class="mde-laden">📱 Anleitung wird geladen…</div>
     <!-- Wird erst beim ersten Antippen des MDE-Tabs geladen (Datei ist ca. 7 MB groß) -->
     <iframe id="mdeFrame" data-src="https://postmen1971.github.io/BandG/MDE_SAP_Anleitung.html"
             title="MDE-Gerät Anleitung"
-            style="width:100%; height:100%; border:none; display:block;">
+            style="position:relative; width:100%; height:100%; border:none; display:block; background:transparent;">
     </iframe>
   </div>
 </section>
@@ -2587,6 +2620,21 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
   }
   document.querySelectorAll(".tabbtn").forEach(b => b.addEventListener("click", () => activate(b.dataset.tab)));
 
+  // Einmaliger Tipp "Zum Home-Bildschirm" - nur im normalen Browser (nicht, wenn schon als App
+  // geöffnet) und nur, bis man ihn einmal mit ✕ geschlossen hat.
+  const HOME_TIPP_KEY = "galvanikHomeTippGeschlossen";
+  function schliesseHomeTipp(){
+    document.getElementById("homeTipp").style.display = "none";
+    try{ localStorage.setItem(HOME_TIPP_KEY, "1"); }catch(e){}
+  }
+  (function(){
+    const alsApp = window.navigator.standalone === true ||
+                   (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    let geschlossen = false;
+    try{ geschlossen = localStorage.getItem(HOME_TIPP_KEY) === "1"; }catch(e){}
+    if(!alsApp && !geschlossen) document.getElementById("homeTipp").style.display = "flex";
+  })();
+
   // Versteckter Zugang zur Gehalt-Seite: 5x auf das Zeit-Ergebnisfeld tippen
   // (gemeinsamer Helfer aus dem <head>). Läuft als zusätzlicher Listener neben
   // der normalen Berechnung - stört diese nicht.
@@ -2639,5 +2687,6 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     });
   })();
 </script>
+<div id="counter"></div>
 </body>
 </html>
