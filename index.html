@@ -171,7 +171,9 @@
   .seg.klein .seg-btn.active{background:#fff;color:var(--orange-dark);box-shadow:0 1px 4px rgba(0,40,85,.15);}
 
   /* Zwei Eingabefelder nebeneinander */
-  .feld-reihe{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  /* align-items:end = Eingabefelder einer Reihe stehen immer auf gleicher Höhe,
+     auch wenn eine Beschriftung auf schmalen Handys in zwei Zeilen umbricht */
+  .feld-reihe{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;}
   .feld-reihe > div{min-width:0;}
 
   /* Gruppe innerhalb einer Karte (z.B. "1. Referenz") */
@@ -1684,8 +1686,8 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
                 <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="refCount" placeholder="z. B. 200000">
             </div>
             <div>
-                <label for="cpm">Kontakte/m (Arbeitskarte)</label>
-                <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="z. B. 200">
+                <label for="cpm">Kontakte/m</label>
+                <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="cpm" placeholder="lt. Arbeitskarte">
             </div>
         </div>
         <!-- interne Zwischenwerte, bewusst ausgeblendet -->
@@ -1915,6 +1917,9 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         elError.style.display = 'none';
         elResultBox.style.display = 'none';
 
+        // Solange noch ein Feld leer ist: still warten, keine rote Meldung beim Tippen
+        if ([elRefHalfD, elRefCount, elCPM, elCurrHalfD].some(el => el.value.trim() === '')) return;
+
         // --- 1. DATENPRÜFUNG ---
         if (isNaN(d_ref_half_measured) || isNaN(count_ref) || isNaN(d_curr_half_measured) || isNaN(cpm) || cpm <= 0) {
             showError("Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein).");
@@ -2068,6 +2073,9 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         document.getElementById('errorBoxGewicht').style.display = 'none';
         elResultBoxGewicht.style.display = 'none';
         elResultGewichtProStueck.innerText = '-';
+
+        // Solange noch ein Feld leer ist: still warten, keine rote Meldung beim Tippen
+        if (['gewLeer','gewVoll','gewVollStueck','gewAktuell'].some(id => document.getElementById(id).value.trim() === '')) return;
 
         if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewicht < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
             showError('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
