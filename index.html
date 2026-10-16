@@ -48,7 +48,13 @@
     user-select:none;
     -webkit-touch-callout:none;
   }
-  .app-header h1{margin:0;font-size:.95rem;font-weight:500;letter-spacing:.2px;}
+  .app-header h1{margin:0;font-size:.95rem;font-weight:500;letter-spacing:.2px;flex:1;text-align:center;}
+  /* Sprachumschalter: 🇩🇪 links, 🇬🇧 rechts neben dem Titel */
+  .app-header{display:flex;align-items:center;gap:8px;}
+  .sprach-btn{width:auto;flex:0 0 auto;background:transparent;border:2px solid transparent;border-radius:8px;
+    padding:1px 5px;margin:0;font-size:1.15rem;line-height:1.2;cursor:pointer;opacity:.45;
+    -webkit-tap-highlight-color:transparent;}
+  .sprach-btn.aktiv{opacity:1;border-color:rgba(255,255,255,.85);}
   .app-header p{margin:2px 0 0;font-size:.72rem;color:#c9d4e6;}
 
   .topbar{
@@ -241,6 +247,329 @@
     background:#1f8a3b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
 </style>
 
+<!-- Sprache: Wörterbuch Deutsch -> Englisch (Schlüssel = deutscher Text) -->
+<script>window.GALVANIK_EN={
+"Deutsch": "Deutsch",
+"English": "English",
+"Galvanik Tools – Strom & Zeit": "Galvanik Tools – Current & Time",
+"Galvanik Offline (Datei)": "Galvanik Offline (File)",
+"⚡ Strom": "⚡ Current",
+"⏱️ Zeit": "⏱️ Time",
+"🧵 Spule": "🧵 Reel",
+"🔳 QR/Code": "🔳 QR/Code",
+"📱 MDE": "📱 MDE",
+"Schließen": "Close",
+"📲 <strong>Tipp:<\/strong> Über <strong>Teilen<\/strong> (iPhone) bzw. <strong>Menü ⋮<\/strong> (Android) → „Zum Home-Bildschirm“ wird Galvanik Tools zur App.": "📲 <strong>Tip:<\/strong> Via <strong>Share<\/strong> (iPhone) or <strong>Menu ⋮<\/strong> (Android) → “Add to Home Screen”, Galvanik Tools becomes an app.",
+"📲 <strong>Tipp:<\/strong> Über <strong>Teilen<\/strong> (iPhone) bzw. <strong>Menü ⋮<\/strong> (Android) → „Zum Home-Bildschirm“ wird Galvanik Offline zur App – danach läuft sie auch ohne Internet.": "📲 <strong>Tip:<\/strong> Via <strong>Share<\/strong> (iPhone) or <strong>Menu ⋮<\/strong> (Android) → “Add to Home Screen”, Galvanik Offline becomes an app – after that it also works without internet.",
+"Tipp schließen": "Close tip",
+"Kopieren": "Copy",
+"Offline-Version · ✓ offline bereit": "Offline version · ✓ ready offline",
+"Offline-Version": "Offline version",
+"Offline-Datei · läuft komplett ohne Internet": "Offline file · runs completely without internet",
+"z. B. 4": "e.g. 4",
+"z. B. 1,0": "e.g. 1.0",
+"z. B. 2,5": "e.g. 2.5",
+"z. B. 7": "e.g. 7",
+"z. B. 18,5": "e.g. 18.5",
+"z. B. 200000": "e.g. 200000",
+"z. B. 3,5": "e.g. 3.5",
+"z. B. 6,25": "e.g. 6.25",
+"z. B. 7,0": "e.g. 7.0",
+"z. B. 9,8": "e.g. 9.8",
+"z.B. 0,8": "e.g. 0.8",
+"z.B. 1,2": "e.g. 1.2",
+"z.B. 123456789": "e.g. 123456789",
+"z.B. 3,6": "e.g. 3.6",
+"z.B. 4,0": "e.g. 4.0",
+"z.B. 7": "e.g. 7",
+"z.B. Auftrag XY, Bad frisch angesetzt...": "e.g. order XY, bath freshly made up...",
+"z.B. TE123456": "e.g. TE123456",
+"lt. Arbeitskarte": "per job card",
+"Passwort": "Password",
+"Galvanik-Stromrechner": "Plating Current Calculator",
+"Neuen Strom-Sollwert einer Station berechnen, wenn sich Schichtdicke oder Bandgeschwindigkeit ändert.": "Calculate a station's new current setpoint when the coating thickness or line speed changes.",
+"Strom aktuell (A)": "Current now (A)",
+"Schicht aktuell (µm)": "Coating now (µm)",
+"Schicht Ziel (µm)": "Coating target (µm)",
+"Geschw. aktuell (m/min)": "Speed now (m/min)",
+"Geschw. neu (m/min)": "Speed new (m/min)",
+"Ergebnis wird hier angezeigt": "The result is shown here",
+"Alle Angaben ohne Gewähr – es wird keine Haftung übernommen.": "All figures without guarantee – no liability is accepted.",
+"Bitte alle Werte eingeben.": "Please enter all values.",
+"Benötigter Strom": "Required current",
+"Mess-Protokoll (Strom → Schichtdicke)": "Measurement log (current → coating thickness)",
+"Trage hier echte Messwerte ein, wenn du den Strom manuell angepasst hast. Damit sammeln wir über die Zeit reale Datenpunkte für eine genauere Berechnung.": "Enter real measured values here whenever you adjusted the current manually. Over time this collects real data points for a more accurate calculation.",
+"Strom vorher (A)": "Current before (A)",
+"Strom nachher (A)": "Current after (A)",
+"Schichtdicke vorher (µm)": "Thickness before (µm)",
+"Schichtdicke nachher (µm)": "Thickness after (µm)",
+"Bandgeschwindigkeit (m/min) - optional": "Line speed (m/min) - optional",
+"Notiz - optional": "Note - optional",
+"Eintrag speichern": "Save entry",
+"Bisherige Einträge": "Previous entries",
+"📋 Alle kopieren": "📋 Copy all",
+"Bitte mindestens Strom vorher/nachher und Schichtdicke vorher/nachher ausfüllen.": "Please fill in at least current before/after and thickness before/after.",
+"Noch keine Einträge.": "No entries yet.",
+"Geschwindigkeit:": "Speed:",
+"Protokoll wurde in die Zwischenablage kopiert.": "Log copied to the clipboard.",
+"Galvanik-Zeitrechner": "Plating Time Calculator",
+"Wie lange das Band von einer Station zur anderen braucht. Zeitmarken der Bandanlage, umgerechnet auf deine Geschwindigkeit (Basis 7 m/min).": "How long the strip takes from one station to another. Time marks of the line, converted to your speed (base 7 m/min).",
+"Geschwindigkeit (m/min)": "Speed (m/min)",
+"Startpunkt": "Start point",
+"Endpunkt": "End point",
+"Bitte wähle Start, Ende und Geschwindigkeit.": "Please choose start, end and speed.",
+"Bitte einen anderen Endpunkt wählen.": "Please choose a different end point.",
+"Bitte Start, Ende und Geschwindigkeit wählen/eingeben.": "Please choose/enter start, end and speed.",
+"Die Geschwindigkeit muss größer als 0 sein.": "The speed must be greater than 0.",
+"Der Startpunkt muss vor dem Endpunkt liegen.": "The start point must come before the end point.",
+"bei {v} m/min": "at {v} m/min",
+"Start": "Start",
+"Hot Wash": "Hot Wash",
+"U-Turn Mitte": "U-turn (middle)",
+"Gold Stripper": "Gold Stripper",
+"Zinn 1": "Tin 1",
+"Zinn 3": "Tin 3",
+"Zinn 5": "Tin 5",
+"Zinn 7": "Tin 7",
+"Zinn 9": "Tin 9",
+"Zinn Stripper": "Tin Stripper",
+"Nach-Fön": "Post-dryer",
+"Speicher": "Accumulator",
+"Getriebe vor Befettung": "Gearbox before greasing",
+"😄 Superwitz": "😄 Joke of the day",
+"Witz wird geladen…": "Loading joke…",
+"Bei jedem Öffnen ein neuer Witz.": "A new joke every time you open the app.",
+"Zitat des Tages": "Quote of the day",
+"Zitat wird geladen…": "Loading quote…",
+"⚽ Topspiele": "⚽ Top matches",
+"Zeigt, welcher TV-Sender/Stream das Spiel überträgt": "Shows which TV channel/stream broadcasts the match",
+"📺 Sender-Übersicht": "📺 TV guide",
+"Spiele werden geladen…": "Loading matches…",
+"Spiele der nächsten 7 Tage: deine Lieblingsvereine und alle europäischen Nationalmannschaften.": "Matches of the next 7 days: your favourite clubs and all European national teams.",
+"HZ": "HT",
+"1. HZ": "1st half",
+"2. HZ": "2nd half",
+"Endstand": "Full time",
+"Angepfiffen {d}, {z} Uhr – Ergebnis folgt": "Kicked off {d}, {z} – result to follow",
+"{z} Uhr": "{z}",
+"Freundschaftsspiel": "Friendly",
+"WM-Qualifikation": "World Cup qualifier",
+"EM-Qualifikation": "Euro qualifier",
+"⚠️ Hauptquelle gerade nicht erreichbar – Ersatzquellen aktiv: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League und Länderspiele. Einzelne Spiele können fehlen.": "⚠️ Main source currently unavailable – backup sources active: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League and internationals. Some matches may be missing.",
+"In den nächsten 7 Tagen spielt keine der ausgewählten Mannschaften.": "None of the selected teams play in the next 7 days.",
+"⚠️ Fußball-Daten aktuell nicht erreichbar (Quelle überlastet oder kein Internet).": "⚠️ Football data currently unavailable (source overloaded or no internet).",
+"Erneut versuchen": "Try again",
+"Spulen-Bestandsrechner": "Reel Stock Calculator",
+"Restmenge (Stück) auf einer angebrochenen Spule schätzen – per Messung oder per Wiegen.": "Estimate the remaining quantity (pieces) on a partly used reel – by measuring or by weighing.",
+"📏 Durchmesser": "📏 Diameter",
+"⚖️ Gewicht": "⚖️ Weight",
+"Spule 98 cm": "Reel 98 cm",
+"Spule 76 cm": "Reel 76 cm",
+"Kern Ø": "Core Ø",
+"· max. Ø": "· max. Ø",
+"❓ Hilfe": "❓ Help",
+"1. Referenz – volle Spule": "1. Reference – full reel",
+"Abstand Spulenrand → Wicklung (cm) – Referenz": "Distance reel edge → winding (cm) – reference",
+"Stückzahl Referenz": "Pieces (reference)",
+"Kontakte/m": "Contacts/m",
+"2. Aktuelle Messung": "2. Current measurement",
+"Abstand Spulenrand → Wicklung (cm) – Aktuell": "Distance reel edge → winding (cm) – now",
+"Ø aktuell:": "Ø now:",
+"Aktueller Bestand ca.": "Current stock approx.",
+"Stk.": "pcs",
+"1. Referenz (volle Spule)": "1. Reference (full reel)",
+"Leergewicht (kg)": "Empty weight (kg)",
+"Vollgewicht (kg)": "Full weight (kg)",
+"Stückzahl volle Spule (lt. Lieferschein)": "Pieces on full reel (per delivery note)",
+"Alle Gewichte <strong>mit<\/strong> Spule. Leergewicht = die leere Spule gewogen.": "All weights <strong>including<\/strong> the reel. Empty weight = the empty reel weighed.",
+"Gewicht aktuell mit Spule (kg)": "Current weight incl. reel (kg)",
+"Gewicht pro Stück:": "Weight per piece:",
+"g/Stück": "g/pc",
+"Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein).": "Please fill in all four fields with valid numbers (contacts/m must be > 0).",
+"Eine Messung ist zu groß. Der berechnete Durchmesser liegt unter dem Kern ({d} cm).": "A measurement is too large. The calculated diameter is smaller than the core ({d} cm).",
+"Eine Messung ist zu klein. Der berechnete Durchmesser ist größer als D_Max ({d} cm).": "A measurement is too small. The calculated diameter is larger than D_Max ({d} cm).",
+"Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).": "Please fill in all fields with valid numbers (full weight and pieces must be greater than 0).",
+"Das Vollgewicht muss größer als das Leergewicht der Spule sein.": "The full weight must be greater than the empty weight of the reel.",
+"⚠️ über Vollgewicht - Werte prüfen": "⚠️ above full weight - check values",
+"⚠️ unter Leergewicht - Werte prüfen": "⚠️ below empty weight - check values",
+"Spulenrechner – so geht's": "Reel calculator – how it works",
+"Hilfe schließen": "Close help",
+"Spulengröße wählen": "Choose reel size",
+"Oben die passende Spule antippen: <strong>98 cm<\/strong> oder <strong>76 cm<\/strong> (größter Außendurchmesser).": "Tap the matching reel at the top: <strong>98 cm<\/strong> or <strong>76 cm<\/strong> (largest outer diameter).",
+"Beispiel: <strong>76 cm<\/strong>": "Example: <strong>76 cm<\/strong>",
+"Referenz messen – volle Spule": "Measure the reference – full reel",
+"Vom äußeren <strong>Spulenrand<\/strong> senkrecht nach innen bis zur <strong>Oberfläche der Wicklung<\/strong> messen – <strong>nicht<\/strong> bis zum Kern. Bei einer vollen Spule ist das nur ein kleines Stück.": "Measure from the outer <strong>reel edge<\/strong> straight inwards to the <strong>surface of the winding<\/strong> – <strong>not<\/strong> to the core. On a full reel this is only a short distance.",
+"Seitenansicht der Spule": "Side view of the reel",
+"Messmaß: nur der kurze orange Abschnitt (3,5 cm)": "Measure: only the short orange section (3.5 cm)",
+"Gestrichelt = voller Weg bis zum Kern (hier max. 20,5 cm) – den <strong>nicht<\/strong> messen": "Dashed = full distance to the core (here max. 20.5 cm) – do <strong>not<\/strong> measure this",
+"Beispiel: <strong>3,5 cm<\/strong>": "Example: <strong>3.5 cm<\/strong>",
+"Stückzahl der vollen Spule": "Pieces on the full reel",
+"Wie viele Kontakte auf der vollen Spule sind (steht auf dem Lieferschein bzw. Etikett).": "How many contacts are on the full reel (shown on the delivery note or label).",
+"Beispiel: <strong>200.000<\/strong>": "Example: <strong>200,000<\/strong>",
+"Kontakte pro Meter": "Contacts per metre",
+"Wie viele Kontakte auf 1 Meter Band sitzen – laut <strong>Arbeitskarte<\/strong>.": "How many contacts sit on 1 metre of strip – according to the <strong>job card<\/strong>.",
+"Beispiel: <strong>200<\/strong>": "Example: <strong>200<\/strong>",
+"Aktuelle Spule messen": "Measure the current reel",
+"Wieder vom <strong>Spulenrand<\/strong> bis zur <strong>Oberfläche der Wicklung<\/strong> messen. Je leerer die Spule, desto größer wird dieser Abstand.": "Again measure from the <strong>reel edge<\/strong> to the <strong>surface of the winding<\/strong>. The emptier the reel, the larger this distance.",
+"Messmaß: nur der kurze orange Abschnitt (7,0 cm)": "Measure: only the short orange section (7.0 cm)",
+"Beispiel: <strong>7,0 cm<\/strong>": "Example: <strong>7.0 cm<\/strong>",
+"Ergebnis": "Result",
+"Sobald alle Felder ausgefüllt sind, erscheint der aktuelle Bestand automatisch – ohne Knopfdruck. Die Referenzwerte (Schritt 2–4) merkt sich die App.": "As soon as all fields are filled in, the current stock appears automatically – no button needed. The app remembers the reference values (steps 2–4).",
+"QR-Code & Strichcode": "QR Code & Barcode",
+"Login-QR für den Scanner erstellen, Strichcodes erzeugen oder QR-Codes mit der Kamera lesen.": "Create a login QR code for the scanner, generate barcodes or read QR codes with the camera.",
+"QR-Code": "QR code",
+"Strichcode": "Barcode",
+"🔍 Lesen": "🔍 Read",
+"Benutzername": "Username",
+"Passwort ein-/ausblenden": "Show/hide password",
+"QR-Code erzeugen": "Create QR code",
+"📤 QR-Code teilen / speichern": "📤 Share / save QR code",
+"ⓘ So funktioniert's": "ⓘ How it works",
+"Der QR-Code enthält: Benutzername, dann <strong>Tab<\/strong>, dann Passwort, dann <strong>Enter<\/strong>. Ein Scanner, der als Tastatur arbeitet, tippt den Benutzernamen ein, springt ins nächste Feld und meldet sich nach dem Passwort selbst an. Alles läuft nur auf diesem Gerät – nichts wird ins Internet gesendet.": "The QR code contains: username, then <strong>Tab<\/strong>, then password, then <strong>Enter<\/strong>. A scanner working as a keyboard types the username, jumps to the next field and logs in by itself after the password. Everything runs only on this device – nothing is sent to the internet.",
+"Text / Nummer": "Text / number",
+"Strichcode erzeugen": "Create barcode",
+"📤 Strichcode teilen / speichern": "📤 Share / save barcode",
+"📷 Kamera starten": "📷 Start camera",
+"✕ Kamera stoppen": "✕ Stop camera",
+"🔍 Suche nach QR-Code…": "🔍 Looking for QR code…",
+"Liest QR-Codes live über die Kamera. WLAN-QR-Codes werden automatisch erkannt und Netzwerkname/Passwort übersichtlich angezeigt. Alles läuft nur auf diesem Gerät.": "Reads QR codes live with the camera. Wi-Fi QR codes are detected automatically and the network name/password are shown clearly. Everything runs only on this device.",
+"Bitte Benutzername und Passwort eingeben.": "Please enter username and password.",
+"Bitte Text oder Nummer eingeben.": "Please enter text or a number.",
+"Ungültige Eingabe für Strichcode.": "Invalid input for barcode.",
+"✅ WLAN-Code erkannt!": "✅ Wi-Fi code detected!",
+"📶 Netzwerk:": "📶 Network:",
+"🔑 Passwort:": "🔑 Password:",
+"(kein Passwort)": "(no password)",
+"Verschlüsselung:": "Encryption:",
+"unbekannt": "unknown",
+"📋 Passwort kopieren": "📋 Copy password",
+"✅ QR-Code erkannt!": "✅ QR code detected!",
+"Inhalt:": "Content:",
+"📋 Text kopieren": "📋 Copy text",
+"Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über {p} – bitte über https:// aufrufen.": "The camera needs a secure connection (https). This page is currently running over {p} – please open it via https://.",
+"Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen.": "This browser/view does not support camera access (e.g. when the page is opened in an embedded preview instead of the real browser). Please open the page directly in Safari/Chrome.",
+"Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.": "The reading function is currently unavailable (library could not be loaded). Please reload the page and try again.",
+"Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf \"Erlauben\" stellen, dann die Seite neu laden.": "Camera access was blocked. Please go to the iPhone Settings under Safari (or the browser you use) → Camera, set it to \"Allow\", then reload the page.",
+"Es wurde keine Kamera gefunden.": "No camera was found.",
+"Die Kamera wird gerade von einer anderen App benutzt.": "The camera is currently being used by another app.",
+"Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.": "Camera access blocked for security reasons (possibly an embedded preview instead of a real browser). Please open the page directly in Safari/Chrome.",
+"Kein Kamera-Zugriff möglich ({f}).": "Camera access not possible ({f}).",
+"unbekannter Fehler": "unknown error",
+"📱 Anleitung wird geladen…": "📱 Loading guide…",
+"MDE-Gerät Anleitung": "MDE device guide",
+"Gehalt / Lohnabrechnung": "Salary / Payslip",
+"<strong>Hinweis:<\/strong> Der folgende Button leitet dich lediglich zur offiziellen Login-Seite unseres Lohnabrechnungs-Dienstleisters <strong>ADP<\/strong> weiter.": "<strong>Note:<\/strong> The button below simply takes you to the official login page of our payroll provider <strong>ADP<\/strong>.",
+"Diese App (RechnerGAL) läuft komplett getrennt davon – es werden <strong>keine Zugangsdaten, Passwörter oder Gehaltsdaten<\/strong> über diese Seite oder ihren Server übertragen oder gespeichert. Der Klick öffnet einfach direkt die ADP-Webseite in deinem Browser, genau wie ein Lesezeichen.": "This app (RechnerGAL) is completely separate from it – <strong>no login details, passwords or salary data<\/strong> are transferred or stored via this page or its server. The click simply opens the ADP website directly in your browser, just like a bookmark.",
+"Login und Verschlüsselung laufen danach ausschließlich über die Server von ADP, nicht über RechnerGAL.": "Login and encryption then run exclusively via ADP's servers, not via RechnerGAL.",
+"Weiter zum ADP-Login →": "Continue to ADP login →",
+"← Zurück zu den Rechnern": "← Back to the calculators"
+};</script>
+<script>
+/* ================================================================================
+   ZWEISPRACHIG (DE / EN) – Sprachumschalter 🇩🇪 links / 🇬🇧 rechts in der Kopfzeile.
+   - Deutsch ist das Original im Code. Englisch kommt aus dem Wörterbuch GALVANIK_EN
+     (Schlüssel = deutscher Text, Wert = englischer Text).
+   - Feste Texte der Seite werden beim Laden automatisch ersetzt (uebersetzeSeite).
+   - Texte, die per JavaScript entstehen, laufen über T("deutscher Text", {platzhalter}).
+   - Die Wahl wird gespeichert (localStorage "galvanikSprache"); Umschalten lädt die Seite neu.
+   - Neue Texte: deutschen Text normal schreiben UND im Wörterbuch ergänzen.
+   ================================================================================ */
+(function(){
+  var KEY = "galvanikSprache";
+  var lang = "de";
+  try { if (localStorage.getItem(KEY) === "en") lang = "en"; } catch(e) {}
+  // In einem eingebetteten Fenster (MDE-Anleitung im iFrame) gilt die Sprache der App
+  try { if (window.parent !== window && window.parent.GALVANIK_SPRACHE) lang = window.parent.GALVANIK_SPRACHE; } catch(e) {}
+
+  var EN = window.GALVANIK_EN || {};
+  window.GALVANIK_SPRACHE = lang;
+  window.istEN = (lang === "en");
+  window.LOC = window.istEN ? "en-GB" : "de-DE";
+  try { document.documentElement.lang = lang; } catch(e) {}
+
+  function norm(s){ return String(s).replace(/\s+/g, " ").trim(); }
+
+  window.T = function(de, vars){
+    var s = (window.istEN && Object.prototype.hasOwnProperty.call(EN, de)) ? EN[de] : de;
+    if (vars) s = s.replace(/\{(\w+)\}/g, function(m, k){ return (vars[k] !== undefined) ? vars[k] : m; });
+    return s;
+  };
+  // Dezimaltrenner: Deutsch Komma, Englisch Punkt
+  window.dez = function(s){ s = String(s); return window.istEN ? s : s.replace(".", ","); };
+
+  window.setzeSprache = function(l){
+    if (l === lang) return;
+    try { localStorage.setItem(KEY, l); } catch(e) {}
+    location.reload();
+  };
+
+  var ATTRIBUTE = ["placeholder", "title", "aria-label", "alt"];
+  var UEBERSPRINGEN = { SCRIPT:1, STYLE:1, TEXTAREA:1 };
+
+  function walk(el){
+    if (el.nodeType !== 1 || UEBERSPRINGEN[el.tagName]) return;
+    if (el.hasAttribute("data-kein-i18n")) return;
+    for (var a = 0; a < ATTRIBUTE.length; a++){
+      var v = el.getAttribute(ATTRIBUTE[a]);
+      if (v){ var kv = norm(v); if (Object.prototype.hasOwnProperty.call(EN, kv)) el.setAttribute(ATTRIBUTE[a], EN[kv]); }
+    }
+    if (el.children.length){
+      var k = norm(el.innerHTML);
+      if (Object.prototype.hasOwnProperty.call(EN, k)){ el.innerHTML = EN[k]; return; }
+    }
+    var kinder = Array.prototype.slice.call(el.childNodes);
+    for (var i = 0; i < kinder.length; i++){
+      var n = kinder[i];
+      if (n.nodeType === 3){
+        var t = n.nodeValue, kt = norm(t);
+        if (kt && Object.prototype.hasOwnProperty.call(EN, kt)){
+          var vorne = t.match(/^\s*/)[0], hinten = t.match(/\s*$/)[0];
+          n.nodeValue = vorne + EN[kt] + hinten;
+        }
+      } else if (n.nodeType === 1){
+        walk(n);
+      }
+    }
+  }
+  window.uebersetzeSeite = function(root){
+    if (!window.istEN) return;
+    walk(root || document.body);
+    if (EN[norm(document.title)]) document.title = EN[norm(document.title)];
+  };
+  // Hilfsfunktion zum Sammeln aller Texte (nur für die Pflege des Wörterbuchs)
+  window.sammleTexte = function(root){
+    var aus = [];
+    function sammle(el){
+      if (el.nodeType !== 1 || UEBERSPRINGEN[el.tagName] || el.hasAttribute("data-kein-i18n")) return;
+      for (var a = 0; a < ATTRIBUTE.length; a++){ var v = el.getAttribute(ATTRIBUTE[a]); if (v && /[A-Za-zÄÖÜäöüß]{2}/.test(v)) aus.push(norm(v)); }
+      var gemischt = false, hatId = false;
+      for (var i = 0; i < el.childNodes.length; i++){
+        var n = el.childNodes[i];
+        if (n.nodeType === 3 && /[A-Za-zÄÖÜäöüß]{2}/.test(n.nodeValue)) gemischt = true;
+      }
+      if (el.children.length && gemischt){
+        hatId = !!el.querySelector("[id],input,select,textarea,script,svg,button,a[onclick]");
+        if (!hatId){ aus.push(norm(el.innerHTML)); return; }
+      }
+      for (var j = 0; j < el.childNodes.length; j++){
+        var m = el.childNodes[j];
+        if (m.nodeType === 3){ var t = norm(m.nodeValue); if (/[A-Za-zÄÖÜäöüß]{2}/.test(t)) aus.push(t); }
+        else sammle(m);
+      }
+    }
+    sammle(root || document.body);
+    return aus.filter(function(x, i){ return aus.indexOf(x) === i; });
+  };
+
+  document.addEventListener("DOMContentLoaded", function(){
+    window.uebersetzeSeite(document.body);
+    var de = document.getElementById("sprachDE"), en = document.getElementById("sprachEN");
+    if (de) de.classList.toggle("aktiv", lang === "de");
+    if (en) en.classList.toggle("aktiv", lang === "en");
+  });
+})();
+
+</script>
 <!-- Gemeinsame Helfer, die von mehreren Tabs benutzt werden -->
 <script>
   // Wandelt Eingaben mit Komma ODER Punkt als Dezimaltrennzeichen zuverlässig in eine Zahl um.
@@ -285,7 +614,9 @@
 
 <div class="kopf-fixiert">
 <div class="app-header">
+  <button type="button" class="sprach-btn" id="sprachDE" onclick="setzeSprache('de')" title="Deutsch" aria-label="Deutsch">🇩🇪</button>
   <h1>Galvanik Tools</h1>
+  <button type="button" class="sprach-btn" id="sprachEN" onclick="setzeSprache('en')" title="English" aria-label="English">🇬🇧</button>
 </div>
 
 <!--
@@ -433,6 +764,35 @@ Unverändert: eine Zeile mit den übrigen Stationen (z. B. „E-Clean 1–2 (V),
 
 Keine weiteren Erklärungen. Antworte auf Deutsch.
   </script>
+  <script type="text/plain" id="kiPromptTextEN">
+You are helping me at a reel-to-reel (strip) electroplating line. The photos show the rectifier pages (Station | Select ON/OFF | Volts | Amps | Setpoint in A or V).
+
+IMPORTANT: Do NOT read any speed from the photos. The "speed … MPM" display at the bottom may belong to a different line and must therefore be ignored.
+
+STEP 1 – just ask me briefly, without calculating or listing anything first:
+"Current speed (m/min)? New speed (m/min)?"
+Wait for my answer.
+
+STEP 2 – calculate:
+New setpoint = old setpoint × (new speed ÷ current speed)
+
+RULES:
+- Only convert stations that are ON and have a setpoint in A.
+- OFF, setpoint 0 and setpoints in V (e.g. E-Clean) stay unchanged.
+- Round as shown on the screen (8.0 → 1 decimal place, 0.65 → 2).
+- Mark values you could not read reliably with ⚠️, do not guess.
+- Include "Dummy" stations in the calculation, but mark them "check".
+
+OUTPUT – compact, only this:
+Factor: X.XXX (current → new m/min)
+
+| Station | old | NEW |
+Only the stations that need to be changed, in line order, new value in bold.
+
+Unchanged: one line with the remaining stations (e.g. "E-Clean 1–2 (V), Nickel 10, Pd/Ni 1, 2, 7, 8 … (OFF)").
+
+No further explanations. Answer in English.
+  </script>
 
   <script>
     // parseDeNumber() kommt jetzt aus dem gemeinsamen Helfer-Block im <head>.
@@ -465,10 +825,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const V_alt=parseDeNumber(document.getElementById("istGeschw").value);
       const V_neu=parseDeNumber(document.getElementById("neuGeschw").value);
 
-      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerHTML='<div class="erg-hinweis">Bitte alle Werte eingeben.</div>';return;}
+      if(!I_alt||!S_alt||!S_neu||!V_alt||!V_neu){document.getElementById("ergebnis").innerHTML='<div class="erg-hinweis">'+T('Bitte alle Werte eingeben.')+'</div>';return;}
       
       const I_neu=I_alt*(S_neu/S_alt)*(V_neu/V_alt);
-      document.getElementById("ergebnis").innerHTML=`<div class="erg-label">Benötigter Strom</div><div class="erg-wert">${I_neu.toFixed(2).replace('.',',')} A</div>`;
+      document.getElementById("ergebnis").innerHTML=`<div class="erg-label">${T('Benötigter Strom')}</div><div class="erg-wert">${dez(I_neu.toFixed(2))} A</div>`;
       speichereLetzteStromWerte();
     }
     
@@ -505,7 +865,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const elFehler = document.getElementById('pFehler');
 
       if(isNaN(stromAlt) || isNaN(stromNeu) || isNaN(schichtAlt) || isNaN(schichtNeu)){
-        elFehler.innerText = 'Bitte mindestens Strom vorher/nachher und Schichtdicke vorher/nachher ausfüllen.';
+        elFehler.innerText = T('Bitte mindestens Strom vorher/nachher und Schichtdicke vorher/nachher ausfüllen.');
         elFehler.style.display = 'block';
         return;
       }
@@ -513,7 +873,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
       const liste = ladeProtokoll();
       liste.unshift({
-        datum: new Date().toLocaleString('de-DE'),
+        datum: new Date().toLocaleString(LOC),
         stromAlt, stromNeu, schichtAlt, schichtNeu,
         geschw: geschw || null,
         notiz: notiz || null
@@ -541,14 +901,14 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const liste = ladeProtokoll();
       const el = document.getElementById('pListe');
       if(liste.length === 0){
-        el.innerHTML = '<div style="color:#888;font-size:0.85rem;">Noch keine Einträge.</div>';
+        el.innerHTML = '<div style="color:#888;font-size:0.85rem;">'+T('Noch keine Einträge.')+'</div>';
         return;
       }
       el.innerHTML = liste.map((e, i) => `
         <div style="background:#f7f7f7;border:1px solid #ddd;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:0.85rem;position:relative;">
           <div style="color:#888;font-size:0.75rem;">${e.datum}</div>
           <div><strong>${e.stromAlt} A → ${e.stromNeu} A</strong> &nbsp;|&nbsp; <strong>${e.schichtAlt} µm → ${e.schichtNeu} µm</strong></div>
-          ${e.geschw ? `<div>Geschwindigkeit: ${e.geschw} m/min</div>` : ''}
+          ${e.geschw ? `<div>${T('Geschwindigkeit:')} ${e.geschw} m/min</div>` : ''}
           ${e.notiz ? `<div style="color:#555;">${e.notiz}</div>` : ''}
           <button type="button" onclick="loescheProtokollEintrag(${i})" style="position:absolute;top:6px;right:6px;width:auto;background:none;border:none;color:#cc0000;font-size:0.9rem;cursor:pointer;padding:2px 6px;">🗑</button>
         </div>
@@ -564,7 +924,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       ).join('\n');
       if(navigator.clipboard){
         navigator.clipboard.writeText(text).then(()=>{
-          alert('Protokoll wurde in die Zwischenablage kopiert.');
+          alert(T('Protokoll wurde in die Zwischenablage kopiert.'));
         }).catch(()=>{
           alert(text);
         });
@@ -592,7 +952,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     // Kopiert still in die Zwischenablage - kein Hinweistext. Nur das Symbol wird kurz zu ✅.
     document.getElementById("kiPromptBtn").addEventListener("click", function(){
       const btn=this;
-      const text=document.getElementById("kiPromptText").textContent.trim();
+      const text=document.getElementById(istEN ? "kiPromptTextEN" : "kiPromptText").textContent.trim();
       kopiereTextInZwischenablage(text).then(function(){
         btn.textContent="✅";
         clearTimeout(btn._timer);
@@ -711,7 +1071,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     /* --- UI init --- */
     const startSel=document.getElementById("startSel"),endSel=document.getElementById("endSel"),speedInput=document.getElementById("speedInput");
-    punkte.forEach(([n])=>{startSel.add(new Option(n,n));endSel.add(new Option(n,n));});
+    punkte.forEach(([n])=>{startSel.add(new Option(T(n),n));endSel.add(new Option(T(n),n));});
 
     /* --- Letzte Suche: nur lokal auf diesem Gerät gespeichert (localStorage) --- */
     const ZEIT_KEY="galvanikZeitLetzteSuche";
@@ -740,7 +1100,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const v=parseDeNumber(document.getElementById("speedInput").value);
       const s=startSel.value, e=endSel.value, out=document.getElementById("zeitResult");
       
-      const hinweis=t=>{out.innerHTML=`<div class="erg-hinweis">${t}</div>`;};
+      const hinweis=t=>{out.innerHTML=`<div class="erg-hinweis">${T(t)}</div>`;};
       if(s && s===e){hinweis("Bitte einen anderen Endpunkt wählen.");return;}
       if(!v||!s||!e){hinweis("Bitte Start, Ende und Geschwindigkeit wählen/eingeben.");return;}
       if(v <= 0){hinweis("Die Geschwindigkeit muss größer als 0 sein.");return;}
@@ -752,9 +1112,9 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const d7=tEnd7 - tStart7;
       const total=Math.round(d7*(7/v));
       const m=Math.floor(total/60), sec=total%60;
-      out.innerHTML=`<div class="erg-label">${escapeHtml(s)} → ${escapeHtml(e)}</div>
+      out.innerHTML=`<div class="erg-label">${escapeHtml(T(s))} → ${escapeHtml(T(e))}</div>
         <div class="erg-wert">${m} min ${sec} s</div>
-        <div class="erg-sub">bei ${v.toFixed(1).replace('.',',')} m/min</div>`;
+        <div class="erg-sub">${T('bei {v} m/min',{v:dez(v.toFixed(1))})}</div>`;
       speichereLetzteSuche();
     }
     // Automatische Neuberechnung bei jeder Änderung - kein Button mehr nötig.
@@ -919,8 +1279,140 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       "Warum ist Trinkgeld freiwillig? Damit man wenigstens bei einer Sache im Restaurant noch selbst entscheiden darf."
     ];
 
+    // Englische Fassung der Witze (gleiche Reihenfolge wie GUTE_WITZE)
+    const GUTE_WITZE_EN=[
+      "The boss asks: 'Why are you only coming in at 11?' – 'Because of the road signs.' – 'What road signs?' – 'Caution, work starts at 8.'",
+      "Two cannibals are eating a clown. One asks the other: 'Does this taste funny to you?'",
+      "I built a ladder out of onions. You can climb really high with it without it ever getting to you – it only makes you cry.",
+      "The doctor says to the patient: 'I have bad news and even worse news.' – 'The bad news first.' – 'You have 24 hours to live.' – 'And the even worse news?' – 'I meant to tell you yesterday.'",
+      "What's the difference between a cat and a comma? A cat has claws at the end of its paws, a comma is a pause at the end of a clause.",
+      "Two friends meet. One says: 'I bought my wife a grave for her birthday.' – 'Why on earth?' – 'Well, last year she didn't use the present I gave her either.'",
+      "A skeleton walks into a bar and orders a beer and a mop.",
+      "Why are marathon runners so good at maths? Because they're always running numbers in their heads.",
+      "The boss says to his new employee: 'If you make a mistake, pretend it was on purpose.' The next day the employee spills coffee all over the office and shouts: 'Art!'",
+      "What does one volcano say to the other? I lava you.",
+      "Two blondes jump off a bridge. Why? Because they wanted to take the plunge.",
+      "Waiter, is that a hair in my soup? No, that's my toupee – I have to leave the kitchen.",
+      "Why do bees wear striped suits? Because the spotted ones are at the dry cleaner's.",
+      "The boss asks the employee: 'Why did you choose this job?' – 'For the exciting tasks and the challenge.' – 'Then why have you been here for 15 years?'",
+      "A man goes to the dentist. The dentist says: 'This is going to hurt.' The man asks: 'Why?' The dentist: 'I just stepped on your foot.'",
+      "Two coffins are sitting in a waiting room. One says: 'Have you been coughing for that long too?'",
+      "My grandma always said: 'What doesn't kill you makes you stronger.' Until it eventually did.",
+      "I told my wife I'm having trouble with my memory. She said: 'What trouble?'",
+      "Two coffins are chatting at the undertaker's. One asks: 'Are you made of oak too?' – 'No, I'm made of old age.'",
+      "Why do people who want to end it all always bring a ladder? In case it doesn't work out after all.",
+      "A man comes into A&E: 'Doctor, I have amnesia!' The doctor: 'Since when?' The man: 'Since when what?'",
+      "The undertaker asks the relative: 'Would you like a cremation or a burial?' – 'Which is cheaper?' – 'Cremation, but paying out the ashes takes a little while.'",
+      "My gravestone should one day say: 'He was just about to quit smoking.'",
+      "I told my lawyer I want to donate everything to science after my death. He said I'd have to achieve something first.",
+      "Why are ghosts so bad at lying? Because you can see right through them.",
+      "The doctor says: 'I'm sorry to tell you that you only have 10 seconds to live.' The patient: 'Can I still—' The doctor: '9, 8, 7...'",
+      "On his deathbed my grandpa said: 'I'll never sell my life insurance.' It was his last sentence, but at least he was consistent.",
+      "A man falls from the twentieth floor. As he passes the tenth floor he shouts: 'So far, so good!'",
+      "I recently discovered a coffin discount store. Slogan: 'With us, you lie cheaply.'",
+      "Why do ghosts never take the lift? Because it really lowers their spirits.",
+      "Two friends at the grave of the third: 'Was he a good man?' – 'Well, at least he never harmed anyone except himself - and the colleagues he got in the way of.'",
+      "My life insurance called and asked whether everything was all right with me. I think they're hoping for something else.",
+      "I told my boss I needed a day off because someone in our family had died. He asked who. I said: 'My motivation.'",
+      "The optimist says: the glass is half full. The pessimist says: the glass is half empty. The undertaker says: the glass will do for the wake.",
+      "I went to a fortune teller. He said I only had a short time left to live. I asked: 'How long?' He said: '10... 9... 8...'",
+      "The doctor says: 'You have one more year.' The patient asks: 'And if I eat healthily?' Doctor: 'Then it'll feel like two.'",
+      "Why aren't mummies afraid of death? They've had it behind them for quite a while.",
+      "My therapist said I should talk about my dark thoughts. Now neither of us talks any more – he retired.",
+      "A man jumps off a bridge. A passer-by shouts: 'Why are you doing this?' The man: 'Loan paid off, now I'm free!'",
+      "What's the difference between an optimist and a skeleton? None – neither has anything left to lose.",
+      "I told my lawyer: 'Sort everything out in case I die.' He said: 'So you've finally made a will?' Me: 'No, I just stopped paying the rent.'",
+      "The Grim Reaper knocks. The tenant asks: 'Have you come for me?' Grim Reaper: 'No, I just sell magazine subscriptions, the scythe is a hobby.'",
+      "Why are funerals so quiet? Because nobody there has anything left to say.",
+      "I told the emergency doctor it was urgent. He asked: 'How urgent?' Me: 'Well, I've already ordered the candles for the funeral.'",
+      "My neighbour's death certificate gave the cause of death as: 'Died of joy.' He had won the lottery and then immediately saw his tax return.",
+      "Why is the cemetery the quietest place in town? Because everyone stays underground – except the worries, they keep coming back up.",
+      "The coach asks: 'What is offside?' The player answers: 'What I always am whenever I score a goal.'",
+      "Why are footballers so bad at maths? Because they only count how many chances they missed after the penalty shoot-out.",
+      "A referee goes to the optician. The optician says: 'Sorry, there's nothing I can do about professional blindness.'",
+      "The reporter asks the coach: 'How do you explain the 0-6 defeat?' – 'Quite simple: we should have scored more goals than the opponents.'",
+      "Why do goalkeepers always take their phone into the goal? In case nothing comes in again.",
+      "At half-time the coach says: 'Lads, we have to play differently!' A player asks: 'How?' – 'Better.'",
+      "What's the difference between a football fan and a baby? At some point the baby stops crying.",
+      "The journalist asks: 'Do you believe in miracles?' The coach: 'I have to, we're fighting relegation.'",
+      "Why does the striker always bring an umbrella? In case it rains chances – which he still won't take.",
+      "A fan goes to the doctor: 'Doctor, my heart is racing.' – 'Since when?' – 'Since the penalty shoot-out last week.'",
+      "A northern German asks a Bavarian: 'What do you say for good morning?' – 'Grias di.' – 'And for goodbye?' – 'Servus.' – 'Handy, so you don't even need a clock.'",
+      "A Swabian and a Berliner meet. The Swabian says: 'Des macht mr net.' The Berliner says: 'Wat willste damit sagen, wa?' In the end they only understand each other by nodding.",
+      "Why does the Swabian save letters when speaking? So there's something left over for the bank balance.",
+      "The Saxon asks: 'Wat machn mer heit?' The Rhinelander doesn't understand a word but laughs along, as always.",
+      "A Bavarian goes to Hamburg and orders a white sausage. The waiter asks: 'With or without mustard?' The Bavarian: 'As long as it's not with fish sauce.'",
+      "Why do people from Cologne and Düsseldorf never quite get along over a beer? Because one orders Kölsch and the other is offended when it's called Alt.",
+      "The East Frisian calls the weather service: 'What are we doing tomorrow?' – 'Rain.' – 'And the day after?' – 'Rain too.' – 'Fine, then I know what the whole year looks like.'",
+      "The Berliner says to the tourist: 'Wat guckste?' The tourist: 'I only asked where the station is.' – 'You can ask that too, wa.'",
+      "The boss says: 'We're one big family here!' – The employee asks: 'Does that mean I'll inherit the company one day?'",
+      "Meeting invitation: 'Quick update, 15 minutes.' Two hours later they haven't even got through the agenda.",
+      "The boss asks at the job interview: 'Where do you see yourself in 5 years?' – 'Honestly? In your office.'",
+      "The intern says: 'I have an idea how we can save time.' The boss: 'Very good, then start with the meetings about saving time.'",
+      "Why does the boss always have an open-door policy? So he can see who leaves on time.",
+      "Email from the boss at 11 pm: 'No rush, but I need this by tomorrow morning.'",
+      "The employee says: 'I need a higher salary, prices are going up everywhere.' The boss: 'Yes, that's why my returns aren't going up like they used to.'",
+      "Why do bosses love the word 'synergy'? Because it packages 'more work, same money' so much more elegantly.",
+      "The customer calls the tradesman: 'When are you coming?' – 'Between 8 and 4.' – 'On which day?' – 'I'll tell you at short notice.'",
+      "The apprentice asks: 'How long will the project take?' The master: 'Twice as long as I say, plus the time until the material arrives.'",
+      "Why do tradesmen always keep a pencil behind their ear? So they're guaranteed not to find it when they need it.",
+      "The customer says: 'That was a quick repair!' The tradesman: 'Yes, the fault was small. Getting here was the problem.'",
+      "The tradesman arrives at the agreed time. Everyone in the house is scared to death.",
+      "The master asks the apprentice: 'How do you measure twice?' – 'Exactly. And then you still cut it wrong once.'",
+      "Why do good tradesmen always bring spare parts? Because the first attempt usually breaks something that was fine before.",
+      "The boss asks the programmer: 'How much longer?' – 'It almost works already, just one small bug left.' (That was three weeks ago.)",
+      "Why are programmers afraid of real people? Because they don't behave as expected and you don't get an error message for it.",
+      "Support hotline: 'Have you tried turning it off and on again?' – 'Yes.' – 'Now once more, but this time for real.'",
+      "Why is the computer always sad? It has too many unsolved problems and nobody asks how it's doing.",
+      "The IT guy says: 'It's not a bug, it's a feature.' The customer says: 'Then I'd like to return the feature.'",
+      "Two bits meet. One asks: 'Are you 0 or 1?' – 'Depends who's asking.'",
+      "Why do programmers like dark mode? Because bugs can hide better in the light – or so they say.",
+      "The patient says: 'Doctor, it hurts when I press here with my finger.' The doctor: 'Then just don't do it.'",
+      "The doctor asks: 'Do you drink or smoke?' – 'No.' – 'Do you do sport?' – 'No.' – 'Then why do you even want to live to 100?'",
+      "The doctor says: 'You have to lose weight, do sport and stress less.' The patient: 'And what if I just take the pill for it?'",
+      "A man goes to the doctor: 'I keep hearing a beeping.' The doctor: 'That's your phone in the waiting room, you left it there.'",
+      "The patient asks: 'What are my chances?' The doctor: 'Good, as long as you don't google what you have.'",
+      "The doctor says: 'The diagnosis is clear.' The patient: 'And what is it?' The doctor: 'You waited too long to see a doctor.'",
+      "The tour guide asks: 'Is everyone here?' Someone shouts: 'No, my suitcase is doing even worse than me – it stayed in Istanbul.'",
+      "The tourist asks: 'Is the water clean here?' The local: 'Of course, only the tourists don't drink it.'",
+      "Why is the suitcase always heavier on the flight home? Because it carries all the holiday you didn't get to have.",
+      "The man at the check-in desk asks: 'Will my luggage fly to Munich too?' – 'No, it stays here and sends you postcards.'",
+      "The hotel guest says: 'My room has a sea view!' – 'Yes, if you stand on the balcony, climb onto the roof and use binoculars.'",
+      "Why do people book package holidays? So at least they know what they'll be complaining about.",
+      "The husband says: 'Darling, I couldn't find the remote.' She: 'It's all in the family calendar, where it is.'",
+      "The wife asks: 'What are you thinking about?' – 'Nothing.' – 'After 20 years of marriage I can tell you: that's impossible, but I believe you anyway.'",
+      "The couples therapist says: 'Talk to each other!' Both at once: 'That's exactly what I keep telling him/her!'",
+      "A married couple argue about who gives in more often. In the end one of them gives in to end the argument.",
+      "The husband says: 'I gave in so we'd finally have some peace.' His colleague asks: 'And, is there peace?' – 'No, now we're discussing why I always give in first.'",
+      "The registrar asks: 'Do you take each other?' Both: 'Yes.' He mutters: 'That was the hardest word for the next 30 years.'",
+      "The citizen asks: 'How long will the application take?' The official: 'That depends on how quickly you fill in the form for the other application.'",
+      "The official says: 'I'm not responsible, but I can tell you who else isn't responsible either.'",
+      "Why is the office always on lunch break when you arrive? To keep it fair – everyone has bad luck sometimes.",
+      "The citizen asks: 'Which documents do I need?' – 'All the ones you didn't bring.'",
+      "The clerk says: 'Your application is incomplete.' – 'What's missing?' – 'I'll tell you at the next appointment in six weeks.'",
+      "Why do forms at the office always have to be filled in twice? So you're sure to queue up twice.",
+      "The teacher asks: 'Who can tell me what absent-mindedness means?' The pupil stands up, thinks, and sits down again without saying anything.",
+      "The teacher says: 'My wife ate my homework.' – 'I don't have a wife.' – 'Then the dog did.'",
+      "The headmaster asks: 'Why are you late?' The teacher: 'A sign said: School – slow down.'",
+      "The teacher says: 'In 20 years nobody will ask you what you got in maths.' Pupil: 'Then why are we learning it now?'",
+      "The teacher asks: 'Who broke the window?' Silence. 'Fine, then the ball keeps practising penalties at break time.'",
+      "Why do teachers have the most patience in the world? Because every year they explain all over again why you don't play on your phone in class.",
+      "The coach asks: 'Why did you miss training?' – 'My alarm clock was set to rest day.'",
+      "The fitness trainer says: '3 more reps!' The participant thinks: 'He said that 10 reps ago too.'",
+      "Why is golf the most expensive sport? Because you keep needing new little white balls after sinking them in the water.",
+      "The jogger asks the cyclist: 'How much further?' – 'Depends whether we have the same idea of a quick lap round the block.'",
+      "The New Year's resolution says: 'I'm going to the gym regularly now.' February says: 'Oh, really?'",
+      "Why is bowling the most honest sport? Because the pins at least show you straight away how bad you really are.",
+      "The guest asks: 'Is the meat tender here?' The waiter: 'So tender you don't really need the knife - except to look at.'",
+      "The waiter says: 'Shall I bring you the bill?' The guest: 'I haven't even ordered yet.' – 'I'm just efficient.'",
+      "The guest asks: 'What do you recommend?' The waiter: 'Another restaurant, but if you want to stay here, the soup.'",
+      "The chef says: 'The dish needs another 20 minutes.' The waiter to the guest: 'The chef is being very creative right now, it takes time.'",
+      "The waiter asks: 'Was everything to your satisfaction?' The guest: 'Yes, apart from the waiting, the food and the bill.'",
+      "Why is tipping voluntary? So that at least one thing in a restaurant is still your own decision."
+];
+
     function zeigeGutenWitz(pool){
-      const liste = (pool && pool.length) ? pool : GUTE_WITZE;
+      const liste = (pool && pool.length) ? pool : (istEN ? GUTE_WITZE_EN : GUTE_WITZE);
       const w=liste[Math.floor(Math.random()*liste.length)];
       document.getElementById('jokeOfDay').textContent=w;
     }
@@ -1000,7 +1492,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         holeJokeApiWitz(),
         holeOfficialJokeApiWitz()
       ]);
-      const topf = [...GUTE_WITZE];
+      const topf = [...(istEN ? GUTE_WITZE_EN : GUTE_WITZE)];
       if(apiWitz1) topf.push(apiWitz1);
       if(apiWitz2) topf.push(apiWitz2);
       zeigeGutenWitz(topf);
@@ -1045,8 +1537,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       {text:"Erfahrung ist der Name, den jeder seinen Fehlern gibt.", author:"Oscar Wilde"}
     ];
 
+    const FALLBACK_QUOTES_EN=[{"text": "The journey is the destination.", "author": "Confucius (attributed)"}, {"text": "Knowledge is power.", "author": "Francis Bacon"}, {"text": "Strength lies in calmness.", "author": "Proverb"}, {"text": "Well begun is half done.", "author": "Aristotle"}, {"text": "It is only with the heart that one can see rightly.", "author": "Antoine de Saint-Exupéry"}, {"text": "The best is the enemy of the good.", "author": "Voltaire"}, {"text": "We cannot solve our problems with the same thinking we used when we created them.", "author": "Albert Einstein (attributed)"}, {"text": "I know that I know nothing.", "author": "Socrates (attributed)"}, {"text": "What does not kill me makes me stronger.", "author": "Friedrich Nietzsche"}, {"text": "Whoever knows the goal will find the way.", "author": "Laozi (attributed)"}, {"text": "It is not the strongest that survives, but the most adaptable.", "author": "after Charles Darwin"}, {"text": "Everything flows, nothing stands still.", "author": "Heraclitus"}, {"text": "The only way to do great work is to love what you do.", "author": "Steve Jobs"}, {"text": "Whether you think you can, or you think you can't – you're right.", "author": "Henry Ford"}, {"text": "Success is the sum of small efforts, repeated day in and day out.", "author": "Robert Collier"}, {"text": "It's not whether you get knocked down, it's whether you get up.", "author": "Vince Lombardi"}, {"text": "Quality is never an accident; it is always the result of intelligent effort.", "author": "John Ruskin"}, {"text": "Success occurs when opportunity meets preparation.", "author": "after Zig Ziglar"}, {"text": "The will to win is important, but the will to prepare is vital.", "author": "after Bobby Knight"}, {"text": "Pain is temporary, quitting lasts forever.", "author": "Endurance sports saying"}, {"text": "I never lose. I either win or learn.", "author": "Nelson Mandela (attributed)"}, {"text": "I'm not fat, I'm just slightly over-developed.", "author": "Popular saying"}, {"text": "Work is the best way to kill time you would otherwise have spent doing nothing.", "author": "Oscar Wilde (attributed)"}, {"text": "I don't mind hard work – I can sit next to it for hours.", "author": "Popular saying"}, {"text": "The early bird can keep the worm, I'm sleeping in.", "author": "Popular saying"}, {"text": "Experience is simply the name we give our mistakes.", "author": "Oscar Wilde"}];
     function zeigeFallbackZitat(){
-      const q=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];
+      const zl=istEN ? FALLBACK_QUOTES_EN : FALLBACK_QUOTES;
+      const q=zl[Math.floor(Math.random()*zl.length)];
       document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
     }
 
@@ -1125,6 +1619,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       {text:"Warum ist der Rum immer weg?", author:"Jack Sparrow, Fluch der Karibik"}
     ];
 
+    const FALLBACK_MOVIE_QUOTES_EN=[{"text": "If you pray for rain, you gotta deal with the mud too.", "author": "Robert McCall, The Equalizer"}, {"text": "I don't have friends. I got family.", "author": "Dominic Toretto, Fast & Furious"}, {"text": "May the odds be ever in your favor.", "author": "The Hunger Games"}, {"text": "I didn't avoid danger, I went looking for it.", "author": "Iron Man"}, {"text": "Hope is a good thing, maybe the best of things.", "author": "Andy Dufresne, The Shawshank Redemption"}, {"text": "It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.", "author": "Rocky Balboa"}, {"text": "Hard times make strong people.", "author": "after the Miyagi principle, The Karate Kid"}, {"text": "A man sees what he wants to see.", "author": "The Godfather Part II"}, {"text": "I'll be back.", "author": "The Terminator"}, {"text": "Hasta la vista, baby.", "author": "Terminator 2: Judgment Day"}, {"text": "May the Force be with you.", "author": "Star Wars"}, {"text": "No, I am your father.", "author": "Star Wars: The Empire Strikes Back"}, {"text": "Life, uh, finds a way.", "author": "Ian Malcolm, Jurassic Park"}, {"text": "I am Groot.", "author": "Guardians of the Galaxy"}, {"text": "With great power comes great responsibility.", "author": "Spider-Man"}, {"text": "Yippee-ki-yay!", "author": "John McClane, Die Hard"}, {"text": "I see dead people.", "author": "The Sixth Sense"}, {"text": "You're gonna need a bigger boat.", "author": "Jaws"}, {"text": "Bond. James Bond.", "author": "James Bond series"}, {"text": "I have a very particular set of skills.", "author": "Taken"}, {"text": "Why so serious?", "author": "Joker, The Dark Knight"}, {"text": "Houston, we have a problem.", "author": "Apollo 13"}, {"text": "I love the smell of napalm in the morning.", "author": "Apocalypse Now"}, {"text": "Where we're going, we don't need roads.", "author": "Back to the Future"}, {"text": "Life is like a box of chocolates. You never know what you're gonna get.", "author": "Forrest Gump"}, {"text": "Here's looking at you, kid.", "author": "Casablanca"}, {"text": "You talkin' to me?", "author": "Travis Bickle, Taxi Driver"}, {"text": "Seize the day, boys. Carpe diem.", "author": "Dead Poets Society"}, {"text": "I'm the king of the world!", "author": "Titanic"}, {"text": "Frankly, my dear, I don't give a damn.", "author": "Gone with the Wind"}, {"text": "Elementary, my dear Watson.", "author": "Sherlock Holmes"}, {"text": "One Ring to rule them all, One Ring to find them.", "author": "The Lord of the Rings"}, {"text": "A wizard is never late, nor is he early. He arrives precisely when he means to.", "author": "Gandalf, The Lord of the Rings"}, {"text": "Always.", "author": "Severus Snape, Harry Potter"}, {"text": "I'll have what she's having.", "author": "When Harry Met Sally"}, {"text": "I'm not fat, I'm fluffy.", "author": "Despicable Me"}, {"text": "That's not my bag, baby.", "author": "Austin Powers"}, {"text": "I'm the Dude.", "author": "The Big Lebowski"}, {"text": "That escalated quickly.", "author": "Anchorman"}, {"text": "Chantal, cry quietly!", "author": "Suck Me Shakespeer (Fack ju Göhte)"}, {"text": "To infinity and beyond!", "author": "Toy Story"}, {"text": "Hakuna Matata!", "author": "The Lion King"}, {"text": "Ohana means family. Family means nobody gets left behind.", "author": "Lilo & Stitch"}, {"text": "Some people are worth melting for.", "author": "Frozen"}, {"text": "Just keep swimming.", "author": "Finding Nemo"}, {"text": "I have a bad feeling about this.", "author": "Star Wars series"}, {"text": "I'm Winston Wolfe. I solve problems.", "author": "Pulp Fiction"}, {"text": "You can't handle the truth!", "author": "A Few Good Men"}, {"text": "It's the choices that make us who we are.", "author": "Peter Parker, Spider-Man 3"}, {"text": "I always tell the truth. Even when I lie.", "author": "Scarface"}, {"text": "Your crazy matches my crazy.", "author": "Deadpool"}, {"text": "Promises are like pie crusts, made to be broken.", "author": "Sherlock Holmes: A Game of Shadows"}, {"text": "I carried a watermelon.", "author": "Dirty Dancing"}, {"text": "I can only show you the door. You're the one that has to walk through it.", "author": "Morpheus, The Matrix"}, {"text": "Everything that has a beginning has an end.", "author": "The Matrix Revolutions"}, {"text": "Avengers, assemble!", "author": "The Avengers"}, {"text": "Some men just want to watch the world burn.", "author": "Alfred, The Dark Knight"}, {"text": "Are you not entertained?", "author": "Maximus, Gladiator"}, {"text": "Why is the rum always gone?", "author": "Jack Sparrow, Pirates of the Caribbean"}];
     let quoteMode = 'allgemein';
 
     function setQuoteMode(mode){
@@ -1132,12 +1627,14 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       if(mode==='allgemein'){
         renderGeneral();
       } else {
-        const q=FALLBACK_MOVIE_QUOTES[Math.floor(Math.random()*FALLBACK_MOVIE_QUOTES.length)];
+        const fl=istEN ? FALLBACK_MOVIE_QUOTES_EN : FALLBACK_MOVIE_QUOTES;
+        const q=fl[Math.floor(Math.random()*fl.length)];
         document.getElementById('quoteGeneral').textContent=`${q.text} — ${q.author}`;
       }
     }
 
     async function uebersetzeInsDeutsche(text){
+      if(istEN) return text; // Englisch: Originaltext der Quelle zeigen
       try{
         const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|de`, {cache:"no-store"});
         if(!res.ok) throw new Error('Übersetzungsfehler');
@@ -1152,7 +1649,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     async function renderGeneral(){
       const el=document.getElementById('quoteGeneral');
-      el.textContent="Zitat wird geladen…";
+      el.textContent=T("Zitat wird geladen…");
       try{
         const res=await fetch('https://dummyjson.com/quotes/random', {cache:"no-store"});
         if(!res.ok) throw new Error('Netzwerkfehler');
@@ -1229,7 +1726,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     }
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17";
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17"+(istEN?"_en":"");
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
@@ -1317,10 +1814,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     // Wandelt einen gültigen Date-Zeitpunkt in Berliner Zeit (MEZ/MESZ, automatisch mit Sommerzeit) um.
     function berlinUhrzeit(date){
-      return date.toLocaleTimeString('de-DE', {timeZone:'Europe/Berlin', hour:'2-digit', minute:'2-digit'});
+      return date.toLocaleTimeString(LOC, {timeZone:'Europe/Berlin', hour:'2-digit', minute:'2-digit'});
     }
     function berlinDatum(date){
-      return date.toLocaleDateString('de-DE', {timeZone:'Europe/Berlin', day:'2-digit', month:'2-digit'});
+      return date.toLocaleDateString(LOC, {timeZone:'Europe/Berlin', day:'2-digit', month:'2-digit'});
     }
 
     function verarbeiteEvent(ev){
@@ -1631,9 +2128,9 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const s=(rohStatus||"").trim();
       if(/^\d+['’]?\+?\d*$/.test(s)) return s.replace(/['’]/,'')+"'"; // z.B. "63" oder "45+2" -> "63'"
       if(/^\d+$/.test(s)) return s+"'";
-      if(/ht|halbzeit|half.?time/i.test(s)) return "HZ";
-      if(/^1h$/i.test(s)) return "1. HZ";
-      if(/^2h$/i.test(s)) return "2. HZ";
+      if(/ht|halbzeit|half.?time/i.test(s)) return T("HZ");
+      if(/^1h$/i.test(s)) return T("1. HZ");
+      if(/^2h$/i.test(s)) return T("2. HZ");
       return s || "LIVE";
     }
 
@@ -1641,10 +2138,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const box=document.getElementById('footballBox');
       spiele=nurNaechsteTage(spiele); // FESTE REGEL: max. 7 Tage im Voraus
       const fallbackHinweis = istFallback
-        ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">⚠️ Hauptquelle gerade nicht erreichbar – Ersatzquellen aktiv: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League und Länderspiele. Einzelne Spiele können fehlen.</div>'
+        ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">'+T('⚠️ Hauptquelle gerade nicht erreichbar – Ersatzquellen aktiv: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League und Länderspiele. Einzelne Spiele können fehlen.')+'</div>'
         : '';
       if(!spiele || spiele.length===0){
-        box.innerHTML=fallbackHinweis+'In den nächsten 7 Tagen spielt keine der ausgewählten Mannschaften.';
+        box.innerHTML=fallbackHinweis+T('In den nächsten 7 Tagen spielt keine der ausgewählten Mannschaften.');
         return;
       }
       let html=fallbackHinweis;
@@ -1655,26 +2152,26 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
           const minute=formatiereSpielminute(s.rohStatus);
           ergebnisTeil=`<strong style="color:#e63946">🔴 ${s.heimTor}:${s.gastTor} (${minute})</strong>`;
         }else if(s.status==="beendet"){
-          ergebnisTeil=`<strong style="color:#0a58ca">Endstand ${s.heimTor}:${s.gastTor}</strong>`;
+          ergebnisTeil=`<strong style="color:#0a58ca">${T('Endstand')} ${s.heimTor}:${s.gastTor}</strong>`;
         }else if(s.stundenSeitAnstoss>0){
-          ergebnisTeil=`Angepfiffen ${datumStr}, ${s.zeit} Uhr – Ergebnis folgt`;
+          ergebnisTeil=T('Angepfiffen {d}, {z} Uhr – Ergebnis folgt',{d:datumStr,z:s.zeit});
         }else{
-          ergebnisTeil=`${datumStr}${s.zeit? ', '+s.zeit+' Uhr':''}`;
+          ergebnisTeil=`${datumStr}${s.zeit? ', '+T('{z} Uhr',{z:s.zeit}):''}`;
         }
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+s.wettbewerb:''}</span></div>`;
+        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+T(s.wettbewerb):''}</span></div>`;
       });
       box.innerHTML=html;
     }
 
     function zeigeFussballFehler(){
       const box=document.getElementById('footballBox');
-      box.innerHTML='⚠️ Fußball-Daten aktuell nicht erreichbar (Quelle überlastet oder kein Internet). '
-        + '<a href="#" id="fussballRetryBtn" style="color:#0066cc;text-decoration:underline;">Erneut versuchen</a>';
+      box.innerHTML=T('⚠️ Fußball-Daten aktuell nicht erreichbar (Quelle überlastet oder kein Internet).')+' '
+        + '<a href="#" id="fussballRetryBtn" style="color:#0066cc;text-decoration:underline;">'+T('Erneut versuchen')+'</a>';
       const btn=document.getElementById('fussballRetryBtn');
       if(btn){
         btn.addEventListener('click', function(e){
           e.preventDefault();
-          box.innerHTML='Spiele werden geladen…';
+          box.innerHTML=T('Spiele werden geladen…');
           ladeFussballTopspiele(1);
         });
       }
@@ -1942,7 +2439,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
         // --- 1. DATENPRÜFUNG ---
         if (isNaN(d_ref_half_measured) || isNaN(count_ref) || isNaN(d_curr_half_measured) || isNaN(cpm) || cpm <= 0) {
-            showError("Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein).");
+            showError(T("Bitte füllen Sie alle vier Felder mit gültigen Zahlen aus (Kontakte/m muss > 0 sein)."));
             return;
         }
 
@@ -1952,11 +2449,11 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
         // --- 3. GÜLTIGKEITSPRÜFUNG ---
         if (d_ref_calculated <= D_INNER || d_current_calculated <= D_INNER) {
-            showError("Eine Messung ist zu groß. Der berechnete Durchmesser liegt unter dem Kern (" + D_INNER + " cm).");
+            showError(T("Eine Messung ist zu groß. Der berechnete Durchmesser liegt unter dem Kern ({d} cm).",{d:D_INNER}));
             return;
         }
         if (d_ref_calculated > currentDMax || d_current_calculated > currentDMax) {
-            showError("Eine Messung ist zu klein. Der berechnete Durchmesser ist größer als D_Max (" + currentDMax + " cm).");
+            showError(T("Eine Messung ist zu klein. Der berechnete Durchmesser ist größer als D_Max ({d} cm).",{d:currentDMax}));
             return;
         }
 
@@ -1986,10 +2483,10 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
         // --- 6. AUSGABE ---
         elOutputRefD.innerText = d_ref_calculated.toFixed(1) + ' cm';
-        elOutputCurrD.innerText = d_current_calculated.toFixed(1).replace('.',',') + ' cm';
+        elOutputCurrD.innerText = dez(d_current_calculated.toFixed(1)) + ' cm';
         elOutputFactorF.innerText = factor_F.toFixed(4) + ' cm²/m';
         
-        elResultVal.innerText = resultCount.toLocaleString('de-DE');
+        elResultVal.innerText = resultCount.toLocaleString(LOC);
         elResultBox.style.display = 'block';
         speichereDurchmesserKalibrierung();
     }
@@ -2098,11 +2595,11 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         if (['gewLeer','gewVoll','gewVollStueck','gewAktuell'].some(id => document.getElementById(id).value.trim() === '')) return;
 
         if (isNaN(leerGewicht) || isNaN(vollGewicht) || isNaN(vollStueck) || isNaN(aktGewicht) || leerGewicht < 0 || vollGewicht <= 0 || vollStueck <= 0 || aktGewicht < 0) {
-            showError('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).', 'errorBoxGewicht');
+            showError(T('Bitte alle Felder mit gültigen Zahlen ausfüllen (Vollgewicht und Stückzahl müssen größer als 0 sein).'), 'errorBoxGewicht');
             return;
         }
         if (vollGewicht - leerGewicht <= PAPIER_VOLLE_SPULE_KG) {
-            showError('Das Vollgewicht muss größer als das Leergewicht der Spule sein.', 'errorBoxGewicht');
+            showError(T('Das Vollgewicht muss größer als das Leergewicht der Spule sein.'), 'errorBoxGewicht');
             return;
         }
 
@@ -2121,13 +2618,13 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
         let hinweis = '';
         if (aktGewicht > vollGewicht) {
-            hinweis = ' ⚠️ über Vollgewicht - Werte prüfen';
+            hinweis = ' ' + T('⚠️ über Vollgewicht - Werte prüfen');
         } else if (bandgewichtAktuellKg < 0) {
-            hinweis = ' ⚠️ unter Leergewicht - Werte prüfen';
+            hinweis = ' ' + T('⚠️ unter Leergewicht - Werte prüfen');
         }
 
-        elResultGewichtProStueck.innerText = (gewichtProStueckKg * 1000).toFixed(4).replace('.',',') + ' g/Stück';
-        elResultValGewicht.innerText = resultCount.toLocaleString('de-DE');
+        elResultGewichtProStueck.innerText = dez((gewichtProStueckKg * 1000).toFixed(4)) + ' ' + T('g/Stück');
+        elResultValGewicht.innerText = resultCount.toLocaleString(LOC);
         if (hinweis) showError(hinweis.trim(), 'errorBoxGewicht'); // Warnung klein darüber statt in der großen Zahl
         elResultBoxGewicht.style.display = 'block';
         speichereGewichtKalibrierung();
@@ -2295,7 +2792,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       teilenBtn.style.display = 'none';
 
       if(!benutzer || !passwort){
-        ausgabe.innerHTML = '<div style="color:red;font-size:13px;">Bitte Benutzername und Passwort eingeben.</div>';
+        ausgabe.innerHTML = '<div style="color:red;font-size:13px;">'+T('Bitte Benutzername und Passwort eingeben.')+'</div>';
         return;
       }
 
@@ -2380,7 +2877,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       teilenBtn.style.display = 'none';
 
       if(!text){
-        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">Bitte Text oder Nummer eingeben.</div><svg id="barcodeSvg"></svg>';
+        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">'+T('Bitte Text oder Nummer eingeben.')+'</div><svg id="barcodeSvg"></svg>';
         return;
       }
 
@@ -2395,7 +2892,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         });
         teilenBtn.style.display = 'block';
       }catch(e){
-        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">Ungültige Eingabe für Strichcode.</div><svg id="barcodeSvg"></svg>';
+        document.getElementById('barcodeAusgabe').innerHTML = '<div style="color:red;font-size:13px;">'+T('Ungültige Eingabe für Strichcode.')+'</div><svg id="barcodeSvg"></svg>';
       }
     }
 
@@ -2465,20 +2962,20 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       let inhaltHtml = '';
       if(wlan){
         inhaltHtml = `
-          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ WLAN-Code erkannt!</div>
+          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">${T('✅ WLAN-Code erkannt!')}</div>
           <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;">
-            <div><strong>📶 Netzwerk:</strong> ${escapeHtml(wlan.S)}</div>
-            <div style="margin-top:4px;"><strong>🔑 Passwort:</strong> ${wlan.P ? escapeHtml(wlan.P) : '(kein Passwort)'}</div>
-            <div style="margin-top:4px;"><strong>Verschlüsselung:</strong> ${escapeHtml(wlan.T || 'unbekannt')}</div>
+            <div><strong>${T('📶 Netzwerk:')}</strong> ${escapeHtml(wlan.S)}</div>
+            <div style="margin-top:4px;"><strong>${T('🔑 Passwort:')}</strong> ${wlan.P ? escapeHtml(wlan.P) : T('(kein Passwort)')}</div>
+            <div style="margin-top:4px;"><strong>${T('Verschlüsselung:')}</strong> ${escapeHtml(wlan.T || T('unbekannt'))}</div>
           </div>
-          <button type="button" onclick="kopiereQrErgebnis('passwort')" style="margin-top:10px;">📋 Passwort kopieren</button>`;
+          <button type="button" onclick="kopiereQrErgebnis('passwort')" style="margin-top:10px;">${T('📋 Passwort kopieren')}</button>`;
       }else{
         inhaltHtml = `
-          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">✅ QR-Code erkannt!</div>
-          <label style="margin-top:0;">Inhalt:</label>
+          <div style="color:#1a7d1a;font-weight:bold;font-size:15px;margin-bottom:6px;">${T('✅ QR-Code erkannt!')}</div>
+          <label style="margin-top:0;">${T('Inhalt:')}</label>
           <div style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;
                       font-family:monospace;font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:5px;">${escapeHtml(text)}</div>
-          <button type="button" onclick="kopiereQrErgebnis('rohtext')" style="margin-top:10px;">📋 Text kopieren</button>`;
+          <button type="button" onclick="kopiereQrErgebnis('rohtext')" style="margin-top:10px;">${T('📋 Text kopieren')}</button>`;
       }
 
       box.innerHTML = `<div style="width:100%;text-align:left;">${inhaltHtml}</div>`;
@@ -2502,15 +2999,15 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
       const stopBtn = document.getElementById('qrKameraStopBtn');
 
       if(location.protocol !== 'https:' && location.hostname !== 'localhost'){
-        zeigeQrLeseErgebnis(null, 'Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über ' + location.protocol + ' – bitte über https:// aufrufen.');
+        zeigeQrLeseErgebnis(null, T('Kamera braucht eine sichere Verbindung (https). Diese Seite läuft aktuell über {p} – bitte über https:// aufrufen.',{p:location.protocol}));
         return;
       }
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        zeigeQrLeseErgebnis(null, 'Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen.');
+        zeigeQrLeseErgebnis(null, T('Dieser Browser/diese Ansicht unterstützt keinen Kamera-Zugriff (z.B. wenn die Seite in einer eingebetteten Vorschau statt im richtigen Browser geöffnet ist). Bitte die Seite direkt in Safari/Chrome öffnen.'));
         return;
       }
       if(typeof jsQR === 'undefined'){
-        zeigeQrLeseErgebnis(null, 'Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.');
+        zeigeQrLeseErgebnis(null, T('Die Lese-Funktion ist gerade nicht verfügbar (Bibliothek konnte nicht geladen werden). Bitte Seite neu laden und erneut versuchen.'));
         return;
       }
 
@@ -2561,15 +3058,15 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     function formatiereKameraFehler(e){
       if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
-        return 'Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf "Erlauben" stellen, dann die Seite neu laden.';
+        return T('Kamera-Zugriff wurde blockiert. Bitte in den iPhone-Einstellungen unter Safari (bzw. dem verwendeten Browser) → Kamera auf "Erlauben" stellen, dann die Seite neu laden.');
       }else if(e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError'){
-        return 'Es wurde keine Kamera gefunden.';
+        return T('Es wurde keine Kamera gefunden.');
       }else if(e.name === 'NotReadableError' || e.name === 'TrackStartError'){
-        return 'Die Kamera wird gerade von einer anderen App benutzt.';
+        return T('Die Kamera wird gerade von einer anderen App benutzt.');
       }else if(e.name === 'SecurityError'){
-        return 'Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.';
+        return T('Kamera-Zugriff aus Sicherheitsgründen blockiert (evtl. eingebettete Vorschau statt echter Browser). Bitte die Seite direkt in Safari/Chrome öffnen.');
       }
-      return 'Kein Kamera-Zugriff möglich (' + (e.name || e.message || 'unbekannter Fehler') + ').';
+      return T('Kein Kamera-Zugriff möglich ({f}).',{f:(e.name || e.message || T('unbekannter Fehler'))});
     }
 
     function stoppeQrKamera(){
@@ -2679,6 +3176,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     let startX = 0, startY = 0;
 
     function starteTimer(e){
+      if (e && e.target && e.target.closest && e.target.closest(".sprach-btn")) return; // Flaggen normal antippbar
       if (e) e.preventDefault();
       if (e && e.touches && e.touches[0]){
         startX = e.touches[0].clientX;
