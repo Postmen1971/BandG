@@ -674,7 +674,7 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
         <a href="https://liveonsat.com/" target="_blank" rel="noopener" title="Zeigt, welcher TV-Sender/Stream das Spiel überträgt" style="display:inline-flex;align-items:center;gap:4px;text-decoration:underline;color:#0066cc;font-weight:normal;font-size:0.8em;">📺 Sender-Übersicht</a>
       </h3>
       <div id="footballBox">Spiele werden geladen…</div>
-      <div class="small">Nächste Spiele deiner Lieblingsvereine sowie aller europäischen Nationalmannschaften.</div>
+      <div class="small">Spiele der nächsten 7 Tage: deine Lieblingsvereine und alle europäischen Nationalmannschaften.</div>
     </div>
   </div>
 
@@ -1216,7 +1216,17 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
     // ESPN lehnt Datumsbereiche (z.B. 20260924-20261009) mit Fehler 400 ab - das war der Grund,
     // warum v16 keine Länderspiele zeigte. Deshalb wird jetzt TAGEWEISE abgefragt:
     // gestern, heute und die nächsten LAENDERSPIEL_TAGE_VORAUS Tage.
-    const LAENDERSPIEL_TAGE_VORAUS=7;
+    // ================================================================================
+    // FESTE REGEL (von Aziz vorgegeben, bei keinem Update ändern):
+    // Der Fußball-LiveScore zeigt NUR Spiele bis maximal 7 Tage im Voraus – nichts darüber hinaus.
+    // Gilt für Vereine, Länderspiele, Ersatzquellen und Cache gleichermaßen (Filter in zeigeFussballErgebnis).
+    // ================================================================================
+    const FUSSBALL_TAGE_VORAUS=7;
+    const LAENDERSPIEL_TAGE_VORAUS=FUSSBALL_TAGE_VORAUS;
+    function nurNaechsteTage(spiele){
+      const grenze=Date.now()+FUSSBALL_TAGE_VORAUS*24*3600000;
+      return (spiele||[]).filter(s=>{ const t=new Date(s.kickoff).getTime(); return isNaN(t) || t<=grenze; });
+    }
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
     const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17";
@@ -1629,11 +1639,12 @@ Keine weiteren Erklärungen. Antworte auf Deutsch.
 
     function zeigeFussballErgebnis(spiele, ausCache, istFallback){
       const box=document.getElementById('footballBox');
+      spiele=nurNaechsteTage(spiele); // FESTE REGEL: max. 7 Tage im Voraus
       const fallbackHinweis = istFallback
         ? '<div style="color:#a15c00;font-size:12px;margin-bottom:6px;">⚠️ Hauptquelle gerade nicht erreichbar – Ersatzquellen aktiv: Bundesliga, Premier League, La Liga, Serie A, Ligue 1, Champions League und Länderspiele. Einzelne Spiele können fehlen.</div>'
         : '';
       if(!spiele || spiele.length===0){
-        box.innerHTML=fallbackHinweis+'Aktuell spielt keiner der europäischen Top-Mannschaften heute.';
+        box.innerHTML=fallbackHinweis+'In den nächsten 7 Tagen spielt keine der ausgewählten Mannschaften.';
         return;
       }
       let html=fallbackHinweis;
