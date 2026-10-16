@@ -1726,7 +1726,7 @@ No further explanations. Answer in English.
     }
     const SPORTSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
     const TEAMID_CACHE_KEY="galvanikFussballTeamIds";
-    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17"+(istEN?"_en":"");
+    const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v18"+(istEN?"_en":"");
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
     // FESTE TheSportsDB-IDs für ALLE Lieblingsvereine (geprüft am 16.10.2026 auf den Ligaseiten von
@@ -2014,19 +2014,10 @@ No further explanations. Answer in English.
       return listen.flat();
     }
 
-    async function ladeFussballTopspiele(versuch){
+    // RESERVE (bis 16.10.2026 Hauptquelle): TheSportsDB + football-data-Proxy + OpenLigaDB.
+    // Läuft nur noch, wenn ESPN gar nicht antwortet (siehe ladeFussballTopspiele weiter unten).
+    async function ladeFussballReserve(versuch){
       versuch = versuch || 1;
-
-      // Cache prüfen (nur beim ersten Versuch)
-      if(versuch===1){
-        try{
-          const cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY));
-          if(cached && (Date.now()-cached.zeitstempel < FIXTURES_TTL_MS)){
-            zeigeFussballErgebnis(cached.daten, true);
-            return;
-          }
-        }catch(e){}
-      }
 
       const teamIdCache=ladeTeamIdCache();
       let alleSpiele=[];
@@ -2083,7 +2074,7 @@ No further explanations. Answer in English.
       if(erfolgsquote < 0.2){
         if(versuch < 2){
           await warteMs(2000);
-          return ladeFussballTopspiele(versuch+1);
+          return ladeFussballReserve(versuch+1);
         }
 
         const [proxyErgebnis, openligaErgebnis] = await Promise.all([
@@ -2131,6 +2122,144 @@ No further explanations. Answer in English.
       try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:eindeutig})); }catch(e){}
 
       zeigeFussballErgebnis(eindeutig, false);
+    }
+
+    /* ================================================================================
+       HAUPTQUELLE VEREINE (seit 16.10.2026): ESPN – schnell, ohne Gratis-Limit, alle Wettbewerbe.
+       1) Spielplan pro Verein (feste ESPN-IDs, eine Abfrage je Verein): Liga, Champions League,
+          Europa League, Pokal, Testspiele – Heim UND Auswärts.
+       2) Live-Stand und Endstand kommen von ESPNs Live-Anzeigetafeln (heute + gestern) der
+          Wettbewerbe, in denen unsere Vereine spielen – der Vereins-Spielplan selbst wird
+          nicht live aktualisiert.
+       Neuer Verein: Namen in LIEBLINGSVEREINE UND hier seine ESPN-ID eintragen
+       (zu finden unter site.api.espn.com/apis/site/v2/sports/soccer/<liga>/teams).
+       ================================================================================ */
+    const ESPN_VEREINE={
+      "Galatasaray":"432", "Besiktas":"1895", "Fenerbahce":"436", "Trabzonspor":"997",
+      "Borussia Dortmund":"124", "Bayern Munich":"132", "VfB Stuttgart":"134",
+      "Real Madrid":"86", "Barcelona":"83",
+      "Juventus":"111", "Inter Milan":"110", "Napoli":"114",
+      "Manchester City":"382", "Liverpool":"364", "Arsenal":"359",
+      "Paris SG":"160"
+    };
+    const ESPN_VEREIN_IDS=new Set(Object.values(ESPN_VEREINE));
+    // Wettbewerbe, deren Anzeigetafel immer abgefragt wird (weitere kommen automatisch aus den Spielplänen dazu)
+    const ESPN_STANDARD_WETTBEWERBE=["ger.1","eng.1","esp.1","ita.1","fra.1","tur.1","uefa.champions","uefa.europa","uefa.europa.conf"];
+    const ABFRAGE_ZEITLIMIT_MS=8000;
+
+    // fetch mit Zeitlimit: eine hängende Quelle hält nicht mehr die ganze Liste auf
+    async function holeJsonMitZeitlimit(url){
+      const steuerung = (typeof AbortController!=="undefined") ? new AbortController() : null;
+      const timer = steuerung ? setTimeout(()=>steuerung.abort(), ABFRAGE_ZEITLIMIT_MS) : null;
+      try{
+        const res=await fetch(url, steuerung ? {cache:"no-store", signal:steuerung.signal} : {cache:"no-store"});
+        if(!res.ok) return null;
+        return await res.json();
+      }catch(e){ return null; }
+      finally{ if(timer) clearTimeout(timer); }
+    }
+
+    function espnTor(c){
+      if(!c || c.score===undefined || c.score===null) return null;
+      const roh = (typeof c.score==="object") ? (c.score.displayValue!==undefined ? c.score.displayValue : c.score.value) : c.score;
+      const n=parseInt(roh,10);
+      return isNaN(n) ? null : n;
+    }
+
+    // Wandelt ein ESPN-Spiel (aus Spielplan ODER Anzeigetafel) in unser Anzeigeformat um
+    function espnVereinsSpiel(ev, wettbewerbErsatz){
+      const comp=ev && ev.competitions && ev.competitions[0];
+      if(!comp || !Array.isArray(comp.competitors)) return null;
+      const heimC=comp.competitors.find(c=>c.homeAway==="home") || comp.competitors[0];
+      const gastC=comp.competitors.find(c=>c.homeAway==="away") || comp.competitors[1];
+      if(!heimC || !gastC || !heimC.team || !gastC.team) return null;
+      if(!ESPN_VEREIN_IDS.has(String(heimC.team.id)) && !ESPN_VEREIN_IDS.has(String(gastC.team.id))) return null;
+      const kickoff=new Date(ev.date);
+      if(isNaN(kickoff.getTime())) return null;
+      const st=ev.status || comp.status || {};
+      const typ=st.type || {};
+      if(/postponed|canceled|cancelled|abandoned/i.test(typ.name||"")) return null;
+      let status="geplant", heimTor=null, gastTor=null;
+      if(typ.state==="in" || typ.state==="post"){
+        heimTor=espnTor(heimC); gastTor=espnTor(gastC);
+        if(heimTor!==null && gastTor!==null) status = typ.state==="post" ? "beendet" : "live";
+      }
+      const liga=ev.league || {};
+      return {
+        id:String(ev.id||""), slug:liga.slug||"",
+        heim:heimC.team.displayName||heimC.team.name||"?", auswaerts:gastC.team.displayName||gastC.team.name||"?",
+        datum:berlinDatum(kickoff), zeit:berlinUhrzeit(kickoff),
+        wettbewerb: liga.abbreviation || liga.name || wettbewerbErsatz || "",
+        heimTor, gastTor, status, kickoff, stundenSeitAnstoss:(Date.now()-kickoff.getTime())/3600000,
+        rohStatus: typ.shortDetail || st.displayClock || ""
+      };
+    }
+
+    async function holeVereinsSpielplanESPN(espnId){
+      const data=await holeJsonMitZeitlimit(`${ESPN_BASE}/all/teams/${espnId}/schedule?fixture=true`);
+      if(!data || !Array.isArray(data.events)) return {ok:false, spiele:[]};
+      return {ok:true, spiele:data.events.map(ev=>espnVereinsSpiel(ev)).filter(Boolean)};
+    }
+
+    async function holeAnzeigetafelESPN(slug, tag){
+      const data=await holeJsonMitZeitlimit(`${ESPN_BASE}/${slug}/scoreboard?dates=${tag}`);
+      if(!data || !Array.isArray(data.events)) return [];
+      const lg=(Array.isArray(data.leagues) && data.leagues[0]) || {};
+      return data.events.map(ev=>{
+        if(!ev.league) ev.league={slug, abbreviation:lg.abbreviation, name:lg.name};
+        return espnVereinsSpiel(ev, lg.abbreviation||lg.name);
+      }).filter(Boolean);
+    }
+
+    async function ladeVereineESPN(){
+      const heute=espnDatum(new Date()), gestern=espnDatum(new Date(Date.now()-24*3600000));
+      const tafelAuftraege=new Set();
+      ESPN_STANDARD_WETTBEWERBE.forEach(sl=>{ tafelAuftraege.add(sl+"|"+heute); tafelAuftraege.add(sl+"|"+gestern); });
+      // Spielpläne und Standard-Anzeigetafeln gleichzeitig holen
+      const [plaene, tafeln1]=await Promise.all([
+        Promise.all(Object.values(ESPN_VEREINE).map(holeVereinsSpielplanESPN)),
+        Promise.all([...tafelAuftraege].map(a=>{ const [sl,t]=a.split("|"); return holeAnzeigetafelESPN(sl,t); }))
+      ]);
+      const okAnzahl=plaene.filter(p=>p.ok).length;
+      const ausPlan=plaene.flatMap(p=>p.spiele);
+      // Laufende/kürzlich begonnene Spiele aus weiteren Wettbewerben (z.B. Pokal, Testspiel) nachladen
+      const extra=new Set();
+      ausPlan.forEach(sp=>{
+        if(sp.slug && sp.stundenSeitAnstoss>-1 && sp.stundenSeitAnstoss<=ERGEBNIS_SICHTBAR_STUNDEN){
+          const t=espnDatum(sp.kickoff), a=sp.slug+"|"+t;
+          if(!tafelAuftraege.has(a)){ tafelAuftraege.add(a); extra.add(a); }
+        }
+      });
+      const tafeln2=await Promise.all([...extra].map(a=>{ const [sl,t]=a.split("|"); return holeAnzeigetafelESPN(sl,t); }));
+      // Zusammenführen: Anzeigetafel (live) gewinnt gegenüber dem Spielplan
+      const karte=new Map();
+      ausPlan.forEach(sp=>karte.set(sp.id||(sp.heim+sp.auswaerts+sp.datum), sp));
+      [...tafeln1.flat(), ...tafeln2.flat()].forEach(sp=>{
+        const k=sp.id||(sp.heim+sp.auswaerts+sp.datum), alt=karte.get(k);
+        if(!alt || sp.status!=="geplant" || alt.status==="geplant"){
+          if(alt && alt.wettbewerb) sp.wettbewerb=alt.wettbewerb; // Namen aus dem Spielplan behalten
+          karte.set(k, sp);
+        }
+      });
+      return {ok: okAnzahl>0, spiele:[...karte.values()]};
+    }
+
+    // Hauptablauf: letzten Stand sofort zeigen, dann frisch laden (ESPN), ESPN aus -> Reserve
+    async function ladeFussballTopspiele(){
+      let cached=null;
+      try{ cached=JSON.parse(localStorage.getItem(FIXTURES_CACHE_KEY)); }catch(e){}
+      if(cached && Array.isArray(cached.daten)){
+        cached.daten.forEach(sp=>{ sp.kickoff=new Date(sp.kickoff); sp.stundenSeitAnstoss=(Date.now()-sp.kickoff.getTime())/3600000; });
+        zeigeFussballErgebnis(cached.daten.filter(sp=>sp.status!=="geplant" || sp.stundenSeitAnstoss<=ERGEBNIS_SICHTBAR_STUNDEN), true);
+        if(Date.now()-cached.zeitstempel < FIXTURES_TTL_MS) return;
+      }
+      const [vereine, laenderspiele]=await Promise.all([ladeVereineESPN(), holeLaenderspiele()]);
+      if(!vereine.ok){ return ladeFussballReserve(1); }
+      let alle=[...vereine.spiele, ...laenderspiele];
+      alle=alle.filter(sp=>sp.stundenSeitAnstoss<=ERGEBNIS_SICHTBAR_STUNDEN);
+      alle.sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff));
+      try{ localStorage.setItem(FIXTURES_CACHE_KEY, JSON.stringify({zeitstempel:Date.now(), daten:alle})); }catch(e){}
+      zeigeFussballErgebnis(alle, false);
     }
 
     function formatiereSpielminute(rohStatus){
