@@ -1729,9 +1729,18 @@ No further explanations. Answer in English.
     const FIXTURES_CACHE_KEY="galvanikFussballSpiele_v17"+(istEN?"_en":"");
     const FIXTURES_TTL_MS=1000*60*5; // 5 Minuten Cache, damit Live-Ergebnisse aktuell bleiben
 
-    // Fest hinterlegte, geprüfte IDs für Vereine, bei denen die Namenssuche mehrdeutig sein kann
-    // (z.B. Paris SG: Herren-Profimannschaft, nicht Frauen/Jugend/eSport)
-    const FESTE_TEAM_IDS={ "Paris SG": "133714", "Barcelona": "133739" };
+    // FESTE TheSportsDB-IDs für ALLE Lieblingsvereine (geprüft am 16.10.2026 auf den Ligaseiten von
+    // thesportsdb.com). Damit entfällt die langsame Namenssuche komplett - auch dann, wenn das Handy
+    // den Zwischenspeicher gelöscht hat (iPhone löscht Webseiten-Speicher nach einigen Tagen ohne Nutzung).
+    // Neuer Verein: Namen in LIEBLINGSVEREINE eintragen UND hier seine ID ergänzen.
+    const FESTE_TEAM_IDS={
+      "Galatasaray":"133804", "Besiktas":"133794", "Fenerbahce":"133807", "Trabzonspor":"133796",
+      "Borussia Dortmund":"133650", "Bayern Munich":"133664", "VfB Stuttgart":"133660",
+      "Real Madrid":"133738", "Barcelona":"133739",
+      "Juventus":"133676", "Inter Milan":"133681", "Napoli":"133670",
+      "Manchester City":"133613", "Liverpool":"133602", "Arsenal":"133604",
+      "Paris SG":"133714"
+    };
 
     function ladeTeamIdCache(){ try{return JSON.parse(localStorage.getItem(TEAMID_CACHE_KEY))||{};}catch(e){return {};} }
     function speichereTeamIdCache(c){ try{localStorage.setItem(TEAMID_CACHE_KEY, JSON.stringify(c));}catch(e){} }
