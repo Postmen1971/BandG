@@ -216,11 +216,231 @@ FESTE REGEL FUER ALLE BILDER (von Aziz vorgegeben, bei JEDEM Update und JEDEM ne
   @media (max-height: 570px) {
     header { position: static; }
   }
+  /* Sprachumschalter 🇩🇪 / 🇬🇧 (nur wenn die Anleitung allein geöffnet ist;
+     eingebettet in der App gilt die Sprache der App) */
+  .kopf-zeile { display: flex; align-items: center; gap: 8px; }
+  .kopf-zeile h1 { flex: 1; }
+  .sprach-btn { width: auto; flex: 0 0 auto; background: transparent; border: 2px solid transparent; border-radius: 8px;
+    padding: 1px 5px; margin: 0; font-size: 1.15rem; line-height: 1.2; cursor: pointer; opacity: .45; color: inherit; }
+  .sprach-btn.aktiv { opacity: 1; border-color: rgba(255,255,255,.85); }
+  html.eingebettet .sprach-btn { display: none; }
 </style>
+<script>try{ if (window.parent !== window) document.documentElement.classList.add("eingebettet"); }catch(e){}</script>
+<!-- Sprache: Wörterbuch Deutsch -> Englisch (Schlüssel = deutscher Text). Menüpunkte bleiben wie am Gerät. -->
+<script>window.GALVANIK_EN={
+"Deutsch": "Deutsch",
+"English": "English",
+"MDE-Gerät – SAP Anleitung": "MDE device – SAP guide",
+"MDE-Gerät Anleitung - SAP": "MDE device guide - SAP",
+"Weg auswählen, um die Bedienschritte anzuzeigen": "Choose a task to show the steps",
+"Menge auf LT ändern / Nachdrucken": "Change quantity on LT / reprint",
+"Palette LT drucken": "Print pallet LT",
+"Spule hinzufügen": "Add reel",
+"Spule entfernen": "Remove reel",
+"Spule (LT) löschen": "Delete reel (LT)",
+"Alle Spulen einer Palette": "All reels on a pallet",
+"SAP-Zugriff & LT-Nr.": "SAP access & LT no.",
+"Material bestellen": "Order material",
+"Menge auf LT ändern / nachdrucken": "Change quantity on LT / reprint",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>3. Change LT Qty<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>3. Change LT Qty<\/strong>",
+"Das ist das <strong>Hauptmenü<\/strong>. Hier <strong>2. Production<\/strong> auswählen (rot markiert).": "This is the <strong>main menu<\/strong>. Select <strong>2. Production<\/strong> here (marked in red).",
+"Schritt 1: Hauptmenü, Production markiert": "Step 1: main menu, Production marked",
+"Das erscheint, nachdem <strong>Production<\/strong> gewählt wurde. Hier <strong>1. Labeling<\/strong> auswählen (rot markiert).": "This appears after <strong>Production<\/strong> has been selected. Select <strong>1. Labeling<\/strong> here (marked in red).",
+"Schritt 2: Production-Menü, Labeling markiert": "Step 2: Production menu, Labeling marked",
+"Das erscheint, nachdem <strong>Labeling<\/strong> gewählt wurde. Hier <strong>3. Change LT Qty<\/strong> auswählen (rot markiert).": "This appears after <strong>Labeling<\/strong> has been selected. Select <strong>3. Change LT Qty<\/strong> here (marked in red).",
+"Schritt 3: Labeling-Menü, Change LT Qty markiert": "Step 3: Labeling menu, Change LT Qty marked",
+"Leeres Formular – LT-Nummer scannen oder eingeben.": "Empty form – scan or enter the LT number.",
+"Change LT Quantity - leeres Formular": "Change LT Quantity - empty form",
+"Genau diese <strong>LT-Nummer<\/strong> auf dem Etikett wird gescannt bzw. eingegeben:": "This exact <strong>LT number<\/strong> on the label is scanned or entered:",
+"Etikett mit LT-Nummer zum Scannen": "Label with LT number to scan",
+"Die Felder <strong>M<\/strong>, <strong>Batch<\/strong>, <strong>Ord<\/strong>, <strong>Printer<\/strong> werden automatisch befüllt.": "The fields <strong>M<\/strong>, <strong>Batch<\/strong>, <strong>Ord<\/strong>, <strong>Printer<\/strong> are filled in automatically.",
+"Change LT Quantity - ausgefüllt": "Change LT Quantity - filled in",
+"Im Feld <strong>Qty<\/strong> die korrigierte Stückzahl eintragen.": "Enter the corrected quantity in the <strong>Qty<\/strong> field.",
+"Mit <strong>F5 (Sav+Pri)<\/strong> speichern und drucken – es wird automatisch ein neues Etikett gedruckt.": "Save and print with <strong>F5 (Sav+Pri)<\/strong> – a new label is printed automatically.",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>5. Print Pallet Lab<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>5. Print Pallet Lab<\/strong>",
+"Das erscheint, nachdem <strong>Labeling<\/strong> gewählt wurde. Hier <strong>5. Pallet Associat<\/strong> auswählen (rot markiert).": "This appears after <strong>Labeling<\/strong> has been selected. Select <strong>5. Pallet Associat<\/strong> here (marked in red).",
+"Schritt 3: Labeling-Menü, Pallet Associat markiert": "Step 3: Labeling menu, Pallet Associat marked",
+"Das erscheint, nachdem <strong>Pallet Associat<\/strong> gewählt wurde. Hier <strong>5. Print Pallet Lab<\/strong> auswählen (rot markiert).": "This appears after <strong>Pallet Associat<\/strong> has been selected. Select <strong>5. Print Pallet Lab<\/strong> here (marked in red).",
+"Schritt 4: Pallet Associat-Menü, Print Pallet Lab markiert": "Step 4: Pallet Associat menu, Print Pallet Lab marked",
+"Bei <strong># Labels<\/strong> die gewünschte Anzahl an Paletten-LT eintragen.": "Enter the required number of pallet LTs at <strong># Labels<\/strong>.",
+"Print Pallet Label Bildschirm": "Print Pallet Label screen",
+"Mit <strong>F1 (Print)<\/strong> bestätigen.": "Confirm with <strong>F1 (Print)<\/strong>.",
+"So sieht das <strong>gedruckte Palettenetikett<\/strong> aus, das dabei entsteht:": "This is what the resulting <strong>printed pallet label<\/strong> looks like:",
+"Gedrucktes Palettenetikett": "Printed pallet label",
+"Spule zur Palette hinzufügen": "Add reel to pallet",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>2. Add Tag<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>2. Add Tag<\/strong>",
+"Das erscheint, nachdem <strong>Pallet Associat<\/strong> gewählt wurde. Hier <strong>2. Add Tag / Pallet<\/strong> auswählen (rot markiert).": "This appears after <strong>Pallet Associat<\/strong> has been selected. Select <strong>2. Add Tag / Pallet<\/strong> here (marked in red).",
+"Schritt 4: Pallet Associat-Menü, Add Tag markiert": "Step 4: Pallet Associat menu, Add Tag marked",
+"Das Etikett der <strong>Palette<\/strong> scannen – genau dieses Etikett wird gescannt:": "Scan the <strong>pallet<\/strong> label – this exact label is scanned:",
+"Palettenetikett zum Scannen": "Pallet label to scan",
+"Der Bildschirm <strong>„Pallet Build“<\/strong> zeigt Pallet-/Carton-License-Tag, Material, Menge und Batch.": "The <strong>“Pallet Build”<\/strong> screen shows the pallet/carton license tag, material, quantity and batch.",
+"Pallet Build Bildschirm": "Pallet Build screen",
+"Anschließend das <strong>Spulen-/Materialetikett<\/strong> scannen – genau dieses Etikett wird gescannt:": "Then scan the <strong>reel/material label<\/strong> – this exact label is scanned:",
+"Spulenetikett zum Scannen": "Reel label to scan",
+"Mit <strong>F1<\/strong> abschließen.": "Finish with <strong>F1<\/strong>.",
+"Spule von Palette entfernen": "Remove reel from pallet",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>3. Rem Tag<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>1. Labeling<\/strong> → <strong>5. Pallet Associat<\/strong> → <strong>3. Rem Tag<\/strong>",
+"Das erscheint, nachdem <strong>Pallet Associat<\/strong> gewählt wurde. Hier <strong>3. Rem Tag / Pallet<\/strong> auswählen (rot markiert).": "This appears after <strong>Pallet Associat<\/strong> has been selected. Select <strong>3. Rem Tag / Pallet<\/strong> here (marked in red).",
+"Schritt 4: Pallet Associat-Menü, Rem Tag markiert": "Step 4: Pallet Associat menu, Rem Tag marked",
+"Es erscheint der noch leere Bildschirm <strong>„Disassociate Ltag(s) from pallet“<\/strong>.": "The still empty <strong>“Disassociate Ltag(s) from pallet”<\/strong> screen appears.",
+"Disassociate-Bildschirm, noch leer": "Disassociate screen, still empty",
+"Jetzt das <strong>Spulen-/Materialetikett<\/strong> scannen – genau dieses Etikett wird gescannt:": "Now scan the <strong>reel/material label<\/strong> – this exact label is scanned:",
+"Danach zeigt der Bildschirm Pallet-Ltag, Material, Menge und Batch.": "The screen then shows the pallet Ltag, material, quantity and batch.",
+"Disassociate Bildschirm": "Disassociate screen",
+"Mit <strong>F1 (Save)<\/strong> speichern.": "Save with <strong>F1 (Save)<\/strong>.",
+"Spule (LT) endgültig löschen": "Permanently delete reel (LT)",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>6. LT movement<\/strong> → <strong>4. Delete LT<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>6. LT movement<\/strong> → <strong>4. Delete LT<\/strong>",
+"⚠️ <strong>Sicherheitshinweis:<\/strong> Als zusätzliche Sicherheit empfiehlt es sich, den Spulen-LT vorher über „Spule entfernen\" (Rem Tag) von der Palette zu lösen, bevor er hier endgültig gelöscht wird.": "⚠️ <strong>Safety note:<\/strong> As an extra precaution, it is recommended to first detach the reel LT from the pallet via “Remove reel” (Rem Tag) before it is permanently deleted here.",
+"Das erscheint, nachdem <strong>Production<\/strong> gewählt wurde. Hier <strong>6. LT movement<\/strong> auswählen (rot markiert).": "This appears after <strong>Production<\/strong> has been selected. Select <strong>6. LT movement<\/strong> here (marked in red).",
+"Schritt 2: Production-Menü, LT movement markiert": "Step 2: Production menu, LT movement marked",
+"Das erscheint, nachdem <strong>LT movement<\/strong> gewählt wurde. Hier <strong>4. Delete LT<\/strong> auswählen (rot markiert).": "This appears after <strong>LT movement<\/strong> has been selected. Select <strong>4. Delete LT<\/strong> here (marked in red).",
+"Schritt 3: LT movement-Menü, Delete LT markiert": "Step 3: LT movement menu, Delete LT marked",
+"Es erscheint dieses Menü. Hier den <strong>LT der zu löschenden Spule<\/strong> einscannen.": "This menu appears. Scan the <strong>LT of the reel to be deleted<\/strong> here.",
+"Schritt 4: License Tag Scan-Bildschirm": "Step 4: License Tag scan screen",
+"Genau dieses Etikett (LT der Spule) wird gescannt. Anschließend mit <strong>F1 (Delete)<\/strong> endgültig entfernen.": "This exact label (LT of the reel) is scanned. Then remove it permanently with <strong>F1 (Delete)<\/strong>.",
+"Spulenetikett mit LT zum Scannen": "Reel label with LT to scan",
+"Alle Spulen-LT einer Palette anzeigen": "Show all reel LTs on a pallet",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>6. LT movement<\/strong> → <strong>3. License Tag Inq.<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>6. LT movement<\/strong> → <strong>3. License Tag Inq.<\/strong>",
+"Das erscheint, nachdem <strong>LT movement<\/strong> gewählt wurde. Hier <strong>3. License Tag Inq.<\/strong> auswählen (rot markiert).": "This appears after <strong>LT movement<\/strong> has been selected. Select <strong>3. License Tag Inq.<\/strong> here (marked in red).",
+"Schritt 3: LT movement-Menü, License Tag Inq. markiert": "Step 3: LT movement menu, License Tag Inq. marked",
+"Der Bildschirm <strong>„License Tag Inquiry\"<\/strong> erscheint. Hier den <strong>LT der Palette<\/strong> scannen.": "The <strong>“License Tag Inquiry”<\/strong> screen appears. Scan the <strong>LT of the pallet<\/strong> here.",
+"Schritt 4: License Tag Inquiry, leer": "Step 4: License Tag Inquiry, empty",
+"Genau dieses Palettenetikett wird gescannt:": "This exact pallet label is scanned:",
+"Das Ergebnis erscheint. Mit <strong>F4 (Ltags)<\/strong> öffnet sich die Liste aller Spulen-LT, die auf dieser Palette gebucht sind.": "The result appears. <strong>F4 (Ltags)<\/strong> opens the list of all reel LTs booked on this pallet.",
+"Schritt 6: Ergebnis mit F4-Ltags markiert": "Step 6: result with F4-Ltags marked",
+"Das ist das Ergebnis: die Liste aller Spulen-<strong>LT<\/strong>, die dieser Palette zugeordnet sind (hier z.B. zwei Stück).": "This is the result: the list of all reel <strong>LTs<\/strong> assigned to this pallet (here e.g. two).",
+"Schritt 7: Liste aller Spulen-LT der Palette": "Step 7: list of all reel LTs on the pallet",
+"SAP-Zugriff & LT-Nr. finden": "SAP access & finding the LT no.",
+"Allgemeine Referenz – nicht am MDE-Gerät, sondern am PC in SAP": "General reference – not on the MDE device, but on the PC in SAP",
+"In der SAP-Befehlsleiste <strong>ZSCN<\/strong> eingeben und Enter drücken.": "Enter <strong>ZSCN<\/strong> in the SAP command field and press Enter.",
+"SAP Easy Access mit ZSCN": "SAP Easy Access with ZSCN",
+"Alternativ über die <strong>Favoriten<\/strong> die passende Transaktion wählen (z.&nbsp;B. ZSCN, LX03, LM01, ZUSR ...).": "Alternatively choose the right transaction from the <strong>Favorites<\/strong> (e.g. ZSCN, LX03, LM01, ZUSR ...).",
+"SAP Favoriten Liste": "SAP favorites list",
+"Auf dem Palettenetikett steht unten die <strong>LT-Nr.<\/strong> (z.&nbsp;B. 4S128700514260).": "The <strong>LT no.<\/strong> is at the bottom of the pallet label (e.g. 4S128700514260).",
+"Palettenetikett mit LT-Nr.": "Pallet label with LT no.",
+"Diese LT-Nr. im Scan-Bildschirm eingeben und Enter drücken.": "Enter this LT no. in the scan screen and press Enter.",
+"Hauptmenü → <strong>2. Production<\/strong> → <strong>5. Kanban<\/strong> → <strong>2. ED Kanban<\/strong>": "Main menu → <strong>2. Production<\/strong> → <strong>5. Kanban<\/strong> → <strong>2. ED Kanban<\/strong>",
+"Danach <strong>5. Kanban<\/strong> auswählen (rot markiert).": "Then select <strong>5. Kanban<\/strong> (marked in red).",
+"Schritt 2: Menü Production, Kanban markiert": "Step 2: Production menu, Kanban marked",
+"Im Kanban-Menü <strong>2. ED Kanban<\/strong> auswählen (rot markiert).": "In the Kanban menu select <strong>2. ED Kanban<\/strong> (marked in red).",
+"Schritt 3: Menü Kanban, ED Kanban markiert": "Step 3: Kanban menu, ED Kanban marked",
+"Bei <strong>ContrCycle<\/strong> den Bestellcode für den gewünschten Artikel eingeben oder einscannen (rot markiert).": "At <strong>ContrCycle<\/strong>, enter or scan the order code for the required item (marked in red).",
+"Schritt 4: ED Kanban Formular, ContrCycle-Feld markiert": "Step 4: ED Kanban form, ContrCycle field marked",
+"Den betreffenden Artikel bzw. den auf dem Auftrag markierten <strong>Strichcode<\/strong> einscannen.": "Scan the item concerned or the <strong>barcode<\/strong> marked on the order.",
+"Schritt 5: Auftragsschein mit markiertem Strichcode": "Step 5: order sheet with marked barcode",
+"Bei <strong>Qty requested<\/strong> die gewünschte Bestellmenge eintragen (rot markiert) und mit <strong>F1 (Save)<\/strong> bestätigen.": "At <strong>Qty requested<\/strong>, enter the required order quantity (marked in red) and confirm with <strong>F1 (Save)<\/strong>.",
+"Schritt 6: ED Kanban Formular, Qty requested markiert": "Step 6: ED Kanban form, Qty requested marked"
+};</script>
+<script>
+/* ================================================================================
+   ZWEISPRACHIG (DE / EN) – Sprachumschalter 🇩🇪 links / 🇬🇧 rechts in der Kopfzeile.
+   - Deutsch ist das Original im Code. Englisch kommt aus dem Wörterbuch GALVANIK_EN
+     (Schlüssel = deutscher Text, Wert = englischer Text).
+   - Feste Texte der Seite werden beim Laden automatisch ersetzt (uebersetzeSeite).
+   - Texte, die per JavaScript entstehen, laufen über T("deutscher Text", {platzhalter}).
+   - Die Wahl wird gespeichert (localStorage "galvanikSprache"); Umschalten lädt die Seite neu.
+   - Neue Texte: deutschen Text normal schreiben UND im Wörterbuch ergänzen.
+   ================================================================================ */
+(function(){
+  var KEY = "galvanikSprache";
+  var lang = "de";
+  try { if (localStorage.getItem(KEY) === "en") lang = "en"; } catch(e) {}
+  // In einem eingebetteten Fenster (MDE-Anleitung im iFrame) gilt die Sprache der App
+  try { if (window.parent !== window && window.parent.GALVANIK_SPRACHE) lang = window.parent.GALVANIK_SPRACHE; } catch(e) {}
+
+  var EN = window.GALVANIK_EN || {};
+  window.GALVANIK_SPRACHE = lang;
+  window.istEN = (lang === "en");
+  window.LOC = window.istEN ? "en-GB" : "de-DE";
+  try { document.documentElement.lang = lang; } catch(e) {}
+
+  function norm(s){ return String(s).replace(/\s+/g, " ").trim(); }
+
+  window.T = function(de, vars){
+    var s = (window.istEN && Object.prototype.hasOwnProperty.call(EN, de)) ? EN[de] : de;
+    if (vars) s = s.replace(/\{(\w+)\}/g, function(m, k){ return (vars[k] !== undefined) ? vars[k] : m; });
+    return s;
+  };
+  // Dezimaltrenner: Deutsch Komma, Englisch Punkt
+  window.dez = function(s){ s = String(s); return window.istEN ? s : s.replace(".", ","); };
+
+  window.setzeSprache = function(l){
+    if (l === lang) return;
+    try { localStorage.setItem(KEY, l); } catch(e) {}
+    location.reload();
+  };
+
+  var ATTRIBUTE = ["placeholder", "title", "aria-label", "alt"];
+  var UEBERSPRINGEN = { SCRIPT:1, STYLE:1, TEXTAREA:1 };
+
+  function walk(el){
+    if (el.nodeType !== 1 || UEBERSPRINGEN[el.tagName]) return;
+    if (el.hasAttribute("data-kein-i18n")) return;
+    for (var a = 0; a < ATTRIBUTE.length; a++){
+      var v = el.getAttribute(ATTRIBUTE[a]);
+      if (v){ var kv = norm(v); if (Object.prototype.hasOwnProperty.call(EN, kv)) el.setAttribute(ATTRIBUTE[a], EN[kv]); }
+    }
+    if (el.children.length){
+      var k = norm(el.innerHTML);
+      if (Object.prototype.hasOwnProperty.call(EN, k)){ el.innerHTML = EN[k]; return; }
+    }
+    var kinder = Array.prototype.slice.call(el.childNodes);
+    for (var i = 0; i < kinder.length; i++){
+      var n = kinder[i];
+      if (n.nodeType === 3){
+        var t = n.nodeValue, kt = norm(t);
+        if (kt && Object.prototype.hasOwnProperty.call(EN, kt)){
+          var vorne = t.match(/^\s*/)[0], hinten = t.match(/\s*$/)[0];
+          n.nodeValue = vorne + EN[kt] + hinten;
+        }
+      } else if (n.nodeType === 1){
+        walk(n);
+      }
+    }
+  }
+  window.uebersetzeSeite = function(root){
+    if (!window.istEN) return;
+    walk(root || document.body);
+    if (EN[norm(document.title)]) document.title = EN[norm(document.title)];
+  };
+  // Hilfsfunktion zum Sammeln aller Texte (nur für die Pflege des Wörterbuchs)
+  window.sammleTexte = function(root){
+    var aus = [];
+    function sammle(el){
+      if (el.nodeType !== 1 || UEBERSPRINGEN[el.tagName] || el.hasAttribute("data-kein-i18n")) return;
+      for (var a = 0; a < ATTRIBUTE.length; a++){ var v = el.getAttribute(ATTRIBUTE[a]); if (v && /[A-Za-zÄÖÜäöüß]{2}/.test(v)) aus.push(norm(v)); }
+      var gemischt = false, hatId = false;
+      for (var i = 0; i < el.childNodes.length; i++){
+        var n = el.childNodes[i];
+        if (n.nodeType === 3 && /[A-Za-zÄÖÜäöüß]{2}/.test(n.nodeValue)) gemischt = true;
+      }
+      if (el.children.length && gemischt){
+        hatId = !!el.querySelector("[id],input,select,textarea,script,svg,button,a[onclick]");
+        if (!hatId){ aus.push(norm(el.innerHTML)); return; }
+      }
+      for (var j = 0; j < el.childNodes.length; j++){
+        var m = el.childNodes[j];
+        if (m.nodeType === 3){ var t = norm(m.nodeValue); if (/[A-Za-zÄÖÜäöüß]{2}/.test(t)) aus.push(t); }
+        else sammle(m);
+      }
+    }
+    sammle(root || document.body);
+    return aus.filter(function(x, i){ return aus.indexOf(x) === i; });
+  };
+
+  document.addEventListener("DOMContentLoaded", function(){
+    window.uebersetzeSeite(document.body);
+    var de = document.getElementById("sprachDE"), en = document.getElementById("sprachEN");
+    if (de) de.classList.toggle("aktiv", lang === "de");
+    if (en) en.classList.toggle("aktiv", lang === "en");
+  });
+})();
+
+</script>
 </head>
 <body>
 <header>
-<h1>MDE-Gerät – SAP Anleitung</h1>
+<div class="kopf-zeile"><button type="button" class="sprach-btn" id="sprachDE" onclick="setzeSprache('de')" title="Deutsch" aria-label="Deutsch">🇩🇪</button><h1>MDE-Gerät – SAP Anleitung</h1><button type="button" class="sprach-btn" id="sprachEN" onclick="setzeSprache('en')" title="English" aria-label="English">🇬🇧</button></div>
 <p>Weg auswählen, um die Bedienschritte anzuzeigen</p>
 <select id="pathSelect" onchange="showPath(this.value)">
 <option selected="" value="changeqty">Menge auf LT ändern / Nachdrucken</option>
