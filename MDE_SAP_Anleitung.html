@@ -437,10 +437,14 @@ FESTE REGEL FUER ALLE BILDER (von Aziz vorgegeben, bei JEDEM Update und JEDEM ne
 })();
 
 </script>
+<style>/* Flaggen als Grafik statt Emoji (Windows zeigt Flaggen-Emojis nur als Buchstaben "DE"/"GB") */
+.sprach-btn{display:inline-flex;align-items:center;justify-content:center;padding:3px 4px;}
+.sprach-btn .flagge{display:block;width:28px;height:17px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.35);}
+</style>
 </head>
 <body>
 <header>
-<div class="kopf-zeile"><button type="button" class="sprach-btn" id="sprachDE" onclick="setzeSprache('de')" title="Deutsch" aria-label="Deutsch">🇩🇪</button><h1>MDE-Gerät – SAP Anleitung</h1><button type="button" class="sprach-btn" id="sprachEN" onclick="setzeSprache('en')" title="English" aria-label="English">🇬🇧</button></div>
+<div class="kopf-zeile"><button type="button" class="sprach-btn" id="sprachDE" onclick="setzeSprache('de')" title="Deutsch" aria-label="Deutsch"><svg class="flagge" viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#DD0000"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button><h1>MDE-Gerät – SAP Anleitung</h1><button type="button" class="sprach-btn" id="sprachEN" onclick="setzeSprache('en')" title="English" aria-label="English"><svg class="flagge" viewBox="0 0 60 30" aria-hidden="true"><clipPath id="ukS"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="ukT"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><g clip-path="url(#ukS)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukT)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg></button></div>
 <p>Weg auswählen, um die Bedienschritte anzuzeigen</p>
 <select id="pathSelect" onchange="showPath(this.value)">
 <option selected="" value="changeqty">Menge auf LT ändern / Nachdrucken</option>
