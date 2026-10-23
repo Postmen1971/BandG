@@ -444,6 +444,19 @@ FESTE REGEL FUER ALLE BILDER (von Aziz vorgegeben, bei JEDEM Update und JEDEM ne
 .sprach-btn{display:inline-flex;align-items:center;justify-content:center;padding:3px 4px;}
 .sprach-btn .flagge{display:block;width:28px;height:17px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.35);}
 </style>
+<style>/* Ersatz-Abstände, nur aktiv wenn das Gerät Flex-"gap" nicht kennt */
+.kein-flex-gap .step>*+*{margin-left:12px}
+.kein-flex-gap .kopf-zeile>*+*{margin-left:8px}
+</style>
+<script>
+/* Ältere Geräte (iOS bis 14.4, alte Android-Browser) kennen "gap" bei Flex-Layouts nicht.
+   Dann bekommt <html> die Klasse "kein-flex-gap" und die Ersatz-Abstände unten greifen.
+   Auf neueren Geräten ändert sich nichts. */
+(function(){try{var d=document.createElement("div");d.style.display="flex";d.style.flexDirection="column";d.style.rowGap="1px";
+d.appendChild(document.createElement("div"));d.appendChild(document.createElement("div"));
+(document.body||document.documentElement).appendChild(d);var ok=d.scrollHeight===1;d.parentNode.removeChild(d);
+if(!ok)document.documentElement.className+=" kein-flex-gap";}catch(e){}})();
+</script>
 </head>
 <body>
 <header>
