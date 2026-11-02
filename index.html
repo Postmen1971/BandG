@@ -12485,17 +12485,17 @@ No further explanations. Answer in English.
         knopf.textContent="📺 "+sender.length;
         knopf.title=T("📺 Sender-Übersicht");
         knopf.style.cssText="border:1px solid #2a7a3b;background:#fff;color:#2a7a3b;border-radius:12px;padding:1px 9px;font-size:12px;cursor:pointer;";
-        const liste=document.createElement("div");
-        liste.style.cssText="display:none;margin-top:4px;line-height:1.45;";
-        liste.textContent=sender.join(" · ");
+        const aufklapp=document.createElement("div");
+        aufklapp.style.cssText="display:none;margin-top:4px;line-height:1.45;";
+        aufklapp.textContent=sender.join(" · ");
         knopf.addEventListener("click", function(e){
           e.preventDefault();
-          const offen=liste.style.display==="none";
-          liste.style.display=offen? "block":"none";
+          const offen=aufklapp.style.display==="none";
+          aufklapp.style.display=offen? "block":"none";
           knopf.style.background=offen? "#2a7a3b":"#fff";
           knopf.style.color=offen? "#fff":"#2a7a3b";
         });
-        el.appendChild(knopf); el.appendChild(liste);
+        el.appendChild(knopf); el.appendChild(aufklapp);
       });
     }
 
