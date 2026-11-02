@@ -12487,7 +12487,14 @@ No further explanations. Answer in English.
         knopf.style.cssText="border:1px solid #2a7a3b;background:#fff;color:#2a7a3b;border-radius:12px;padding:1px 9px;font-size:12px;cursor:pointer;";
         const aufklapp=document.createElement("div");
         aufklapp.style.cssText="display:none;margin-top:4px;line-height:1.45;";
-        aufklapp.textContent=sender.join(" · ");
+        // Sender abwechselnd grün / hellblau – man sieht sofort, wo ein Name aufhört und der nächste beginnt
+        sender.forEach((name,i)=>{
+          const sp=document.createElement("span");
+          sp.textContent=name;
+          sp.style.cssText="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:9px;font-size:11px;"
+            + (i%2===0 ? "background:#e3f4e6;color:#1f6b31;" : "background:#e2f0fb;color:#0b5a8f;");
+          aufklapp.appendChild(sp);
+        });
         knopf.addEventListener("click", function(e){
           e.preventDefault();
           const offen=aufklapp.style.display==="none";
