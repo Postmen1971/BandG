@@ -12427,8 +12427,8 @@ No further explanations. Answer in English.
         }else{
           ergebnisTeil=`${datumStr}${s.zeit? ', '+T('{z} Uhr',{z:s.zeit}):''}`;
         }
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+T(s.wettbewerb):''}</span>`
-          + `<div class="tv-sender" data-heim="${encodeURIComponent(s.heim)}" data-gast="${encodeURIComponent(s.auswaerts)}" data-datum="${encodeURIComponent(s.datum||"")}" style="font-size:12px;color:#2a7a3b;"></div></div>`;
+        html+=`<div class="spiel"><strong style="color:var(--darkblue,#0b2a5b);">${s.heim} – ${s.auswaerts}</strong><br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+T(s.wettbewerb):''}</span>`
+          + `<div class="tv-sender" data-heim="${encodeURIComponent(s.heim)}" data-gast="${encodeURIComponent(s.auswaerts)}" data-datum="${encodeURIComponent(s.datum||"")}" style="font-size:11px;color:#2a7a3b;margin-top:2px;"></div></div>`;
       });
       box.innerHTML=html;
       zeigeTvSender();
