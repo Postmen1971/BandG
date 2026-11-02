@@ -12427,10 +12427,60 @@ No further explanations. Answer in English.
         }else{
           ergebnisTeil=`${datumStr}${s.zeit? ', '+T('{z} Uhr',{z:s.zeit}):''}`;
         }
-        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+T(s.wettbewerb):''}</span></div>`;
+        html+=`<div class="spiel">${s.heim} – ${s.auswaerts}<br><span class="datum">${ergebnisTeil}${s.wettbewerb? ' · '+T(s.wettbewerb):''}</span>`
+          + `<div class="tv-sender" data-heim="${encodeURIComponent(s.heim)}" data-gast="${encodeURIComponent(s.auswaerts)}" data-datum="${encodeURIComponent(s.datum||"")}" style="font-size:12px;color:#2a7a3b;"></div></div>`;
       });
       box.innerHTML=html;
+      zeigeTvSender();
     }
+
+    /* --- Im TV: Sender je Spiel von liveonsat.com ---
+       Der Browser darf liveonsat nicht direkt lesen. Darum holt ein GitHub-Auftrag (Projekt SkorText) alle 30 Minuten
+       die Senderliste und legt sie als Datei ab, die hier gelesen werden darf. Enthält die Spiele der nächsten 7 Tage. */
+    const TV_FEED_URL="https://raw.githubusercontent.com/Postmen1971/SkorText/feed/liveonsat.json";
+    const TV_CACHE_KEY="bandgTvSender_v1";
+    const TV_TTL_MS=1000*60*30;
+    function tvNorm(t){ return (t||"").toLowerCase().replace(/ı/g,"i").replace(/ß/g,"ss").normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+    const TV_NOISE=new Set(["fc","sc","sk","fk","cf","ac","as","sv","vfb","vfl","tsg","afc","club","de","the"]);
+    function tvTokens(team){ return tvNorm(team).split(/[^a-z0-9]+/).filter(w=>w.length>=3 && !TV_NOISE.has(w)); }
+    const TV_JUGEND=/\b(u-?\d{2}|women|woman|frauen|kadin|ladies|reserves|ii)\b|\(w\)/i;
+    // Deutsche/türkische Sender zuerst (liegen in der Datei schon vorne), höchstens 4 anzeigen
+    function tvSenderFuer(heim, gast, datum, liste){
+      const t1=tvTokens(heim), t2=tvTokens(gast);
+      const jugend=TV_JUGEND.test(heim+" "+gast);
+      const f=liste.find(x=>{
+        // gleiches Datum (Format wie in der Liste: "03.11.") – sonst könnte ein anderes Spiel derselben Vereine passen
+        const dm=(datum||"").match(/(\d{1,2})\D(\d{1,2})/);
+        if(dm && x.date && (+x.date.slice(8,10)!==+dm[1] || +x.date.slice(5,7)!==+dm[2])) return false;
+        if(!jugend && TV_JUGEND.test(x.home+" "+x.away)) return false;
+        const h=tvNorm(x.home), a=tvNorm(x.away);
+        return (t1.some(w=>h.includes(w)) && t2.some(w=>a.includes(w))) || (t1.some(w=>a.includes(w)) && t2.some(w=>h.includes(w)));
+      });
+      return f ? f.channels.map(c=>c.replace(/\s*📺/g,"").trim()) : [];
+    }
+    async function holeTvListe(){
+      try{
+        const c=JSON.parse(localStorage.getItem(TV_CACHE_KEY)||"null");
+        if(c && Date.now()-c.zeit<TV_TTL_MS) return c.liste;
+      }catch(e){}
+      const res=await fetch(TV_FEED_URL, {cache:"no-store"});
+      if(!res.ok) throw new Error("TV-Feed "+res.status);
+      const daten=await res.json();
+      const liste=daten.fixtures||[];
+      try{ localStorage.setItem(TV_CACHE_KEY, JSON.stringify({zeit:Date.now(), liste})); }catch(e){}
+      return liste;
+    }
+    async function zeigeTvSender(){
+      const felder=document.querySelectorAll('#footballBox .tv-sender');
+      if(!felder.length) return;
+      let liste;
+      try{ liste=await holeTvListe(); }catch(e){ return; } // ohne Senderliste einfach nichts anzeigen
+      felder.forEach(el=>{
+        const sender=tvSenderFuer(decodeURIComponent(el.dataset.heim), decodeURIComponent(el.dataset.gast), decodeURIComponent(el.dataset.datum||""), liste);
+        if(sender.length) el.textContent="📺 "+sender.slice(0,4).join(" · ")+(sender.length>4? " …":"");
+      });
+    }
+
 
     function zeigeFussballFehler(){
       const box=document.getElementById('footballBox');
