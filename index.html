@@ -12442,7 +12442,8 @@ No further explanations. Answer in English.
     const TV_TTL_MS=1000*60*30;
     function tvNorm(t){ return (t||"").toLowerCase().replace(/ı/g,"i").replace(/ß/g,"ss").normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
     const TV_NOISE=new Set(["fc","sc","sk","fk","cf","ac","as","sv","vfb","vfl","tsg","afc","club","de","the"]);
-    function tvTokens(team){ return tvNorm(team).split(/[^a-z0-9]+/).filter(w=>w.length>=3 && !TV_NOISE.has(w)); }
+    const TV_ALIAS={internazionale:"inter"}; // liveonsat schreibt „Inter Milan“
+    function tvTokens(team){ return tvNorm(team).split(/[^a-z0-9]+/).filter(w=>w.length>=3 && !TV_NOISE.has(w)).map(w=>TV_ALIAS[w]||w); }
     const TV_JUGEND=/\b(u-?\d{2}|women|woman|frauen|kadin|ladies|reserves|ii)\b|\(w\)/i;
     // Deutsche/türkische Sender zuerst (liegen in der Datei schon vorne), höchstens 4 anzeigen
     function tvSenderFuer(heim, gast, datum, liste){
